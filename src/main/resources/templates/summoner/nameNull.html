@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<div layout:fragment="content">
+    <div class="container position-relative">
+        <div class="row justify-content-center">
+            <div class="col-xl-6">
+                <div class="text-center">
+                    <!-- 검색한 소환사 명 -->
+                    <h1 id="margin-top-5" th:text="${smn}">소환사 명</h1><br>
+                    <!-- 리무무 이미지 -->
+                    <img src="/img/nameNull.png" width="500px" class="mb-5" alt="RIMUMU.GG" >
+
+                    <!-- 소환사 검색폼 -->
+                    <div class="submit-form">
+                        <form class="form-subscribe" id="searchSmn" action="/summoner" method="get">
+                            <div class="row">
+                                <div class="col">
+                                    <input type="text" class="form-control form-control-lg" id="smn" name="smn" placeholder="소환사명을 입력해주세요.">
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-primary btn-lg disabled" id="submitButton">검색</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+</div>

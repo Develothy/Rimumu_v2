@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="header">
+    <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+        <img src="/img/summoner.png" width="25px" alt="logo" href="/">
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="/">RIMUMU.GG</a>
+
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/board">커뮤니티</a>
+                </li>
+
+                <li class="nav-item" >
+                    <a class="nav-link" href="/login">로그인</a>
+                </li>
+                <li class="nav-item" >
+                    <a class="nav-link" href="/join">회원가입</a>
+                </li>
+                <li class="nav-item" >
+                    <a class="nav-link" href="/logout">로그아웃</a>
+                </li>
+            </ul>
+
+            <!-- 검색 form -->
+            <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                <div class="input-group">
+                    <input name="summoner" class="form-control mr-sm-2" type="text" placeholder="검색어를 입력해주세요">
+                    <span class="input-group-btn" >
+                    <button class="btn btn-outline-light my-2 my-sm-0" >Search</button>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </nav>
+</div>
+</html>
