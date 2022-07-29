@@ -4,7 +4,26 @@
       layout:decorate="~{layout/layout}">
 
 <div layout:fragment="content">
-    <div class="container">
+    <div class="container position-relative">
+        <div class="row justify-content-center">
+            <div class="col-xl-6">
+                <div class="text-center text-white">
+                    <img src="/img/Rimumu.GG.png" width="500px" class="mb-5" id="margin-top" alt="URIM.GG" >
+                    <div class="submit-form">
+                        <form class="form-subscribe" id="summoner" action="/summoner" method="get">
+                            <div class="row">
+                                <div class="col">
+                                    <input type="text" class="form-control form-control-lg" id="smn" name="smn" placeholder="림우짱">
+                                </div>
+                                <div class="col-auto"><button type="submit" class="btn btn-primary btn-lg disabled" id="submitButton">검색</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
 
 

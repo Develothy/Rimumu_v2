@@ -27,9 +27,10 @@ public class SummonerController {
 
     // 소환사 Summoner(smn) 검색
     @GetMapping("/summoner")
-    public String summoner(@RequestParam(value = "smn") String smn, HttpServletRequest httpServletRequest, Model model) throws ParseException {
+    public String summoner(@RequestParam("smn") String smn, HttpServletRequest httpServletRequest, Model model) throws ParseException {
 
         smn.replaceAll(" ","");//검색 명 공백제거
+        model.addAttribute("smn", smn);
 
         // smn URL 연결
         String apiResult ="";
@@ -50,6 +51,21 @@ public class SummonerController {
             return "summoner/nameNull";
         }
 
+        // 존재하는 소환사
+        JSONParser jsonParser = new JSONParser();
+        //검색 소환사 account 정보 가져오기
+        JSONObject jsonObject = new JSONObject();
+        JSONObject accResult = (JSONObject) jsonParser.parse(apiResult);
+
+        System.out.println("String 타입 : "+ apiResult);
+        System.out.println("Json 타입 : " + accResult);
+
+        //APIresult를 Json화 해준 후 이름, 아이콘, 고유id 가져오기
+        String json_name = accResult.get("name").toString();
+        int profileIconId  = Integer.parseInt(accResult.get("profileIconId").toString());
+        String id  = accResult.get("id").toString();
+        String puuid  = accResult.get("puuid").toString();
+        int smLv = Integer.parseInt(accResult.get("summonerLevel").toString());
 
 
 
