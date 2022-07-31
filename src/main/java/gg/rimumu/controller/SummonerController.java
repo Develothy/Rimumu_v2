@@ -238,6 +238,32 @@ public class SummonerController {
         }
 
 
+        // 검색한 소환사 최근 전적 승률 KDA
+        int recentWin=0;
+        int recentLose=0;
+        int recentKill=0;
+        int recentDeath=0;
+        int recentAssist=0;
+
+        // 매치 리스트 가져오기 matchId
+        String matchIdResult = null;
+        try {
+            String match_urls = "https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/"+puuid+"/ids?start=0&count20&api_key="+ API_KEY;
+            System.out.println(match_urls);
+
+            URL url = new URL(match_urls);
+
+            BufferedReader bf;
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            bf = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
+            System.out.println(bf);
+
+            matchIdResult = bf.readLine();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("String 타입 : "+ matchIdResult);
 
 
 
