@@ -15,7 +15,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -349,7 +348,7 @@ public class SummonerController {
             int gameSec = (int) gameDuration % 60;
             matchMap.put("gameDuration", gameMin + "분" + gameSec + "초");
             System.out.println(gameDuration);
-            System.out.println(gameMin + "분" + gameSec + "초");
+            System.out.println("게임시간" + gameMin + "분" + gameSec + "초");
 
             //게임 시작시간 (ago)
             SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -357,8 +356,10 @@ public class SummonerController {
             String date = "";
             try {
                 date = sdf.format(info.get("gameEndTimestamp").toString());
+                System.out.println("date try");
             } catch (Exception e) {
                 date = sdf.format(info.get("gameStartTimestamp").toString());
+                System.out.println("date catch");
             }
             String now = sdf.format(new Date());
             System.out.println("date : " + date);
