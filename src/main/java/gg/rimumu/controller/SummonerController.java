@@ -33,7 +33,7 @@ public class SummonerController {
 
     // 소환사 Summoner(smn) 검색
     @GetMapping("/summoner")
-    public String summoner(@RequestParam("smn") String smn, HttpServletRequest httpServletRequest, Model model) throws ParseException, IOException {
+    public String summoner(@RequestParam("smn") String smn, HttpServletRequest httpServletRequest, Model model) throws ParseException, IOException, java.text.ParseException {
 
         smn.replaceAll(" ", "");//검색 명 공백제거
         model.addAttribute("smn", smn);
@@ -363,6 +363,42 @@ public class SummonerController {
             String now = sdf.format(new Date());
             System.out.println("date : " + date);
             System.out.println("now : " + now);
+
+            Date inDate = sdf.parse(date);
+            Date nowDate = sdf.parse(now);
+            System.out.println("parse in : "+inDate);
+            System.out.println("parse now: "+nowDate);
+
+            //24시간->1일 / 60분->1시간 / 60초->1분 표기
+            int days = (int)(nowDate.getTime()-inDate.getTime())/(24*60*60*1000);
+            int hours = (int)(nowDate.getTime()-inDate.getTime())/(60*60*1000);
+            int min = (int)(nowDate.getTime()-inDate.getTime())/(60*1000);
+//	    	int sec = (int)(nowDate.getTime()-inDate.getTime())/(1000%60);
+
+
+            System.out.println("days : "+days);
+            System.out.println("hours : "+hours);
+            System.out.println("min : "+min);
+            // x달 전 / x일 전 / x시간 전 / x분 전
+            if (days!=0) {
+                matchMap.put("ago", days+"일 전");
+                System.out.println(days+"일 전");
+            }else if(hours==0){
+                matchMap.put("ago", min+"분 전");
+                System.out.println(min+" 분 전");
+            }else {
+                matchMap.put("ago",hours%24+"시간 전");
+                System.out.println(hours%24+"시간 전");
+            }
+            //확인용
+            for(String keys : matchMap.keySet()) {
+                System.out.print(keys);
+                System.out.print(" : ");
+                System.out.print(matchMap.get(keys));
+                System.out.print(", ");
+            }
+
+
 
             return "summoner/smnResult";
         }
