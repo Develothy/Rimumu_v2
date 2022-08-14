@@ -350,8 +350,8 @@ public class SummonerController {
             System.out.println(gameDuration);
             System.out.println("게임시간" + gameMin + "분" + gameSec + "초");
 
-            //게임 시작시간 (ago)
-            SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            //게임 시작시간 (ago) // Date error
+/*            SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             String date = "";
             try {
@@ -399,6 +399,93 @@ public class SummonerController {
                 System.out.print(", ");
             }
 
+ */
+
+            /*
+             * participants 키의 배열['participants':{},] 가져오기(플레이어 당 인게임) // 블루 0~4/ 레드 5~9
+             * 플레이어 수 만큼 도는 for문
+             */
+
+            JSONArray partiInGame = (JSONArray) info.get("participants");
+            System.out.println("포문 진입 전 사이즈체크 : "+ partiInGame.size());
+
+            for(int p = 0; p < partiInGame.size(); p++){
+                System.out.println("플레이어 포문 진입, p = " + p + "/" + partiInGame.size());
+                JSONObject inGame = (JSONObject) partiInGame.get(p);
+
+                //key값 증가. 소환사 이름 sm0.sm1.sm2...값 차례대로 넣어주기
+                String sm = "sm"+ p;
+                //<img SRC="smImgUrl">
+                String smImgUrl = "smImgUrl"+p;
+                //inGame summoner(p)의 챔피언
+                String inChamp = inGame.get("championName").toString();
+                //inGame summoner(p)의 소환사 명
+                String inName = inGame.get("summonerName").toString();
+
+                System.out.println(sm + inChamp + inName);
+
+                matchMap.put(sm, inName);
+                matchMap.put(smImgUrl, ddUrl + ddVer + "/img/champion/"+inChamp+".png");
+
+ 		    	/*
+ 		    	/ 검색한 소환사(나)의 챔피언 가져오기
+ 		    	/ (json_name=나)
+ 		    	*/
+                if(inName.equals(json_name)) { //공백처리 완료된 name
+                    matchMap.put("myChamp", inChamp);
+                    matchMap.put("myChampUrl", ddUrl + ddVer+"/img/champion/"+inChamp+".png");
+                    int myK = Integer.parseInt(inGame.get("kills").toString());
+                    int myD = Integer.parseInt(inGame.get("deaths").toString());
+                    int myA = Integer.parseInt(inGame.get("assists").toString());
+                    matchMap.put("myK", myK);
+                    matchMap.put("myD", myD);
+                    matchMap.put("myA", myA);
+
+                    if(myD==0) {
+                        matchMap.put("myAvg", "Perfect!");
+                    }else{
+                        double kda = (double)Math.round((myK+myA)/myD*100)/100; //흠,,,ㅜㅜ소수 2째자리,,,안댐
+                        matchMap.put("myAvg", "평점 1 : "+kda);
+                        System.out.println("kda : "+kda);
+                    }
+
+                    // 나의 최근 경기(20) KDA
+                    recentKill = recentKill + myK;
+                    recentDeath = recentDeath + myD;
+                    recentAssist = recentAssist + myA;
+                    model.addAttribute("recentKill", recentKill);
+                    model.addAttribute("recentDeath", recentDeath);
+                    model.addAttribute("recentAssist", recentAssist);
+                    if(recentDeath==0) {
+                        model.addAttribute("recentKDA","퍼펙트냠냠");
+                    }
+                    model.addAttribute("recentKDA", (recentKill+recentAssist)/recentDeath);
+
+                    // 단일 경기 승리, 패배
+                    Boolean win = Boolean.valueOf(inGame.get("win").toString());
+                    if (win) {
+                        matchMap.put("win", "WIN");
+                    }else {
+                        matchMap.put("win", "LOSE");
+
+                    }
+                    // 나의 최근 경기(20) 승률
+                    if (win) {
+                        recentWin = recentWin+1;
+                    }else {
+                        recentLose = recentLose+1;
+                    }
+                    model.addAttribute("wins", recentWin);
+                    model.addAttribute("lose", recentLose);
+                    model.addAttribute("recentTotal", recentWin+recentLose);
+                    model.addAttribute("recentRate", recentWin/(recentWin+recentLose));
+
+
+
+
+
+                }
+            }
 
 
             return "summoner/smnResult";
