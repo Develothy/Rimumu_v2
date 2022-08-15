@@ -481,11 +481,107 @@ public class SummonerController {
                     model.addAttribute("recentRate", recentWin/(recentWin+recentLose));
 
 
+                    // 나의 inGame 룬
+                    JSONObject runes = (JSONObject) inGame.get("perks");
+                    System.out.println(runes);
+                    JSONArray styles = (JSONArray) runes.get("styles");
+                    //	String style = style.get("style").ge
+                    System.out.println(styles);
+
+                    //styles 에서 style을 가져와야 함,,,, [{"style":},
 
 
 
-                }
-            }
+                    // 나의 inGame 스펠 [{"summonerId1:""}]
+
+                    for(int s=1;s<3;s++) {
+                        String smSpell = "summoner"+s+"Id";
+                        smSpell = inGame.get(smSpell).toString();
+
+                        switch (smSpell) {
+                            case "1" : smSpell ="SummonerBoost";
+                                break;
+                            case "3" : smSpell="SummonerExhaust";
+                                break;
+                            case "4" : smSpell="SummonerFlash";
+                                break;
+                            case "6" : smSpell="SummonerHaste";
+                                break;
+                            case "7" : smSpell="SummonerHeal";
+                                break;
+                            case "11" : smSpell="SummonerSmite";
+                                break;
+                            case "12" : smSpell="SummonerTeleport";
+                                break;
+                            case "13" : smSpell="SummonerMana";
+                                break;
+                            case "14" : smSpell="SummonerDot";
+                                break;
+                            case "21" : smSpell="SummonerBarrier";
+                                break;
+                            case "30" : smSpell="SummonerPoroRecall";
+                                break;
+                            case "31" : smSpell="SummonerPoroThrow";
+                                break;
+                            case "32" : smSpell="SummonerSnowball";
+                                break;
+                            case "39" : smSpell="SummonerSnowURFSnowball_Mark";
+                                break;
+                            case "54" : smSpell="Summoner_UltBook_Placeholder";
+                                break;
+                        }
+                        matchMap.put("smSpell"+s, smSpell);
+                        matchMap.put("smSpell"+s+"Url", ddUrl + ddVer+"/img/spell/"+smSpell+".png");
+                    }
+
+                    // 나의 inGame item 이미지 [{"item":xx}]
+                    for(int t=0; t<7; t++) {
+                        String item = "item"+t;
+                        String inItem = inGame.get(item).toString(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
+
+                        // item이 없는 칸 회색템 표시
+                        if(inItem.equals("0")) {
+                            matchMap.put("myT"+t, "/resources/img/itemNull.png");
+
+                            // inGame 나의 item 설명 (툴팁)
+                            // item.json URL 연결
+                        }else{
+                            System.out.println("아이템 넘버 : "+inItem);
+                            matchMap.put("myT"+t, ddUrl+ddVer+"/img/item/"+inItem+".png");
+
+                            // item TOOLTIP 템 정보
+                            String itemApi = ddUrl+ddVer+"/data/ko_KR/item.json";
+                            URL itemUrl = new URL(itemApi);
+
+                            HttpURLConnection ItemUrlconn = (HttpURLConnection) itemUrl.openConnection();
+                            ItemUrlconn.setRequestMethod("GET");
+                            BufferedReader itemBf = new BufferedReader(new InputStreamReader(ItemUrlconn.getInputStream(),"UTF-8"));
+                            System.out.println("아이템 설명 bf : "+itemBf); //작동 확인용
+
+                            String itemResult = itemBf.readLine();
+
+                            //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
+                            JSONObject itemJson = (JSONObject) jsonParser.parse(itemResult);
+                            //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
+                            JSONObject itemData = (JSONObject) itemJson.get("data");
+                            //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
+                            JSONObject itemNum = (JSONObject) itemData.get(inItem);
+                            //오른 에러!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            String itemName = itemNum.get("name").toString();
+                            String itemDesc = itemNum.get("description").toString();
+                            String itemText = itemNum.get("plaintext").toString();
+
+                            matchMap.put("itemTooltip"+t,"<b>"+ itemName+"</b>" +"<br><hr>"+itemDesc+"<br>"+itemText);
+                            System.out.println("itemTooltip"+t+" : itemName : "+itemName+" / itemDesc : "+itemDesc+" / itemText : "+itemText);
+                        }
+                        // ITEM, TOOLTIP 종료
+                    }
+                    System.out.println("matchMap 종료");
+                    list.add(matchMap);
+
+                } // 1 matchId 종료
+                model.addAttribute("list",list);
+            } // 20 MatchId forEach 반복문 종료
 
 
             return "summoner/smnResult";
