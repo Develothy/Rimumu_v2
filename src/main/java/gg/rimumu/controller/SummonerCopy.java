@@ -17,15 +17,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 
 
 @Controller
 @RequiredArgsConstructor
-public class SummonerController {
+public class SummonerCopy {
+
 
     @Value("${LoL_KEY}")
     final private String API_KEY;
@@ -35,6 +34,7 @@ public class SummonerController {
 
     @Value("${DDVer}")
     final private String ddVer;
+
 
 
     // 소환사 Summoner(smn) 검색
