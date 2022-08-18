@@ -1,3 +1,4 @@
+/*
 package gg.rimumu.controller;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class SummonerController {
 
-    @Value("${LoL_KEY}")
+    @Value("${LoL.KEY}")
     final private String API_KEY;
 
     @Value("${DDUrl}")
@@ -281,10 +282,12 @@ public class SummonerController {
 
 
         JSONArray json_matchId = (JSONArray) jsonParser.parse(matchIdResult);
-        /*
+        */
+/*
          * forEach 반복문 시작구간
          * 설명 : 챔피언, 게입타입, 승패, 게임 시간, KDA, 룬, 스펠, 아이템, 플레이어
-         */
+         *//*
+
         ArrayList<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
         //매치 당 정보 가져오기 / 20게임 정보의 api 이용 중
         for (int i = 0; i < json_matchId.size() - 15; i++) {
@@ -358,6 +361,7 @@ public class SummonerController {
             System.out.println("게임시간" + gameMin + "분" + gameSec + "초");
 
             //게임 시작시간 (ago) // Date error
+*/
 /*            SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             String date = "";
@@ -406,12 +410,15 @@ public class SummonerController {
                 System.out.print(", ");
             }
 
- */
+ *//*
 
-            /*
+
+            */
+/*
              * participants 키의 배열['participants':{},] 가져오기(플레이어 당 인게임) // 블루 0~4/ 레드 5~9
              * 플레이어 수 만큼 도는 for문
-             */
+             *//*
+
 
             JSONArray partiInGame = (JSONArray) info.get("participants");
             System.out.println("포문 진입 전 사이즈체크 : "+ partiInGame.size());
@@ -434,10 +441,12 @@ public class SummonerController {
                 matchMap.put(sm, inName);
                 matchMap.put(smImgUrl, ddUrl + ddVer + "/img/champion/"+inChamp+".png");
 
- 		    	/*
+ 		    	*/
+/*
  		    	/ 검색한 소환사(나)의 챔피언 가져오기
  		    	/ (json_name=나)
- 		    	*/
+ 		    	*//*
+
                 if(inName.equals(json_name)) { //공백처리 완료된 name
                     matchMap.put("myChamp", inChamp);
                     matchMap.put("myChampUrl", ddUrl + ddVer+"/img/champion/"+inChamp+".png");
@@ -598,3 +607,4 @@ public class SummonerController {
         return null;
     }
 }
+*/
