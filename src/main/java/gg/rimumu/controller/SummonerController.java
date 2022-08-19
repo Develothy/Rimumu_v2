@@ -28,15 +28,6 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class SummonerController {
 
-    @Value("${LoL.KEY}")
-    final private String API_KEY;
-
-    @Value("${DDUrl}")
-    final private String ddUrl;
-
-    @Value("${DDVer}")
-    final private String ddVer;
-
 
     // 소환사 Summoner(smn) 검색
     @GetMapping("/summoner")
