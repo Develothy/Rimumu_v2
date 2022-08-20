@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -187,7 +188,7 @@ public class SummonerService {
 
 
 
-/*    // current 현재 게임 여부 ---------------보류
+    // current 현재 게임 여부 ---------------
     //ex https://kr.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/x2OV0C24um6oOgMaj-jhhpDO1WAlCaH_yqyYLf6SQxIY4g?api_key=RGAPI-032475c9-844d-4beb-82f9-2a1132ee2666
     public SummonerDto currentGame(SummonerDto summonerDto, String id) throws IOException {
 
@@ -197,61 +198,49 @@ public class SummonerService {
         try {
             JSONObject curData = (JSONObject) jsonParser.parse(curResult);
 
-            //curResult를 JSON화 해준 후 인게임 정보 가져오기
-
             // exception ------------------------게임중이 아닐 경우 null
+            //model.addAttribute("current", "yes"); // yes or no 방식으로 변경 // 기존 404;
+
+            // 현재 게임 중일 경우 실행 //
+
+            // 큐 타입
             String queueId = curData.get("gameQueueConfigId").toString();
             summonerDto.setQueueId(gameType(queueId));
 
-            //model.addAttribute("current", "yes"); // yes or no 방식으로 변경 // 기존 404;
+            // participants : ['x','x'] 부분 arr
+            JSONArray partiArr = (JSONArray) curData.get("participants");
 
-            // participants : xx 부분
-            JSONArray partiInGame = (JSONArray) curData.get("participants");
+            for (int p = 0; p < partiArr.size(); p++) {
 
-            for (int p = 0; p < partiInGame.size(); p++) {
-                System.out.println("플레이어 포문 진입, p = " + p + "/" + partiInGame.size());
-
-                JSONArray inGameArr = (JSONArray) partiInGame.get(p);
-                JSONObject inGame = new JSONObject();
+                JSONArray partiDtlArr = (JSONArray) partiArr.get(p);
 
                 // JSON Array -> JSON Object
-                if (inGameArr.size() > 0) {
-                    for (int i = 0; i < inGameArr.size(); i++) {
-                        inGame = (JSONObject) inGameArr.get(i);
+                JSONObject inGame = new JSONObject();
+
+                for (int i = 0; i < partiDtlArr.size(); i++) {
+                    // i번째 participant
+                    inGame = (JSONObject) partiDtlArr.get(i);
+
+                    //inGame participant(p)의 id == myId 비교
+                    String partiId = (String) inGame.get("summonerId");
+                    if (partiId == id){
+
+                        //inGame participant(p)의 xx값
+                        //Long curTime = (Long) inGame.get("gameStartTime"); // 유닉스 타임
+                        int inChampId = (int) inGame.get("championId"); //
+                        //	model.addAttribute(smImgUrl, ddUrl + ddVer + "/img/champion/"+inChamp+".png");
+
                     }
-                }
-
-                //key값 증가. 소환사 이름 sm0.sm1.sm2...값 차례대로 넣어주기
-                String sm = "sm" + p;
-                //<img SRC="smImgUrl">
-                String smImgUrl = "smImgUrl" + p;
-
-                //inGame summoner(p)의 소환사 명
-                String inName = (String) inGame.get("summonerName");
-                System.out.println(sm + inName);
-
-
-                try {
-                    //inGame summoner(p)의 챔피언 key값
-                    String inChampId = inGame.get("championId").toString();
-                    String getKey = "K" + inChampId;
-
-
-                //    model.addAttribute(sm, inName);
-                //    //	model.addAttribute(smImgUrl, ddUrl + ddVer + "/img/champion/"+inChamp+".png");
-
-                } catch (Exception e) {
-                    System.out.println("------Dto오류-------------");
                 }
             }
             // 게임 중 아님 current 404
         } catch (Exception e) {
-        //    model.addAttribute("current", "404");
+        //    model.addAttribute("current", "404"); // exception 필요
 
         }
         return summonerDto;
     }
-    // current 현재 게임 여부 종료*/
+    // current 현재 게임 여부 종료
 
 
     // 매치 리스트 가져오기 matchId
@@ -325,17 +314,17 @@ public class SummonerService {
 
             //게임 시작시간 (ago) // Date error
 
-/*            SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-            String date = "";
+/*            SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+            Date date = new Date();
+            Long date1;
             try {
-                date = sdf.format(info.get("gameEndTimestamp").toString());
+                date1 = Long.valueOf(sdf.format(info.get("gameEndTimestamp")));
                 System.out.println("date try");
             } catch (Exception e) {
-                date = sdf.format(info.get("gameStartTimestamp").toString());
+  //              date = sdf.format(info.get("gameStartTimestamp").toString());
                 System.out.println("date catch");
             }
-            String now = sdf.format(new Date());
+            String now = sdf.format(LocalDateTime.now());
             System.out.println("date : " + date);
             System.out.println("now : " + now);
 
@@ -353,9 +342,9 @@ public class SummonerService {
 
             System.out.println("days : "+days);
             System.out.println("hours : "+hours);
-            System.out.println("min : "+min);
+            System.out.println("min : "+min); */
             // x달 전 / x일 전 / x시간 전 / x분 전
-            if (days!=0) {
+/*            if (days!=0) {
                 matchMap.put("ago", days+"일 전");
                 System.out.println(days+"일 전");
             }else if(hours==0){
@@ -371,9 +360,9 @@ public class SummonerService {
                 System.out.print(" : ");
                 System.out.print(matchMap.get(keys));
                 System.out.print(", ");
-            }
+            }*/
 
- *//*
+ /*
 
 
              */

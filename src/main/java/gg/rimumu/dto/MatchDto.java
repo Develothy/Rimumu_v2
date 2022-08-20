@@ -13,7 +13,7 @@ public class MatchDto {
 
     private String matchId;
 
-    private String QueueId;
+    private String queueId;
 
     private String gameDuration;
 

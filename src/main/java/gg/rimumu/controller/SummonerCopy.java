@@ -32,7 +32,7 @@ public class SummonerCopy {
 
     // 소환사 Summoner(smn) 검색
     @GetMapping("/summoner")
-    public String summoner(@RequestParam("smn") String smn, SummonerDto summonerDto, Model model) throws ParseException, IOException {
+    public String summoner(@RequestParam("smn") String smn, SummonerDto summonerDto, Model model) throws ParseException, IOException, java.text.ParseException {
 
         smn.replaceAll(" ", "");//검색 명 공백제거
         model.addAttribute("smn", smn);
