@@ -1,5 +1,6 @@
 package gg.rimumu.service;
 
+import gg.rimumu.dto.ChampionDto;
 import gg.rimumu.dto.MatchDto;
 import gg.rimumu.dto.SummonerDto;
 import org.json.simple.JSONArray;
@@ -16,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -190,7 +192,7 @@ public class SummonerService {
 
     // current 현재 게임 여부 ---------------
     //ex https://kr.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/x2OV0C24um6oOgMaj-jhhpDO1WAlCaH_yqyYLf6SQxIY4g?api_key=RGAPI-032475c9-844d-4beb-82f9-2a1132ee2666
-    public SummonerDto currentGame(SummonerDto summonerDto, String id) throws IOException {
+    public SummonerDto currentGame(SummonerDto summonerDto, String id, ChampionDto championDto) throws IOException {
 
         String curUrl = currentUrl + id + "?api_key=" + API_KEY;
         String curResult = urlConn(curUrl);
@@ -214,12 +216,11 @@ public class SummonerService {
 
                 JSONArray partiDtlArr = (JSONArray) partiArr.get(p);
 
-                // JSON Array -> JSON Object
-                JSONObject inGame = new JSONObject();
-
                 for (int i = 0; i < partiDtlArr.size(); i++) {
+
+                    // JSON Array -> JSON Object
                     // i번째 participant
-                    inGame = (JSONObject) partiDtlArr.get(i);
+                    JSONObject inGame = (JSONObject) partiDtlArr.get(i);
 
                     //inGame participant(p)의 id == myId 비교
                     String partiId = (String) inGame.get("summonerId");
@@ -227,7 +228,9 @@ public class SummonerService {
 
                         //inGame participant(p)의 xx값
                         //Long curTime = (Long) inGame.get("gameStartTime"); // 유닉스 타임
-                        int inChampId = (int) inGame.get("championId"); //
+                        String inChampId = inGame.get("championId").toString(); //
+                        //String champImg = championDto
+
                         //	model.addAttribute(smImgUrl, ddUrl + ddVer + "/img/champion/"+inChamp+".png");
 
                     }
