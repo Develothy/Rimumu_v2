@@ -334,13 +334,13 @@ public class SummonerService {
 
     public SummonerDto matchDtl(SummonerDto summonerDto, String id) throws ParseException, IOException {
 
-        MatchDto matchDto = new MatchDto();
-
         List<SummonerDto> matchIdList = summonerDto.getMatchIdList();
         List<MatchDto> matchDtoList = new ArrayList<>();
 
         //매치 당 정보 가져오기 / 20게임 정보의 api 이용 중
         for (int i = 0; i < matchIdList.size() - 15; i++) {
+
+            MatchDto matchDto = new MatchDto();
 
             String matchId = "";
             matchId = String.valueOf(matchIdList.get(i));
@@ -616,8 +616,8 @@ public class SummonerService {
                 //    list.add(matchMap);
                 System.out.println("partiDto : "+partiDto);
                 partiDtoList.add(partiDto);
-                matchDto.setPartiDtoList(partiDtoList);
             } // 1 matchId 종료
+            matchDto.setPartiDtoList(partiDtoList);
             System.out.println("partiDtoList : "+partiDtoList.toString());
 
             //test
