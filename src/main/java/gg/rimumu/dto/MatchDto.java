@@ -2,6 +2,7 @@ package gg.rimumu.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@ToString
 public class MatchDto {
 
     private String matchId;
@@ -17,6 +19,10 @@ public class MatchDto {
 
     private String gameDuration;
 
+    private String win;
 
-    private List<MatchDto> matchDtoList;
+
+    private List<MatchDto> matchDtoList = new ArrayList<>();
+    private List<ParticipantDto> partiDtoList;
+    private MyGameDto myGameDto;
 }

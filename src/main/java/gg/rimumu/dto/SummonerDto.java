@@ -2,13 +2,15 @@ package gg.rimumu.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+
 import java.util.List;
 
 import java.util.ArrayList;
 
 @Getter
 @Setter
-//@ToString
+@ToString
 public class SummonerDto {
 
     private String id;
@@ -48,6 +50,8 @@ public class SummonerDto {
 
     // matchId list
     private List<SummonerDto> matchIdList = new ArrayList<>();
+
+    private List<MatchDto> matchDtoList = new ArrayList<>();
 
 
 

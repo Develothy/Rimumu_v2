@@ -10,19 +10,32 @@
         <p th:text="${summonerDto.soloTier}"></p>
         <p th:text="${summonerDto.flexTier}"></p>
 
+        <p th:text="${summonerDto.matchDtoList}"></p>
 
+        <table class="table">
+            <thead class="thead-light">
+            <tr class="text-center">
+                <th scope="col">no.</th>
+                <th scope="col">게임 시간</th>
+                <th scope="col">WIN</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr class="text-center" th:each="match:${summonerDto.matchDtoList}">
+                    <th scope="row">
+                        <span th:text="${match.queueId}">게임타입</span>
+                    </th>
+                    <td>
+                        <span th:text="${match.gameDuration}"> 시간</span>
+                    </td>
+                    <td>
+                        <span th:text="${match.win}">승패</span>
+                    </td>
 
+                </tr>
+            </tbody>
 
-
-
-
-
-
-
-
-
-
-
+        </table>
 
 
     </div>

@@ -37,7 +37,7 @@ public class SummonerCopy {
         smn.replaceAll(" ", "");//검색 명 공백제거
         model.addAttribute("smn", smn);
 
-        summonerService.smnSearch(summonerDto, smn);
+        summonerDto = summonerService.smnSearch(summonerDto, smn);
 
 
         model.addAttribute("summonerDto", summonerDto);

@@ -1,9 +1,11 @@
 package gg.rimumu.dto;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class ChampionDto {
 
     private String K266 ="Aatrox";
@@ -167,6 +169,7 @@ public class ChampionDto {
     private String K26 ="Zilean";
     private String K142 ="Zoe";
     private String K143 ="Zyra";
+
 
 }
 
