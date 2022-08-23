@@ -20,7 +20,7 @@ public class SummonerDto {
     // 레벨
     private int smLv;
     // 아이콘 이미지 주소
-    private String imgIconURL;
+    private String iconImgUrl;
 
     // 솔랭 기록
     private String soloTier;

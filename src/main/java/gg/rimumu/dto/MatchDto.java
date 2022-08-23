@@ -22,7 +22,6 @@ public class MatchDto {
     private String win;
 
 
-    private List<MatchDto> matchDtoList = new ArrayList<>();
     private List<ParticipantDto> partiDtoList;
     private MyGameDto myGameDto;
 }

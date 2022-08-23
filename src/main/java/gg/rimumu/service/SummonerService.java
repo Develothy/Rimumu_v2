@@ -90,14 +90,16 @@ public class SummonerService {
         summonerDto.setSmLv(Integer.parseInt(accResult.get("summonerLevel").toString()));
 
         int profileIconId = Integer.parseInt(accResult.get("profileIconId").toString());
-        summonerDto.setImgIconURL(ddUrl + ddVer + "/img/profileicon/" + profileIconId + ".png");
+        summonerDto.setIconImgUrl(ddUrl + ddVer + "/img/profileicon/" + profileIconId + ".png");
 
         String id = accResult.get("id").toString();
+        summonerDto.setId(id);
         String puuid = accResult.get("puuid").toString();
+        summonerDto.setPuuid(puuid);
 
 
         // 티어 조회
-        smnTier(summonerDto, id);
+        getTier(summonerDto, id);
 
         // 게임중 여부 조회
         //currentGame(summonerDto, id);
@@ -113,7 +115,7 @@ public class SummonerService {
 
 
     // 티어 조회 로직
-    public SummonerDto smnTier(SummonerDto summonerDto, String id) throws IOException, ParseException {
+    public SummonerDto getTier(SummonerDto summonerDto, String id) throws IOException, ParseException {
 
         String rankUrl = tierUrl + id + "?api_key=" + API_KEY;
         String rankResult = urlConn(rankUrl);
@@ -154,7 +156,7 @@ public class SummonerService {
     } // smnTier() 티어 죄회 로직 종료
 
     // GameType 구하기
-    public String gameType(String queueId) {
+    public String getGameType(String queueId) {
         switch (queueId) {
             case "420": // 4
                 queueId = "솔랭";
@@ -273,7 +275,7 @@ public class SummonerService {
 
             // 큐 타입
             String queueId = curData.get("gameQueueConfigId").toString();
-            summonerDto.setQueueId(gameType(queueId));
+            summonerDto.setQueueId(getGameType(queueId));
 
             // participants : ['x','x'] 부분 arr
             JSONArray partiArr = (JSONArray) curData.get("participants");
@@ -291,8 +293,8 @@ public class SummonerService {
                     inGame = (JSONObject) partiDtlArr.get(i);
 
                     //inGame participant(p)의 id == myId 비교
-                    String partiId = (String) inGame.get("summonerId");
-                    if (partiId == id) {
+                    String compareId = (String) inGame.get("summonerId");
+                    if (compareId == id) {
 
                         //inGame participant(p)의 xx값
                         //Long curTime = (Long) inGame.get("gameStartTime"); // 유닉스 타임
@@ -370,7 +372,7 @@ public class SummonerService {
 
             //게임종류(협곡 칼바람 등) //모드 추가 시 추가 필요
             String queueId = info.get("queueId").toString();
-            matchDto.setQueueId(gameType(queueId));
+            matchDto.setQueueId(getGameType(queueId));
 
 
             //게임시간 (길이)(초)

@@ -4,7 +4,96 @@
       layout:decorate="~{layout/layout}">
 
 <div layout:fragment="content">
-    <div class="container">
+    <div class="container main-inner">
+
+        <!-- 검색한 소환사 info 컨테이터 -->
+        <div class="main-card mb-3 card">
+            <div class="row summoner-date2">
+
+                <!-- 아이콘 -->
+                <div class="col-sm-3 summoner">
+                    <img th:src="${summonerDto.iconImgUrl}" alt="소환사 아이콘" width="120px">
+                </div>
+
+                <!-- 소환사 명 -->
+                <div class="summoner col-sm-7">
+                    <h1 class="mt-3">[[${summonerDto.name}]]</h1>
+                    <h5><span class="badge badge-secondary">Lv.[[${summonerDto.smLv}]]</span> </h5>
+                </div>
+            </div>
+            <!-- 검색한 소환사 info 하단 -->
+            <div class="row summoner-data4">
+                <!-- box 1 -->
+                <div class="col-sm-3 bg-secondary">
+                    <div class="row">
+                        <!-- 솔로랭크 -->
+                        <th:block th:unless="${summonerDto.soloTier == 'Unranked'}">
+                            <div class="col-sm-5 bg-secondary">
+                                <img th:src="@{/img/emblem/}+${summonerDto.soloTier}+@{.png}" alt="tier" width="70px">
+                            </div>
+                            <div class="col-sm-6 bg-secondary">
+                                <h6 class="small">솔로랭크</h6>
+                                <h6>[[${summonerDto.soloTier}]] [[${summonerDto.soloRank}]]</h6>
+                                <h6 class="small">[[${summonerDto.soloLeaguePoints}]]</h6>
+                                <h6 class="small">[[${summonerDto.soloWins}]] [[${summonerDto.soloLosses}]]</h6>
+                            </div>
+                        </th:block>
+                        <!--언랭일때-->
+                        <th:block th:if="${summonerDto.soloTier == 'Unranked'}">
+                            <img th:src="@{/img/rank1.png}" alt="Unranked" width="190px">
+                        </th:block>
+                    </div>
+                </div>
+                <!-- box 2 -->
+                <div class="col-sm-3 bg-secondary">
+                    <div class="row">
+                        <!-- 자유랭크 -->
+                        <th:block th:unless="${summonerDto.flexTier == 'Unranked'}">
+                            <div class="col-sm-5 bg-secondary">
+                                <img th:src="@{/img/emblem/}+${summonerDto.flexTier}+@{.png}" alt="tier" width="70px">
+                            </div>
+                            <div class="col-sm-6 bg-secondary">
+                                <h6 class="small">자유랭크</h6>
+                                <h6>[[${summonerDto.flexTier}]] [[${summonerDto.flexRank}]]</h6>
+                                <h6 class="small">[[${summonerDto.flexLeaguePoints}]]</h6>
+                                <h6 class="small">[[${summonerDto.flexWins}]] [[${summonerDto.flexLosses}]]</h6>
+                            </div>
+                        </th:block>
+                        <!--언랭일때-->
+                        <th:block th:if="${summonerDto.flexTier == 'Unranked'}">
+                            <img th:src="@{/img/rank2.png}" alt="Unranked" width="190px">
+                        </th:block>
+                    </div>
+                </div>
+                <!-- box 3 최근 20전 승률 -->
+                <div class="col-sm-3 bg-secondary">
+                    <div class="row">
+                        <!-- 도넛 차트 -->
+                        <div class="col-sm-5 bg-secondary">
+                            <canvas id="myChart" width="230" height="330"></canvas>
+                        </div>
+                        <div class="col-sm-6 bg-secondary">
+                            <h6></h6>
+                            <h6></h6>
+                            <h6 class="small"></h6>
+                        </div>
+                    </div>
+                </div>
+                <!-- box 3 최근 20전 승률 -->
+                <div class="col-sm-3 bg-secondary">
+                   <!-- <th:block th:if="${summonerDto.current == 'no'}">
+                        <img src="@{/img/current.png}" width="190px">
+                    </th:block>
+                    <th:block th:if="${summonerDto.current == 'yes'}">
+                        <p th:text="현재 게임중!"></p>
+                        <img src="${summonerDto.curChampUrl}" alt="현재 챔프" width="70px">
+                    </th:block>-->
+                </div>
+            </div>
+            <!-- info 하단 종료 -->
+        </div>
+        <!-- info 컨테이너 종료 -->
+
         <p th:text="${summonerDto.name}"></p>
         <p th:text="${summonerDto.smLv}"></p>
         <p th:text="${summonerDto.soloTier}"></p>
@@ -36,6 +125,9 @@
             </tbody>
 
         </table>
+
+
+
 
 
     </div>
