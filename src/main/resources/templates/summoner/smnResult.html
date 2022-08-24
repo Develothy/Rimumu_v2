@@ -24,14 +24,14 @@
             <!-- 검색한 소환사 info 하단 -->
             <div class="row summoner-data4">
                 <!-- box 1 -->
-                <div class="col-sm-3 bg-secondary">
+                <div class="col-sm-3 back-blue">
                     <div class="row">
                         <!-- 솔로랭크 -->
                         <th:block th:unless="${summonerDto.soloTier == 'Unranked'}">
-                            <div class="col-sm-5 bg-secondary">
-                                <img th:src="@{/img/emblem/}+${summonerDto.soloTier}+@{.png}" alt="tier" width="70px">
+                            <div class="col-sm-5 back-blue">
+                                <img th:src="@{/img/emblem/${summonerDto.soloTier}.png}" alt="tier" width="70px">
                             </div>
-                            <div class="col-sm-6 bg-secondary">
+                            <div class="col-sm-6 back-blue">
                                 <h6 class="small">솔로랭크</h6>
                                 <h6>[[${summonerDto.soloTier}]] [[${summonerDto.soloRank}]]</h6>
                                 <h6 class="small">[[${summonerDto.soloLeaguePoints}]]</h6>
@@ -45,18 +45,18 @@
                     </div>
                 </div>
                 <!-- box 2 -->
-                <div class="col-sm-3 bg-secondary">
+                <div class="col-sm-3 back-blue">
                     <div class="row">
                         <!-- 자유랭크 -->
                         <th:block th:unless="${summonerDto.flexTier == 'Unranked'}">
-                            <div class="col-sm-5 bg-secondary">
+                            <div class="col-sm-5 back-blue">
                                 <img th:src="@{/img/emblem/}+${summonerDto.flexTier}+@{.png}" alt="tier" width="70px">
                             </div>
-                            <div class="col-sm-6 bg-secondary">
+                            <div class="col-sm-6 back-blue">
                                 <h6 class="small">자유랭크</h6>
                                 <h6>[[${summonerDto.flexTier}]] [[${summonerDto.flexRank}]]</h6>
-                                <h6 class="small">[[${summonerDto.flexLeaguePoints}]]</h6>
-                                <h6 class="small">[[${summonerDto.flexWins}]] [[${summonerDto.flexLosses}]]</h6>
+                                <h6 class="small">[[${summonerDto.flexLeaguePoints}]] Point</h6>
+                                <h6 class="small">[[${summonerDto.flexWins}]]승 [[${summonerDto.flexLosses}]]패 </h6>
                             </div>
                         </th:block>
                         <!--언랭일때-->
@@ -66,13 +66,13 @@
                     </div>
                 </div>
                 <!-- box 3 최근 20전 승률 -->
-                <div class="col-sm-3 bg-secondary">
+                <div class="col-sm-3 back-blue">
                     <div class="row">
                         <!-- 도넛 차트 -->
-                        <div class="col-sm-5 bg-secondary">
+                        <div class="col-sm-5 back-blue">
                             <canvas id="myChart" width="230" height="330"></canvas>
                         </div>
-                        <div class="col-sm-6 bg-secondary">
+                        <div class="col-sm-6 back-blue">
                             <h6></h6>
                             <h6></h6>
                             <h6 class="small"></h6>
@@ -80,7 +80,7 @@
                     </div>
                 </div>
                 <!-- box 3 최근 20전 승률 -->
-                <div class="col-sm-3 bg-secondary">
+                <div class="col-sm-3 back-blue">
                    <!-- <th:block th:if="${summonerDto.current == 'no'}">
                         <img src="@{/img/current.png}" width="190px">
                     </th:block>
@@ -101,30 +101,52 @@
 
         <p th:text="${summonerDto.matchDtoList}"></p>
 
-        <table class="table">
-            <thead class="thead-light">
-            <tr class="text-center">
-                <th scope="col">no.</th>
-                <th scope="col">게임 시간</th>
-                <th scope="col">WIN</th>
-            </tr>
-            </thead>
-            <tbody>
-                <tr class="text-center" th:each="match:${summonerDto.matchDtoList}">
-                    <th scope="row">
-                        <span th:text="${match.queueId}">게임타입</span>
-                    </th>
-                    <td>
-                        <span th:text="${match.gameDuration}"> 시간</span>
-                    </td>
-                    <td>
-                        <span th:text="${match.win}">승패</span>
-                    </td>
+        <!-- 매치 리스트 -->
+        <div class="main-card2 mb-3 card">
+            <div class="table-responsive">
 
-                </tr>
-            </tbody>
+                <table class="table align-middle text-truncate mb-0 table-borderless table-hover">
 
-        </table>
+                        <tr class="text-center" th:each="match:${summonerDto.matchDtoList}" th:classappend="${match.win}">
+                            <th scope="row" th:classappend="${match.win}" width="3%">
+                                <span th:text="${match.win}">승패</span>
+                            </th>
+
+                            <td width="5%">
+                                <span th:text="${match.queueId}">게임타입</span>
+                                <b>[[${match.myGameDto.myChamp}]]</b>
+                                <span th:text="${match.gameDuration}"> 시간</span>
+                            </td>
+
+                            <td width="15%">
+                                <img th:src="${match.myGameDto.myChampUrl}">
+
+                            </td>
+                            <td width="10%">
+                                <img th:src="${match.myGameDto.spImgUrl1}">
+                                <img th:src="${match.myGameDto.spImgUrl2}">
+                                <img th:src="${match.myGameDto.spImgUrl1}">
+                                <img th:src="${match.myGameDto.spImgUrl2}">
+
+                            </td>
+                            <td width="10%">
+                                <h5><b>[[${match.myGameDto.myK}]] / [[${match.myGameDto.myD}]] / [[${match.myGameDto.myA}]]</b></h5>
+                                <p>[[${match.myGameDto.myAvg}]]</p>
+                            </td>
+
+
+
+
+
+
+
+
+                        </tr>
+
+
+                </table>
+            </div>
+        </div>
 
 
 

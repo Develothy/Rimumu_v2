@@ -483,8 +483,10 @@ public class SummonerService {
                     Boolean win = Boolean.valueOf(inGame.get("win").toString());
                     if (win) {
                         matchDto.setWin("WIN");
+                        matchDto.setTable("table-primary");
                     } else {
                         matchDto.setWin("LOSE");
+                        matchDto.setTable("table-danger");
                     }
 
                     MyGameDto myGameDto = new MyGameDto();

@@ -24,3 +24,30 @@ body {
     margin-left: 200px;
     margin-right: 200px;
 }
+
+#myChart{
+	display:block;
+	height : 35%;
+	max-height : 130px;
+	width: 35%;
+}
+.WIN{
+    background-color : #b8daff;
+}
+.LOSE{
+    background-color : #f5c6cb;
+}
+
+.WIN .WIN{
+    background-color : #57a4f6;
+    writing-mode: vertical-rl;
+}
+.LOSE .LOSE{
+    background-color : #f78d8d;
+    writing-mode: vertical-rl;
+}
+
+.back-blue{
+	  align-items:center;
+      background-color: #f0f4fd;
+}

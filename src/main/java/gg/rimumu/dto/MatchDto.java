@@ -20,6 +20,7 @@ public class MatchDto {
     private String gameDuration;
 
     private String win;
+    private String table;
 
 
     private List<ParticipantDto> partiDtoList;
