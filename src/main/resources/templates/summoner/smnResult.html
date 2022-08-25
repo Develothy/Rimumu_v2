@@ -73,13 +73,13 @@
                             <canvas id="myChart" width="230" height="330"></canvas>
                         </div>
                         <div class="col-sm-6 back-blue">
-                            <h6></h6>
-                            <h6></h6>
-                            <h6 class="small"></h6>
+                            <h6>[[*{recentTotal}]]전 [[*{recentWin}]]승 [[*{recentLose}]]패</h6>
+                            <h6>[[*{recentAvg}]]</h6>
+                            <h6 class="small">[[*{recentKill}]] / [[*{recentDeath}]] / [[*{recentAssist}]]</h6>
                         </div>
                     </div>
                 </div>
-                <!-- box 3 최근 20전 승률 -->
+                <!-- box 4 인게임 여부 -->
                 <div class="col-sm-3 back-blue">
                    <!-- <th:block th:if="*{current == 'no'}">
                         <img src="@{/img/current.png}" width="190px">
@@ -107,19 +107,19 @@
 
                 <table class="table align-middle text-truncate mb-0 table-borderless table-hover">
 
-                        <tr class="text-center" th:each="match:${summonerDto.matchDtoList}" th:classappend="${match.win}">
+                        <tr class="text-center" th:each="match:${summonerDto.matchDtoList}" th:classappend="${match.table}">
                             <th scope="row" th:classappend="${match.win}" width="3%">
                                 <span th:text="${match.win}">승패</span>
                             </th>
 
                             <td width="5%">
-                                <span th:text="${match.queueId}">게임타입</span>
-                                <b>[[${match.myGameDto.myChamp}]]</b>
+                                <p th:text="${match.queueId}">게임타입</p>
+                                <h6><b>[[${match.myGameDto.myChamp}]]</b></h6>
                                 <span th:text="${match.gameDuration}"> 시간</span>
                             </td>
 
                             <td width="15%">
-                                <img th:src="${match.myGameDto.myChampUrl}">
+                                <img th:src="${match.myGameDto.myChampUrl}" width="100px">
 
                             </td>
                             <td width="10%">

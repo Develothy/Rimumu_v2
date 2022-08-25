@@ -1,3 +1,10 @@
+@import "bootstrap";
+
+$primary: #b8daff;
+$danger: #f5c6cb;
+
+
+
 html {
     position: relative;
     min-height: 100%;
@@ -31,18 +38,18 @@ body {
 	max-height : 130px;
 	width: 35%;
 }
-.WIN{
+/*.WIN{
     background-color : #b8daff;
 }
 .LOSE{
     background-color : #f5c6cb;
-}
+}*/
 
-.WIN .WIN{
+.table-primary .WIN{
     background-color : #57a4f6;
     writing-mode: vertical-rl;
 }
-.LOSE .LOSE{
+.table-danger .LOSE{
     background-color : #f78d8d;
     writing-mode: vertical-rl;
 }
