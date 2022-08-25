@@ -47,6 +47,8 @@ public class SummonerDto {
     private int recentKill;
     private int recentDeath;
     private int recentAssist;
+    private int recentTotal;
+    private double recentAvg;
 
     // matchId list
     private List<SummonerDto> matchIdList = new ArrayList<>();

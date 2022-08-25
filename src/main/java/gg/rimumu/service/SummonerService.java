@@ -252,7 +252,10 @@ public class SummonerService {
                 smSpell = "SummonerSnowURFSnowball_Mark";
                 break;
             case "54":
-                smSpell = "Summoner_UltBook_Placeholder";
+                smSpell = "Summoner_UltBookPlaceholder";
+                break;
+            case "55":
+                smSpell = "Summoner_UltBookSmitePlaceholder";
                 break;
         }
         return smSpell;
@@ -459,8 +462,6 @@ public class SummonerService {
 
                 ParticipantDto partiDto = new ParticipantDto();
 
-                //key값 증가. 소환사 이름 sm0.sm1.sm2...값 차례대로 넣어주기
-                //String sm = "sm"+ p;
 
                 //inGame summoner(p)의 소환사 명
                 String inName = inGame.get("summonerName").toString();
@@ -485,9 +486,11 @@ public class SummonerService {
                     if (win) {
                         matchDto.setWin("WIN");
                         matchDto.setTable("table-primary");
+                        summonerDto.setRecentWin(summonerDto.getRecentWin()+1);
                     } else {
                         matchDto.setWin("LOSE");
                         matchDto.setTable("table-danger");
+                        summonerDto.setRecentLose(summonerDto.getRecentLose()+1);
                     }
 
                     MyGameDto myGameDto = new MyGameDto();
@@ -497,9 +500,16 @@ public class SummonerService {
                     int myK = Integer.parseInt(inGame.get("kills").toString());
                     int myD = Integer.parseInt(inGame.get("deaths").toString());
                     int myA = Integer.parseInt(inGame.get("assists").toString());
+                    // 해당 판 KDA
                     myGameDto.setMyK(myK);
                     myGameDto.setMyD(myD);
                     myGameDto.setMyA(myA);
+                    // 최근 전적 KDA
+                    summonerDto.setRecentKill(summonerDto.getRecentKill()+myK);
+                    summonerDto.setRecentDeath(summonerDto.getRecentDeath()+myD);
+                    summonerDto.setRecentAssist(summonerDto.getRecentAssist()+myA);
+                    summonerDto.setRecentTotal(summonerDto.getRecentTotal()+1);
+                    summonerDto.setRecentAvg(summonerDto.getRecentKill()+summonerDto.getRecentAssist()/summonerDto.getRecentDeath());
 
 
                     if (myD == 0) {
@@ -541,83 +551,56 @@ public class SummonerService {
                         System.out.println("spell : " + smSpell);
                     }
 
-/*                    // 나의 inGame item 이미지 [{"item":xx}]
+
+                    // 나의 inGame item 이미지 [{"item":xx}]
+                    List<ItemDto> itemList = new ArrayList<>();
+
                     for(int t=0; t<7; t++) {
-                        String item = "item"+t;
-                        String inItem = inGame.get(item).toString(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
+                        String item = "item" + t;
+                        String itemNum = inGame.get(item).toString(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
+
+                        ItemDto itemDto = new ItemDto();
 
                         // item이 없는 칸 회색템 표시
-                        if(inItem.equals("0")) {
-                            matchMap.put("myT"+t, "/resources/img/itemNull.png");
+                        if (itemNum.equals("0")) {
+                            itemDto.setItemNum(itemNum);
+                            itemDto.setItemImgUrl("/img/itemNull.png");
 
                             // inGame 나의 item 설명 (툴팁)
                             // item.json URL 연결
-                        }else{
-                            System.out.println("아이템 넘버 : "+inItem);
-                            matchMap.put("myT"+t, ddUrl+ddVer+"/img/item/"+inItem+".png");
+                        } else {
+                            System.out.println("아이템 넘버 : " + itemNum);
+                            itemDto.setItemNum(itemNum);
+                            itemDto.setItemImgUrl(ddUrl + ddVer + "/img/item/" + itemNum + ".png");
 
                             // item TOOLTIP 템 정보
-                            String itemApi = ddUrl+ddVer+"/data/ko_KR/item.json";
-                            URL itemUrl = new URL(itemApi);
 
-                            HttpURLConnection ItemUrlconn = (HttpURLConnection) itemUrl.openConnection();
-                            ItemUrlconn.setRequestMethod("GET");
-                            BufferedReader itemBf = new BufferedReader(new InputStreamReader(ItemUrlconn.getInputStream(),"UTF-8"));
-                            System.out.println("아이템 설명 bf : "+itemBf); //작동 확인용
-
-                            String itemResult = itemBf.readLine();
+                            String itemUrl = ddUrl + ddVer + "/data/ko_KR/item.json";
+                            String itemResult = urlConn(itemUrl);
 
                             //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
                             JSONObject itemJson = (JSONObject) jsonParser.parse(itemResult);
                             //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
                             JSONObject itemData = (JSONObject) itemJson.get("data");
                             //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
-                            JSONObject itemNum = (JSONObject) itemData.get(inItem);
-                            //오른 에러!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                            String itemName = itemNum.get("name").toString();
-                            String itemDesc = itemNum.get("description").toString();
-                            String itemText = itemNum.get("plaintext").toString();
+                            JSONObject itemDtl = (JSONObject) itemData.get(itemNum);
+                            //오른 에러!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!8xxx
+                            String itemName = itemDtl.get("name").toString();
+                            String itemDesc = itemDtl.get("description").toString();
+                            String itemText = itemDtl.get("plaintext").toString();
 
-                            matchMap.put("itemTooltip"+t,"<b>"+ itemName+"</b>" +"<br><hr>"+itemDesc+"<br>"+itemText);
-                            System.out.println("itemTooltip"+t+" : itemName : "+itemName+" / itemDesc : "+itemDesc+" / itemText : "+itemText);
+                            itemDto.setItemTooltip("<b>" + itemName + "</b>" + "<br><hr>" + itemDesc + "<br>" + itemText);
+
+                            System.out.println("itemTooltip" + t + " : itemName : " + itemName + " / itemDesc : " + itemDesc + " / itemText : " + itemText);
+
                         }
+                        itemList.add(itemDto);
                         // ITEM, TOOLTIP 종료
-*/
+
+                    }
+                    myGameDto.setItemDtoList(itemList);
                     matchDto.setMyGameDto(myGameDto);
                 }
-                // 나의 최근 경기(20) 승률
-
-                //?식 이용해볼까
-                // win == true ? summonerDto.setRecentWin(recentWin+1) : summonerDto.setRecentLose(recentLose+1)
-
-/*                    if (win) {
-                        recentWin = recentWin+1;
-                    }else {
-                        recentLose = recentLose+1;
-                    }
-
-                    model.addAttribute("wins", recentWin);
-                    model.addAttribute("lose", recentLose);
-                    model.addAttribute("recentTotal", recentWin+recentLose);
-                    model.addAttribute("recentRate", recentWin/(recentWin+recentLose));
-
-                    // 나의 최근 경기(20) KDA
-                    recentKill = recentKill + myK;
-                    recentDeath = recentDeath + myD;
-                    recentAssist = recentAssist + myA;
-                    model.addAttribute("recentKill", recentKill);
-                    model.addAttribute("recentDeath", recentDeath);
-                    model.addAttribute("recentAssist", recentAssist);
-                    if(recentDeath==0) {
-                        model.addAttribute("recentKDA","퍼펙트냠냠");
-                    }
-                    model.addAttribute("recentKDA", (recentKill+recentAssist)/recentDeath);
-
- */
-
-
-                //    System.out.println("matchMap 종료");
-                //    list.add(matchMap);
                 System.out.println("partiDto : "+partiDto);
                 partiDtoList.add(partiDto);
             } // 1 matchId 종료
@@ -629,7 +612,6 @@ public class SummonerService {
             matchDtoList.add(matchDto);
             System.out.println("matchDtoList : "+matchDtoList);
             summonerDto.setMatchDtoList(matchDtoList);
-            //    model.addAttribute("list",list);
         } // 20 MatchId forEach 반복문 종료
 
         System.out.println("summonerDto : "+summonerDto);
