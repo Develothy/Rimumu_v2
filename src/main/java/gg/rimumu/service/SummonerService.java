@@ -207,6 +207,7 @@ public class SummonerService {
 
     // Spell 구하기
     public String getSpell(String smSpell) {
+
         switch (smSpell) {
             case "1":
                 smSpell = "SummonerBoost";
@@ -528,8 +529,7 @@ public class SummonerService {
                         String smSpell = "";
                         smSpell = inGame.get("summoner"+s+"Id").toString();
 
-                        getSpell(smSpell);
-
+                        smSpell = getSpell(smSpell);
                         if (s == 1) {
                             myGameDto.setSpell1(smSpell);
                             myGameDto.setSpImgUrl1(ddUrl + ddVer + "/img/spell/" + smSpell + ".png");
