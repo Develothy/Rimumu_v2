@@ -522,15 +522,17 @@ public class SummonerService {
 
 
                     // 나의 inGame 룬
-            /*        JSONObject runes = (JSONObject) inGame.get("perks");
-                    System.out.println(runes);
+                    JSONObject runes = (JSONObject) inGame.get("perks");
                     JSONArray styles = (JSONArray) runes.get("styles");
-                    //	String style = style.get("style").ge
-                    System.out.println(styles);
 
-             */
+                    // 메인 룬
+                    JSONObject selec1 = (JSONObject) styles.get(0);
+                    myGameDto.setRune1(selec1.get("style").toString());
+                    // 보조 룬
+                    JSONObject selec2 = (JSONObject) styles.get(1);
+                    myGameDto.setRune1(selec2.get("style").toString());
 
-                    //styles 에서 style을 가져와야 함,,,, [{"style":},
+
 
 
                     // 나의 inGame 스펠 [{"summonerId1:""}]
