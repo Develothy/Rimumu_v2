@@ -261,6 +261,29 @@ public class SummonerService {
         return smSpell;
     }
 
+    // rune 이미지 주소 변환
+    public String getRuneImgUrl(String rune) {
+
+        switch (rune) {
+            case "8000":
+                rune = "perk-images/Styles/7201_Precision.png";
+                break;
+            case "8100":
+                rune = "perk-images/Styles/7200_Domination.png";
+                break;
+            case "8200":
+                rune = "perk-images/Styles/7202_Sorcery.png";
+                break;
+            case "8300":
+                rune = "perk-images/Styles/7203_Whimsy.png";
+                break;
+            case "8400":
+                rune = "perk-images/Styles/7204_Resolve.png";
+                break;
+        }
+        return rune;
+    }
+
 
     // current 현재 게임 여부 ---------------
     //ex https://kr.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/x2OV0C24um6oOgMaj-jhhpDO1WAlCaH_yqyYLf6SQxIY4g?api_key=RGAPI-032475c9-844d-4beb-82f9-2a1132ee2666
@@ -527,16 +550,13 @@ public class SummonerService {
 
                     // 메인 룬
                     JSONObject selec1 = (JSONObject) styles.get(0);
-                    myGameDto.setRune1(selec1.get("style").toString());
+                    myGameDto.setRuneImgUrl1(ddUrl + "img/" + getRuneImgUrl(selec1.get("style").toString()));
                     // 보조 룬
                     JSONObject selec2 = (JSONObject) styles.get(1);
-                    myGameDto.setRune1(selec2.get("style").toString());
-
-
+                    myGameDto.setRuneImgUrl2(ddUrl + "img/" + getRuneImgUrl(selec2.get("style").toString()));
 
 
                     // 나의 inGame 스펠 [{"summonerId1:""}]
-
                     for (int s = 1; s < 3; s++) {
                         String smSpell = "";
                         smSpell = inGame.get("summoner"+s+"Id").toString();

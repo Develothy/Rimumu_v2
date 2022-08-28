@@ -22,8 +22,8 @@ public class MyGameDto {
 
     private String myAvg;
 
-    private String rune1;
-    private String rune2;
+    private String runeImgUrl1;
+    private String runeImgUrl2;
 
     private String spell1;
     private String spell2;

@@ -25,7 +25,7 @@ body {
     min-height: 100%;
 }
 p {
-    font-family : 'Pretendard-Regular';
+    font-family : 'Pretendard-Light';
 }
 
 .footer {
@@ -54,10 +54,14 @@ p {
 .table-primary .WIN{
     background-color : #57a4f6;
     writing-mode: vertical-rl;
+    text-orientation: upright;
+    color: #b8daff;
 }
 .table-danger .LOSE{
     background-color : #f78d8d;
     writing-mode: vertical-rl;
+    text-orientation: upright;
+    color: #f5c6cb;
 }
 
 .back-blue{

@@ -107,7 +107,7 @@
 
                 <table class="table align-middle text-truncate mb-0 table-borderless table-hover">
 
-                        <tr class="text-center" th:each="match:${summonerDto.matchDtoList}" th:classappend="${match.table}">
+                        <tr class="text-center align-middle" th:each="match:${summonerDto.matchDtoList}" th:classappend="${match.table}">
                             <th scope="row" th:classappend="${match.win}" width="3%">
                                 <span th:text="${match.win}">승패</span>
                             </th>
@@ -122,14 +122,14 @@
                                 <img th:src="${match.myGameDto.myChampUrl}" width="100px">
 
                             </td>
-                            <td width="10%">
-                                <img th:src="${match.myGameDto.spImgUrl1}" width="15px">
-                                <img th:src="${match.myGameDto.spImgUrl2}" width="15px">
-                                <img th:src="${match.myGameDto.spImgUrl1}" width="15px">
-                                <img th:src="${match.myGameDto.spImgUrl2}" width="15px">
+                            <td width="5%" >
+                                <img th:src="${match.myGameDto.runeImgUrl1}" width="20px" class="m-1 d-block">
+                                <img th:src="${match.myGameDto.runeImgUrl2}" width="20px" class="m-1 d-block">
+                                <img th:src="${match.myGameDto.spImgUrl1}" width="20px" class="m-1 d-block">
+                                <img th:src="${match.myGameDto.spImgUrl2}" width="20px" class="m-1 d-block">
 
                             </td>
-                            <td width="10%">
+                            <td width="10%" class="align-middle">
                                 <h5><b>[[${match.myGameDto.myK}]] / [[${match.myGameDto.myD}]] / [[${match.myGameDto.myA}]]</b></h5>
                                 <p>[[${match.myGameDto.myAvg}]]</p>
                             </td>
