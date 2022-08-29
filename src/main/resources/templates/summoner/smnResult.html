@@ -94,11 +94,6 @@
         </div>
         <!-- info 컨테이너 종료 -->
 
-        <p th:text="${summonerDto.name}"></p>
-        <p th:text="${summonerDto.smLv}"></p>
-        <p th:text="${summonerDto.soloTier}"></p>
-        <p th:text="${summonerDto.flexTier}"></p>
-
         <p th:text="${summonerDto.matchDtoList}"></p>
 
         <!-- 매치 리스트 -->
@@ -132,6 +127,13 @@
                             <td width="10%" class="align-middle">
                                 <h5><b>[[${match.myGameDto.myK}]] / [[${match.myGameDto.myD}]] / [[${match.myGameDto.myA}]]</b></h5>
                                 <p>[[${match.myGameDto.myAvg}]]</p>
+
+                            </td>
+                           <td width="30%" class="align-middle" >
+                               <p th:each="item:${match.myGameDto.itemDtoList}"></p>
+                               <p th:text="item">item 뽑아줭</p>
+                               <!--<img th:src="${item.itemImgUrl}" alt="itemImg" width="20px">-->
+
                             </td>
 
 
