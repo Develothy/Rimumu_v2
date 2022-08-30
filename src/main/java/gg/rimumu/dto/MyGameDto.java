@@ -31,6 +31,6 @@ public class MyGameDto {
     private String spImgUrl2;
 
 
-    private List<ItemDto> itemDtoList;
+    private List<ItemDto> itemDtoList = new ArrayList<>();
 
 }

@@ -103,7 +103,7 @@
                 <table class="table align-middle text-truncate mb-0 table-borderless table-hover">
 
                         <tr class="text-center align-middle" th:each="match:${summonerDto.matchDtoList}" th:classappend="${match.table}">
-                            <th scope="row" th:classappend="${match.win}" width="3%">
+                            <th scope="row" th:classappend="${match.win}" width="5%">
                                 <span th:text="${match.win}">승패</span>
                             </th>
 
@@ -129,13 +129,28 @@
                                 <p>[[${match.myGameDto.myAvg}]]</p>
 
                             </td>
-                           <td width="30%" class="align-middle" >
-                               <p th:each="item:${match.myGameDto.itemDtoList}"></p>
-                               <p th:text="item">item 뽑아줭</p>
-                               <!--<img th:src="${item.itemImgUrl}" alt="itemImg" width="20px">-->
+                            <td width="30%" class="align-middle" >
+                                <span th:each="item,index:${match.myGameDto.itemDtoList}" >
+                                    <img th:src="${item.itemImgUrl}" alt="itemImg" width="20px">
+                                    <br th:if="${index.index == 3 }">
+                                </span>
+                                <img th:src="@{/img/itemNull.png}" alt="itemNull" width="20px" >
 
                             </td>
-
+                            <td width="15%">
+                                <ul class="text-left m-0">
+                                    <li th:each="parti,index:${match.partiDtoList}" th:if="${index.index < 5}" class="m-0">
+                                        <a th:href="'/summoner?smn='+${parti.inName}" class="text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="small"> [[${parti.inName}]]</span> </a>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td width="15%">
+                                <ul class="text-left m-0">
+                                    <li th:each="parti,index:${match.partiDtoList}" th:if="${index.index >= 5}" class="m-0">
+                                        <a th:href="'/summoner?smn='+${parti.inName}" class="text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="small"> [[${parti.inName}]]</span> </a>
+                                    </li>
+                                </ul>
+                            </td>
 
 
 

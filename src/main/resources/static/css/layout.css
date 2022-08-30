@@ -28,6 +28,14 @@ p {
     font-family : 'Pretendard-Light';
 }
 
+ol,ul,li {
+    list-style: none;
+}
+
+a {
+    text-decoration : none;
+}
+
 .footer {
     position: absolute;
     left: 0;
