@@ -59,8 +59,16 @@ a {
 	width: 35%;
 }
 
+.table-primary {
+    border: 1px solid #81beff;
+}
+
+.table-danger {
+    border: 1px solid #f78d8d;
+}
+
 .table-primary .WIN{
-    background-color : #57a4f6;
+    background-color : #81beff;
     writing-mode: vertical-rl;
     text-orientation: upright;
     color: #b8daff;

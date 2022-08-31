@@ -3,6 +3,22 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        function partiClick(smn) {
+
+            smn.replace(" ","");
+            alert("자바스크립트 실행"+smn);
+            var url = '/summoner?smn='+ smn;
+            alert(url);
+
+            location.replace(url);
+
+        }
+
+    </script>
+</th:block>
+
 <div layout:fragment="content">
     <div class="container main-inner">
 
@@ -107,13 +123,13 @@
                                 <span th:text="${match.win}">승패</span>
                             </th>
 
-                            <td width="5%">
-                                <p th:text="${match.queueId}">게임타입</p>
+                            <td width="20%">
+                                <p class="small" th:text="${match.queueId}">게임타입</p>
                                 <h6><b>[[${match.myGameDto.myChamp}]]</b></h6>
                                 <span th:text="${match.gameDuration}"> 시간</span>
                             </td>
 
-                            <td width="15%">
+                            <td width="10%">
                                 <img th:src="${match.myGameDto.myChampUrl}" width="100px">
 
                             </td>
@@ -124,12 +140,12 @@
                                 <img th:src="${match.myGameDto.spImgUrl2}" width="20px" class="m-1 d-block">
 
                             </td>
-                            <td width="10%" class="align-middle">
+                            <td width="20%" class="align-middle">
                                 <h5><b>[[${match.myGameDto.myK}]] / [[${match.myGameDto.myD}]] / [[${match.myGameDto.myA}]]</b></h5>
                                 <p>[[${match.myGameDto.myAvg}]]</p>
 
                             </td>
-                            <td width="30%" class="align-middle" >
+                            <td width="15%" class="align-middle" >
                                 <span th:each="item,index:${match.myGameDto.itemDtoList}" >
                                     <img th:src="${item.itemImgUrl}" alt="itemImg" width="20px">
                                     <br th:if="${index.index == 3 }">
@@ -137,19 +153,23 @@
                                 <img th:src="@{/img/itemNull.png}" alt="itemNull" width="20px" >
 
                             </td>
-                            <td width="15%">
-                                <ul class="text-left m-0">
-                                    <li th:each="parti,index:${match.partiDtoList}" th:if="${index.index < 5}" class="m-0">
-                                        <a th:href="'/summoner?smn='+${parti.inName}" class="text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="small"> [[${parti.inName}]]</span> </a>
+                            <td width="10%" class="align-middle p-0">
+                                <ul class="d-block text-truncate text-left m-0 px-0 mr-2">
+                                    <li th:each="parti,index:${match.partiDtoList}" th:if="${index.index < 5}" class="d-block text-truncate">
+                                        <button type="button" th:value="${parti.inName}" onclick="partiClick(this.value)" class="d-block text-truncate text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="text-truncate small"> [[${parti.inName}]]</span> </button>
                                     </li>
                                 </ul>
                             </td>
-                            <td width="15%">
-                                <ul class="text-left m-0">
-                                    <li th:each="parti,index:${match.partiDtoList}" th:if="${index.index >= 5}" class="m-0">
-                                        <a th:href="'/summoner?smn='+${parti.inName}" class="text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="small"> [[${parti.inName}]]</span> </a>
+                            <td width="10%" class="align-middle p-0">
+                                <ul class="d-block text-truncate text-left m-0 px-0 mr-2">
+                                    <li th:each="parti,index:${match.partiDtoList}" th:if="${index.index >= 5}" class="d-block text-truncate">
+                                        <a href="#" th:value="${parti.inName}" th:onclick="partiClick(this.value)" class="d-block text-truncate text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="text-truncate small"> [[${parti.inName}]]</span> </a>
                                     </li>
                                 </ul>
+
+                            </td>
+                            <td width="5%" th:classappend="${match.win}">
+                                <span> ∨ </span>
                             </td>
 
 
