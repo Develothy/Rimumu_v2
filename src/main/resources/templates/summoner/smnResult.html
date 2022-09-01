@@ -7,13 +7,10 @@
     <script th:inline="javascript">
         function partiClick(smn) {
 
-            smn.replace(" ","");
-            alert("자바스크립트 실행"+smn);
+            smn = smn.replaceAll(" ","");
             var url = '/summoner?smn='+ smn;
-            alert(url);
 
             location.replace(url);
-
         }
 
     </script>
