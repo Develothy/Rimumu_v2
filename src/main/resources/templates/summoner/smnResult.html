@@ -4,7 +4,38 @@
       layout:decorate="~{layout/layout}">
 
 <th:block layout:fragment="script">
-    <script th:inline="javascript">
+    <script type ="text/javascript"
+            th:src="@{https://cdn.jsdelivr.net/npm/chart.js@3.8.2/dist/chart.min.js}" th:inline="javascript">
+
+
+        window.onload = function() {
+
+            var w = document.getElementById('wins').value;
+            var ctx = document.getElementById('myChart').getContext('2d');
+
+            var myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        label: '# of Votes',
+                        data: [60, 40],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                }
+            });
+
+        }
+
+
+
         function partiClick(smn) {
             smn = smn.replaceAll(" ","");
             var url = '/summoner?smn='+ smn;
@@ -83,6 +114,8 @@
                         <!-- 도넛 차트 -->
                         <div class="col-sm-5 back-blue">
                             <canvas id="myChart" width="230" height="330"></canvas>
+                            <input type="hidden" th:value="*{recentWin}" id="wins">
+                            <input type="hidden" th:value="*{recentLose}" id="lose">
                         </div>
                         <div class="col-sm-6 back-blue">
                             <h6>[[*{recentTotal}]]전 [[*{recentWin}]]승 [[*{recentLose}]]패</h6>
@@ -146,11 +179,12 @@
                             </td>
                             <!-- match items -->
                             <td width="15%" class="align-middle" >
-                                <span th:each="item,index:${match.myGameDto.itemDtoList}" >
-                                    <img th:src="${item.itemImgUrl}" alt="itemImg" width="20px">
+                                <span th:each="item,index:${match.myGameDto.itemDtoList}">
+                                    <img th:src="${item.itemImgUrl}" alt="itemImg" width="20px" th:title="${item.itemTooltip}" class="tooltip_event">
                                     <br th:if="${index.index == 3 }">
                                 </span>
-                                <img th:src="@{/img/itemNull.png}" alt="itemNull" width="20px" >
+                                <img th:src="@{/img/itemNull.png}" alt="itemNull" width="20px" title="보이지 않는 검이 가장 무서운 법...">
+
 
                             </td>
                             <!-- match participant -->

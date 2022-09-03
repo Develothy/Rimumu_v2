@@ -51,13 +51,14 @@ a {
     margin-left: 200px;
     margin-right: 200px;
 }
-
+/*
 #myChart{
 	display:block;
 	height : 35%;
 	max-height : 130px;
 	width: 35%;
 }
+*/
 
 .table-primary {
     border: 1px solid #81beff;
@@ -84,3 +85,4 @@ a {
 	  align-items:center;
       background-color: #f0f4fd;
 }
+

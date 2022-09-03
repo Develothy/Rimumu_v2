@@ -58,7 +58,6 @@ public class SummonerService {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod("GET");
         bf = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
-        System.out.println(bf);
 
         apiResult = bf.readLine();
 
@@ -282,6 +281,45 @@ public class SummonerService {
                 break;
         }
         return rune;
+    }
+
+    // item 구하기
+    public ItemDto getItem(String itemNum) throws IOException, ParseException {
+
+        ItemDto itemDto = new ItemDto();
+
+        // item이 없는 칸 회색템 표시
+        if (itemNum.equals("0")) {
+            itemDto.setItemNum(itemNum);
+            itemDto.setItemImgUrl("/img/itemNull.png");
+            itemDto.setItemTooltip("보이지 않는 검이 가장 무서운 법.....");
+
+            // inGame 나의 item 설명 (툴팁)
+            // item.json URL 연결
+        } else {
+            itemDto.setItemNum(itemNum);
+            itemDto.setItemImgUrl(ddUrl + ddVer + "/img/item/" + itemNum + ".png");
+
+            // item TOOLTIP 템 정보
+
+            String itemUrl = ddUrl + ddVer + "/data/ko_KR/item.json";
+            String itemResult = urlConn(itemUrl);
+
+            //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
+            JSONObject itemJson = (JSONObject) jsonParser.parse(itemResult);
+            //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
+            JSONObject itemData = (JSONObject) itemJson.get("data");
+            //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
+            JSONObject itemDtl = (JSONObject) itemData.get(itemNum);
+
+            String itemName = itemDtl.get("name").toString();
+            String itemDesc = itemDtl.get("description").toString();
+            String itemText = itemDtl.get("plaintext").toString();
+
+            itemDto.setItemTooltip("<b>" + itemName + "</b>" + "<br><hr>" + itemDesc + "<br>" + itemText);
+
+        }
+        return itemDto;
     }
 
 
@@ -570,7 +608,6 @@ public class SummonerService {
                             myGameDto.setSpImgUrl2(ddUrl + ddVer + "/img/spell/" + smSpell + ".png");
 
                         }
-                        System.out.println("spell : " + smSpell);
                     }
 
 
@@ -582,40 +619,8 @@ public class SummonerService {
                         String itemNum = inGame.get(item).toString(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
 
                         ItemDto itemDto = new ItemDto();
+                        itemDto = getItem(itemNum);
 
-                        // item이 없는 칸 회색템 표시
-                        if (itemNum.equals("0")) {
-                            itemDto.setItemNum(itemNum);
-                            itemDto.setItemImgUrl("/img/itemNull.png");
-
-                            // inGame 나의 item 설명 (툴팁)
-                            // item.json URL 연결
-                        } else {
-                            System.out.println("아이템 넘버 : " + itemNum);
-                            itemDto.setItemNum(itemNum);
-                            itemDto.setItemImgUrl(ddUrl + ddVer + "/img/item/" + itemNum + ".png");
-
-                            // item TOOLTIP 템 정보
-
-                            String itemUrl = ddUrl + ddVer + "/data/ko_KR/item.json";
-                            String itemResult = urlConn(itemUrl);
-
-                            //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
-                            JSONObject itemJson = (JSONObject) jsonParser.parse(itemResult);
-                            //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
-                            JSONObject itemData = (JSONObject) itemJson.get("data");
-                            //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
-                            JSONObject itemDtl = (JSONObject) itemData.get(itemNum);
-                            //오른 에러!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!8xxx
-                            String itemName = itemDtl.get("name").toString();
-                            String itemDesc = itemDtl.get("description").toString();
-                            String itemText = itemDtl.get("plaintext").toString();
-
-                            itemDto.setItemTooltip("<b>" + itemName + "</b>" + "<br><hr>" + itemDesc + "<br>" + itemText);
-
-                            System.out.println("itemTooltip" + t + " : itemName : " + itemName + " / itemDesc : " + itemDesc + " / itemText : " + itemText);
-
-                        }
                         itemList.add(itemDto);
                         // ITEM, TOOLTIP 종료
 
