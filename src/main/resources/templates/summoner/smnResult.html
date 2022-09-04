@@ -8,31 +8,32 @@
             th:src="@{https://cdn.jsdelivr.net/npm/chart.js@3.8.2/dist/chart.min.js}" th:inline="javascript">
 
 
-        window.onload = function() {
 
-            var w = document.getElementById('wins').value;
-            var ctx = document.getElementById('myChart').getContext('2d');
+        var data ={
+            datasets: [{
+                    label: '# of Votes',
+                    data: [60, 40],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+        };
 
-            var myChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        label: '# of Votes',
-                        data: [60, 40],
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.2)',
-                            'rgba(54, 162, 235, 0.2)',
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                        ],
-                        borderWidth: 1
-                    }]
-                }
-            });
+        var config = {
+            type: 'doughnut',
+            data: data,
+            options:{}
+        };
 
-        }
+        var myChart = new Chart(
+            document.getElementById('myChart'),config
+        );
 
 
 
