@@ -100,7 +100,7 @@ public class SummonerService {
         // 티어 조회
         getTier(summonerDto, id);
 
-        // 게임중 여부 조회
+        // 게임중 여부 조회 (riot developer api 막힘)
         //currentGame(summonerDto, id);
 
         // matchId 최근 20게임
@@ -363,8 +363,8 @@ public class SummonerService {
 
                         //inGame participant(p)의 xx값
                         //Long curTime = (Long) inGame.get("gameStartTime"); // 유닉스 타임
-                        int inChampId = (int) inGame.get("championId"); //
-                        String champImg = (String) ChampionDto.class.getDeclaredField("K" + inChampId).get(inChampId);
+                        String inChampKey = "K"+inGame.get("championId"); //
+                        String champImg = ChampionKey.valueOf(inChampKey).getLabel();
 
                         System.out.println("champDto :" + champImg);
 
