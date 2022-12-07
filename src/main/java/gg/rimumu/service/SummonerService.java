@@ -118,22 +118,20 @@ public class SummonerService {
 
         String rankUrl = tierUrl + id + "?api_key=" + API_KEY;
         String rankResult = urlConn(rankUrl);
+        summonerDto.setSoloTier("Unranked");
+        summonerDto.setFlexTier("Unranked");
 
-        //언랭일 경우 [] 값 null
-        if ("[]".equals(rankResult)) {
-            summonerDto.setSoloTier("Unranked");
-            summonerDto.setFlexTier("Unranked");
-        } // 언랭 아닐 경우 [] 값 확인
-        else {
+        //언랭아닐 경우 [] 값
+        if (!"[]".equals(rankResult) || !rankResult.isEmpty()) {
             JSONArray json_rank_result = (JSONArray) jsonParser.parse(rankResult);
             //솔랭, 자랭 구분하기
             for (int i = 0; i < json_rank_result.size(); i++) {
+
                 JSONObject obj_rank_result = (JSONObject) json_rank_result.get(i);
                 String rankType = obj_rank_result.get("queueType").toString();
 
                 // 솔랭, 자랭 값이 존재 한다면 해당 tier값으로 덮음
-
-                //솔랭일 경우
+                //솔랭
                 if ("RANKED_SOLO_5x5".equals(rankType)) {
                     summonerDto.setSoloTier(obj_rank_result.get("tier").toString()); // 챌, 다이아, 플레 등
                     summonerDto.setSoloRank(obj_rank_result.get("rank").toString()); // 1 ~ 4
@@ -141,11 +139,11 @@ public class SummonerService {
                     summonerDto.setSoloWins(obj_rank_result.get("wins").toString()); //랭크 전체 승
                     summonerDto.setSoloLosses(obj_rank_result.get("losses").toString()); //랭크 전체 패
                 }
-                //자랭일 경우
+                //자랭
                 if ("RANKED_FLEX_SR".equals(rankType)) {
                     summonerDto.setFlexTier(obj_rank_result.get("tier").toString());
                     summonerDto.setFlexRank(obj_rank_result.get("rank").toString());
-                    summonerDto.setSoloLeaguePoints(obj_rank_result.get("leaguePoints").toString());
+                    summonerDto.setFlexLeaguePoints(obj_rank_result.get("leaguePoints").toString());
                     summonerDto.setFlexWins(obj_rank_result.get("wins").toString());
                     summonerDto.setFlexLosses(obj_rank_result.get("losses").toString());
                 }
