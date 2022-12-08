@@ -154,107 +154,17 @@ public class SummonerService {
 
     // GameType 구하기
     public String getGameType(String queueId) {
-        switch (queueId) {
-            case "420": // 4
-                queueId = "솔랭";
-                break;
-            case "430": // 2
-                queueId = "일반";
-                break;
-            case "440":
-                queueId = "자유랭크";
-                break;
-            case "450": // 60
-                queueId = "칼바람";
-                break;
-            case "70":
-                queueId = "단일 챔피언";
-                break;
-            case "300":
-                queueId = "포로왕";
-                break;
-            case "900":
-                queueId = "무작위 우르프";
-                break;
-            case "1020":
-                queueId = "단일챔피언";
-                break;
-            case "1300":
-                queueId = "돌격 넥서스";
-                break;
-            case "1400":
-                queueId = "궁극기 주문서";
-                break;
-            case "1900":
-                queueId = "우르프";
-                break;
-            case "2000":
-                queueId = "튜토리얼 1";
-                break;
-            case "2010":
-                queueId = "튜토리얼 2";
-                break;
-            case "2020":
-                queueId = "튜토리얼 3";
-                break;
 
-        }
+        queueId = GameTypeKey.valueOf("T"+queueId).label();
+
         return queueId;
     }
 
     // Spell 구하기
     public String getSpell(String smSpell) {
 
-        switch (smSpell) {
-            case "1":
-                smSpell = "SummonerBoost";
-                break;
-            case "3":
-                smSpell = "SummonerExhaust";
-                break;
-            case "4":
-                smSpell = "SummonerFlash";
-                break;
-            case "6":
-                smSpell = "SummonerHaste";
-                break;
-            case "7":
-                smSpell = "SummonerHeal";
-                break;
-            case "11":
-                smSpell = "SummonerSmite";
-                break;
-            case "12":
-                smSpell = "SummonerTeleport";
-                break;
-            case "13":
-                smSpell = "SummonerMana";
-                break;
-            case "14":
-                smSpell = "SummonerDot";
-                break;
-            case "21":
-                smSpell = "SummonerBarrier";
-                break;
-            case "30":
-                smSpell = "SummonerPoroRecall";
-                break;
-            case "31":
-                smSpell = "SummonerPoroThrow";
-                break;
-            case "32":
-                smSpell = "SummonerSnowball";
-                break;
-            case "39":
-                smSpell = "SummonerSnowURFSnowball_Mark";
-                break;
-            case "54":
-                smSpell = "Summoner_UltBookPlaceholder";
-                break;
-            case "55":
-                smSpell = "Summoner_UltBookSmitePlaceholder";
-                break;
-        }
+        smSpell = SpellKey.valueOf("SP"+smSpell).label();
+
         return smSpell;
     }
 
