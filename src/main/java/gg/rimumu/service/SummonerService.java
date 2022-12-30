@@ -7,6 +7,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class SummonerService {
     @Value("${matchDtlUrl}")
     private String matchDtlUrl;
 
-    final JSONParser jsonParser = new JSONParser();
+    final static JSONParser jsonParser = new JSONParser();
 
 
     // api 연결
@@ -122,7 +123,7 @@ public class SummonerService {
         summonerDto.setFlexTier("Unranked");
 
         //언랭아닐 경우 [] 값
-        if (!"[]".equals(rankResult) || !rankResult.isEmpty()) {
+        if (ObjectUtils.isEmpty(rankResult)) {
             JSONArray json_rank_result = (JSONArray) jsonParser.parse(rankResult);
             //솔랭, 자랭 구분하기
             for (int i = 0; i < json_rank_result.size(); i++) {
@@ -478,8 +479,11 @@ public class SummonerService {
                     summonerDto.setRecentDeath(summonerDto.getRecentDeath()+myD);
                     summonerDto.setRecentAssist(summonerDto.getRecentAssist()+myA);
                     summonerDto.setRecentTotal(summonerDto.getRecentTotal()+1);
-                    summonerDto.setRecentAvg(summonerDto.getRecentKill()+summonerDto.getRecentAssist()/summonerDto.getRecentDeath());
-
+                    if (summonerDto.getRecentDeath() == 0) {
+                        summonerDto.setRecentAvg("Perfect!");
+                    } else {
+                        summonerDto.setRecentAvg(String.valueOf(summonerDto.getRecentKill() + summonerDto.getRecentAssist() / summonerDto.getRecentDeath()));
+                    }
 
                     if (myD == 0) {
                         myGameDto.setMyAvg("Perfect!");
