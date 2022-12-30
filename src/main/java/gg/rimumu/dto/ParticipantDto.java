@@ -9,8 +9,6 @@ import lombok.ToString;
 @ToString
 public class ParticipantDto {
 
-    private String sm;
-
     private String champImgUrl;
 
     private String inChamp;
