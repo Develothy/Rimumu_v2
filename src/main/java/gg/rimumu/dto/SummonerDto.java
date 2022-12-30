@@ -37,9 +37,10 @@ public class SummonerDto {
     private String flexLosses;
 
     // 현재 게임중인 기록 (current)
+    private boolean isCurrent = false; // 게임 여부 true false
     private String queueId;
-    private String current; // 게임 여부 true false
-    private String curChampUrl; // chap 이미지
+    private String curChamp; // champ
+    private String curChampUrl; // champ 이미지
 
     // 검색한 소환사 최근 전적 승률 KDA
     private int recentWin;

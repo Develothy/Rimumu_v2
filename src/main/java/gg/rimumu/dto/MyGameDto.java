@@ -25,8 +25,6 @@ public class MyGameDto {
     private String runeImgUrl1;
     private String runeImgUrl2;
 
-    private String spell1;
-    private String spell2;
     private String spImgUrl1;
     private String spImgUrl2;
 

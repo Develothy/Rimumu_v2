@@ -4,42 +4,39 @@
       layout:decorate="~{layout/layout}">
 
 <th:block layout:fragment="script">
-    <script type ="text/javascript"
-            th:src="@{https://cdn.jsdelivr.net/npm/chart.js@3.8.2/dist/chart.min.js}" th:inline="javascript">
+    <script th:inline="javascript" type ="text/javascript"
+            th:src="@{//cdn.jsdelivr.net/npm/chart.js@3.8.2/dist/chart.min.js}">
 
-
-
-        var data ={
+        const data = {
             datasets: [{
-                    label: '# of Votes',
-                    data: [60, 40],
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                    ],
-                    borderWidth: 1
-                }]
+                label: '# of Votes',
+                data: [60, 40],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                ],
+                borderWidth: 1
+            }]
         };
 
-        var config = {
+        const config = {
             type: 'doughnut',
             data: data,
-            options:{}
+            options: {}
         };
 
-        var myChart = new Chart(
-            document.getElementById('myChart'),config
+        const myChart = new Chart(
+            document.getElementById('myChart'), config
         );
-
 
 
         function partiClick(smn) {
             smn = smn.replaceAll(" ","");
-            var url = '/summoner?smn='+ smn;
+            const url = '/summoner?smn=' + smn;
 
             location.replace(url);
         }
@@ -129,13 +126,13 @@
                 </div>
                 <!-- box 4 인게임 여부 -->
                 <div class="col-sm-3 back-blue">
-                   <!-- <th:block th:if="*{current == 'no'}">
-                        <img src="@{/img/current.png}" width="190px">
+                    <th:block th:if="*{current == false}">
+                        <img th:src="@{/img/current.png}" width="160px">
                     </th:block>
-                    <th:block th:if="*{current == 'yes'}">
-                        <p th:text="현재 게임중!"></p>
-                        <img src="*{curChampUrl}" alt="현재 챔프" width="70px">
-                    </th:block>-->
+                    <th:block th:if="*{current == true}">
+                        <p th:text="*{curChamp}"></p>
+                        <img th:src="*{curChampUrl}" alt="현재 챔프" width="70px">
+                    </th:block>
                 </div>
             </div>
             <!-- info 하단 종료 -->
@@ -209,7 +206,8 @@
 
                             </td>
                             <td width="5%" th:classappend="${match.win}">
-                                <span> ∨ </span>
+                                <a> ∨ </a>
+
                             </td>
 
 

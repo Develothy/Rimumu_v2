@@ -15,8 +15,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -50,9 +49,9 @@ public class SummonerService {
 
 
     // api 연결
-    public String urlConn(String urlConn) throws IOException {
+    public String urlConn(String urlConn) throws IOException, ParseException {
 
-        String apiResult = "";
+        String apiResultString = "";
 
         URL url = new URL(urlConn);
         BufferedReader bf; //buffer reread 전송 전 임시 보관소(입출력 속도향상)
@@ -60,9 +59,9 @@ public class SummonerService {
         urlConnection.setRequestMethod("GET");
         bf = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
 
-        apiResult = bf.readLine();
-
-        return apiResult;
+        apiResultString = bf.readLine();
+        //JSONObject apiResult = (JSONObject) jsonParser.parse(apiResultString);
+        return apiResultString;
     }
 
     // 소환사 검색
@@ -70,12 +69,10 @@ public class SummonerService {
 
         String url = smnUrl + smn + "?api_key=" + API_KEY;
 
-        String result = urlConn(url);
-
-        // 존재하는 소환사 // 미존재 시 exception 처리
-
+        // 존재하는 소환사 // 미존재 시 exception 처리 필요
+        String accResultString= urlConn(url);
         //검색 소환사 account 정보 가져오기
-        JSONObject accResult = (JSONObject) jsonParser.parse(result);
+        JSONObject accResult = (JSONObject) jsonParser.parse(accResultString);
 
         smnInfo(summonerDto, accResult);
 
@@ -102,51 +99,95 @@ public class SummonerService {
         getTier(summonerDto, id);
 
         // 게임중 여부 조회 (riot developer api 막힘)
-        //currentGame(summonerDto, id);
+        currentGame(summonerDto, id);
 
         // matchId 최근 20게임
         matchesUrl(summonerDto, puuid);
 
         // matchDtlList
-        matchDtl(summonerDto, id);
+        matchDtl(summonerDto);
 
         return summonerDto;
     } // smnInfo() 소환사 정보 종료
 
 
+    // current 현재 게임 여부 ---------------
+    //ex https://kr.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/x2OV0C24um6oOgMaj-jhhpDO1WAlCaH_yqyYLf6SQxIY4g?api_key=RGAPI-032475c9-844d-4beb-82f9-2a1132ee2666
+    public SummonerDto currentGame(SummonerDto summonerDto, String id) throws IOException {
+
+        String curUrl = currentUrl + id + "?api_key=" + API_KEY;
+
+        // exception ------------------------게임중이 아닐 경우 null
+        // 현재 게임 중일 경우 실행 //
+        try {
+            String curResultString = urlConn(curUrl);
+            JSONObject curResult = (JSONObject) jsonParser.parse(curResultString);
+            summonerDto.setCurrent(true);
+
+            // 큐 타입
+            String queueId = curResult.get("gameQueueConfigId").toString();
+            summonerDto.setQueueId(getGameType(queueId));
+
+            // participants : ['x','x'] 부분 arr
+            JSONArray partiArr = (JSONArray) curResult.get("participants");
+
+            for (int p = 0; p < partiArr.size(); p++) {
+                //JSONArray partiDtlArr = (JSONArray) partiArr.get(p);
+
+                // i번째 participant
+                JSONObject inGame = (JSONObject) partiArr.get(p);
+                //inGame participant(p)의 id == myId 비교
+                String compareId = (String) inGame.get("summonerId");
+                if (compareId.equals(id)) {
+                    //Long curTime = (Long) inGame.get("gameStartTime"); // 유닉스 타임
+                    String curChamp = ChampionKey.valueOf("K"+inGame.get("championId")).getLabel();
+                    String curChampImg = ddUrl + ddVer + "/img/champion/" + curChamp +".png";
+                    summonerDto.setCurChamp("현재 " + curChamp + "를 게임중!");
+                    summonerDto.setCurChampUrl(curChampImg);
+                    return summonerDto;
+                }
+            }
+            // 게임 중 아님 current 404
+        } catch (Exception e) {
+            System.out.println("not play now");
+        }
+        return summonerDto;
+    }
+    // current 현재 게임 여부 종료
+
     // 티어 조회 로직
     public SummonerDto getTier(SummonerDto summonerDto, String id) throws IOException, ParseException {
 
         String rankUrl = tierUrl + id + "?api_key=" + API_KEY;
-        String rankResult = urlConn(rankUrl);
+        String rankResultString = urlConn(rankUrl);
         summonerDto.setSoloTier("Unranked");
         summonerDto.setFlexTier("Unranked");
 
         //언랭아닐 경우 [] 값
-        if (ObjectUtils.isEmpty(rankResult)) {
-            JSONArray json_rank_result = (JSONArray) jsonParser.parse(rankResult);
+        if (ObjectUtils.isEmpty(rankResultString)) {
+            JSONArray rankArr = (JSONArray) jsonParser.parse(rankResultString);
             //솔랭, 자랭 구분하기
-            for (int i = 0; i < json_rank_result.size(); i++) {
+            for (int i = 0; i < rankArr.size(); i++) {
 
-                JSONObject obj_rank_result = (JSONObject) json_rank_result.get(i);
-                String rankType = obj_rank_result.get("queueType").toString();
+                JSONObject ranks = (JSONObject) rankArr.get(i);
+                String rankType = ranks.get("queueType").toString();
 
                 // 솔랭, 자랭 값이 존재 한다면 해당 tier값으로 덮음
                 //솔랭
                 if ("RANKED_SOLO_5x5".equals(rankType)) {
-                    summonerDto.setSoloTier(obj_rank_result.get("tier").toString()); // 챌, 다이아, 플레 등
-                    summonerDto.setSoloRank(obj_rank_result.get("rank").toString()); // 1 ~ 4
-                    summonerDto.setSoloLeaguePoints(obj_rank_result.get("leaguePoints").toString()); // 티어 LP
-                    summonerDto.setSoloWins(obj_rank_result.get("wins").toString()); //랭크 전체 승
-                    summonerDto.setSoloLosses(obj_rank_result.get("losses").toString()); //랭크 전체 패
+                    summonerDto.setSoloTier(ranks.get("tier").toString()); // 챌, 다이아, 플레 등
+                    summonerDto.setSoloRank(ranks.get("rank").toString()); // 1 ~ 4
+                    summonerDto.setSoloLeaguePoints(ranks.get("leaguePoints").toString()); // 티어 LP
+                    summonerDto.setSoloWins(ranks.get("wins").toString()); //랭크 전체 승
+                    summonerDto.setSoloLosses(ranks.get("losses").toString()); //랭크 전체 패
                 }
                 //자랭
                 if ("RANKED_FLEX_SR".equals(rankType)) {
-                    summonerDto.setFlexTier(obj_rank_result.get("tier").toString());
-                    summonerDto.setFlexRank(obj_rank_result.get("rank").toString());
-                    summonerDto.setFlexLeaguePoints(obj_rank_result.get("leaguePoints").toString());
-                    summonerDto.setFlexWins(obj_rank_result.get("wins").toString());
-                    summonerDto.setFlexLosses(obj_rank_result.get("losses").toString());
+                    summonerDto.setFlexTier(ranks.get("tier").toString());
+                    summonerDto.setFlexRank(ranks.get("rank").toString());
+                    summonerDto.setFlexLeaguePoints(ranks.get("leaguePoints").toString());
+                    summonerDto.setFlexWins(ranks.get("wins").toString());
+                    summonerDto.setFlexLosses(ranks.get("losses").toString());
                 }
             } // 솔랭, 자랭 구분 종료
         } // 랭크 정보 등록 종료
@@ -156,17 +197,65 @@ public class SummonerService {
     // GameType 구하기
     public String getGameType(String queueId) {
 
-        queueId = GameTypeKey.valueOf("T"+queueId).label();
+        return GameTypeKey.valueOf("T"+queueId).label();
+    }
 
-        return queueId;
+    // 매치 리스트 가져오기 matchId
+    public SummonerDto matchesUrl(SummonerDto summonerDto, String puuid) throws IOException, ParseException {
+
+        String matUrl = matchesUrl + puuid + "/ids?start=0&count20&api_key=" + API_KEY;
+        String matchesString = urlConn(matUrl);
+        JSONArray matchesArr = (JSONArray) jsonParser.parse(matchesString);
+        summonerDto.setMatchIdList(matchesArr);
+
+        System.out.println("matchesUrl() matcheIdList : " + summonerDto.getMatchIdList().toString());
+        return summonerDto;
+    }
+
+    // match 당 정보 //  { info : {xx} } 부분
+    public JSONObject matchIdInfo(String matchId) throws IOException, ParseException {
+
+        String matchDataUrl = matchDtlUrl + matchId + "?api_key=" + API_KEY;
+        matchDataUrl = matchDataUrl.replace("\"", "");
+
+        String matchResultString = urlConn(matchDataUrl);
+        JSONObject matchResult = (JSONObject) jsonParser.parse(matchResultString);
+        //matchResult 중 info : xx 부분
+        JSONObject info = (JSONObject) matchResult.get("info");
+
+        return info;
     }
 
     // Spell 구하기
-    public String getSpell(String smSpell) {
+    public List<String> getSpell(JSONObject inGame) {
 
-        smSpell = SpellKey.valueOf("SP"+smSpell).label();
+        List spImgList = new ArrayList<>();
+        for (int s = 1; s < 3; s++){
+            String smSpell = inGame.get("summoner" + s + "Id").toString();
+            smSpell = SpellKey.valueOf("SP" + smSpell).label();
+            spImgList.add(smSpell);
+        }
+        return spImgList;
+    }
 
-        return smSpell;
+    // rune 구하기
+    public List<String> getRune(JSONObject inGame){
+
+        List<String> runeList = new ArrayList<>();
+        // 나의 inGame 룬
+        JSONObject runes = (JSONObject) inGame.get("perks");
+        JSONArray styles = (JSONArray) runes.get("styles");
+
+        // 메인 룬
+        JSONObject selec1 = (JSONObject) styles.get(0);
+        String runeImgUrl1 = ddUrl + "img/" + getRuneImgUrl(selec1.get("style").toString());
+        // 보조 룬
+        JSONObject selec2 = (JSONObject) styles.get(1);
+        String runeImgUrl2 = ddUrl + "img/" + getRuneImgUrl(selec2.get("style").toString());
+        runeList.add(runeImgUrl1);
+        runeList.add(runeImgUrl2);
+
+        return runeList;
     }
 
     // rune 이미지 주소 변환
@@ -202,167 +291,67 @@ public class SummonerService {
             itemDto.setItemNum(itemNum);
             itemDto.setItemImgUrl("/img/itemNull.png");
             itemDto.setItemTooltip("보이지 않는 검이 가장 무서운 법.....");
-
-            // inGame 나의 item 설명 (툴팁)
-            // item.json URL 연결
-        } else {
-            itemDto.setItemNum(itemNum);
-            itemDto.setItemImgUrl(ddUrl + ddVer + "/img/item/" + itemNum + ".png");
-
-            // item TOOLTIP 템 정보
-
-            String itemUrl = ddUrl + ddVer + "/data/ko_KR/item.json";
-            String itemResult = urlConn(itemUrl);
-
-            //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
-            JSONObject itemJson = (JSONObject) jsonParser.parse(itemResult);
-            //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
-            JSONObject itemData = (JSONObject) itemJson.get("data");
-            //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
-            JSONObject itemDtl = (JSONObject) itemData.get(itemNum);
-
-            String itemName = itemDtl.get("name").toString();
-            String itemDesc = itemDtl.get("description").toString();
-            String itemText = itemDtl.get("plaintext").toString();
-
-            itemDto.setItemTooltip("<b>" + itemName + "</b>" + "<br><hr>" + itemDesc + "<br>" + itemText);
-
+            return itemDto;
         }
+        // inGame 나의 item 설명 (툴팁)
+        // item.json URL 연결
+
+        itemDto.setItemNum(itemNum);
+        itemDto.setItemImgUrl(ddUrl + ddVer + "/img/item/" + itemNum + ".png");
+
+        // item TOOLTIP 템 정보
+        String itemUrl = ddUrl + ddVer + "/data/ko_KR/item.json";
+
+        //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
+        String itemResultString = urlConn(itemUrl);
+        JSONObject itemResult = (JSONObject) jsonParser.parse(itemResultString);
+        //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
+        JSONObject itemData = (JSONObject) itemResult.get("data");
+        //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
+        JSONObject itemDtl = (JSONObject) itemData.get(itemNum);
+
+        String itemName = itemDtl.get("name").toString();
+        String itemDesc = itemDtl.get("description").toString();
+        String itemText = itemDtl.get("plaintext").toString();
+
+        itemDto.setItemTooltip("<b>" + itemName + "</b>" + "/n <hr>" + itemDesc + "<br>" + itemText);
+
         return itemDto;
     }
 
+    // match 소환사들 detail_ 소환사명, 챔피언 정보
+    public ParticipantDto getPartiNameAndChamp(JSONObject inGame){
 
-    // current 현재 게임 여부 ---------------
-    //ex https://kr.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/x2OV0C24um6oOgMaj-jhhpDO1WAlCaH_yqyYLf6SQxIY4g?api_key=RGAPI-032475c9-844d-4beb-82f9-2a1132ee2666
-    public SummonerDto currentGame(SummonerDto summonerDto, String id) throws IOException {
+        ParticipantDto partiDto = new ParticipantDto();
 
-        String curUrl = currentUrl + id + "?api_key=" + API_KEY;
-        String curResult = urlConn(curUrl);
+        //inGame summoner(p)의 소환사 명
+        String inName = inGame.get("summonerName").toString();
+        partiDto.setInName(inName);
 
-        try {
-            JSONObject curData = (JSONObject) jsonParser.parse(curResult);
+        //inGame summoner(p)의 챔피언
+        String inChamp = inGame.get("championName").toString();
+        partiDto.setInChamp(inChamp);
+        partiDto.setChampImgUrl(ddUrl + ddVer + "/img/champion/" + inChamp + ".png");
 
-            // exception ------------------------게임중이 아닐 경우 null
-            //model.addAttribute("current", "yes"); // yes or no 방식으로 변경 // 기존 404;
+        return partiDto;
+    }
 
-            // 현재 게임 중일 경우 실행 //
-
-            // 큐 타입
-            String queueId = curData.get("gameQueueConfigId").toString();
-            summonerDto.setQueueId(getGameType(queueId));
-
-            // participants : ['x','x'] 부분 arr
-            JSONArray partiArr = (JSONArray) curData.get("participants");
-
-            for (int p = 0; p < partiArr.size(); p++) {
-
-                JSONArray partiDtlArr = (JSONArray) partiArr.get(p);
-
-                // JSON Array -> JSON Object
-                JSONObject inGame = new JSONObject();
-                for (int i = 0; i < partiDtlArr.size(); i++) {
-
-                    // JSON Array -> JSON Object
-                    // i번째 participant
-                    inGame = (JSONObject) partiDtlArr.get(i);
-
-                    //inGame participant(p)의 id == myId 비교
-                    String compareId = (String) inGame.get("summonerId");
-                    if (compareId == id) {
-
-                        //inGame participant(p)의 xx값
-                        //Long curTime = (Long) inGame.get("gameStartTime"); // 유닉스 타임
-                        String inChampKey = "K"+inGame.get("championId"); //
-                        String champImg = ChampionKey.valueOf(inChampKey).getLabel();
-
-                        System.out.println("champDto :" + champImg);
-
-                        //	model.addAttribute(smImgUrl, ddUrl + ddVer + "/img/champion/"+inChamp+".png");
-
-                    }
-                }
-            }
-            // 게임 중 아님 current 404
-        } catch (Exception e) {
-            //    model.addAttribute("current", "404"); // exception 필요
-
+    public String getKdaAvg (double k, double d, double a) {
+        String avg="";
+        if (d == 0) {
+            avg = "Perfect!";
+        } else {
+            avg = String.format("%.2f", (k + a) / d);
         }
-        return summonerDto;
-    }
-    // current 현재 게임 여부 종료
-
-
-    // 매치 리스트 가져오기 matchId
-    public SummonerDto matchesUrl(SummonerDto summonerDto, String puuid) throws IOException, ParseException {
-
-        String matUrl = matchesUrl + puuid + "/ids?start=0&count20&api_key=" + API_KEY;
-        JSONArray matchesArr = (JSONArray) jsonParser.parse(urlConn(matUrl));
-        summonerDto.setMatchIdList(matchesArr);
-
-        System.out.println("matchesUrl() matcheIdList : " + summonerDto.getMatchIdList().toString());
-        return summonerDto;
+        return avg;
     }
 
-    /*
-     * forEach 반복문 시작구간
-     * 설명 : 챔피언, 게입타입, 승패, 게임 시간, KDA, 룬, 스펠, 아이템, 플레이어
-     */
+    public String getAgoTime(Long gameTime) {
 
-    public SummonerDto matchDtl(SummonerDto summonerDto, String id) throws ParseException, IOException {
+        String agoTime = "";
 
-        List<SummonerDto> matchIdList = summonerDto.getMatchIdList();
-        List<MatchDto> matchDtoList = new ArrayList<>();
-
-        //매치 당 정보 가져오기 / 20게임 정보의 api 이용 중
-        for (int i = 0; i < matchIdList.size() - 15; i++) {
-
-            MatchDto matchDto = new MatchDto();
-
-            String matchId = "";
-            matchId = String.valueOf(matchIdList.get(i));
-            System.out.println("for문 matchId" + matchId);
-            matchDto.setMatchId(matchId);
-
-            // i번째 matchId에 대한 정보
-            String matchDataUrl = matchDtlUrl + matchId + "?api_key=" + API_KEY;
-            matchDataUrl = matchDataUrl.replace("\"", "");
-            System.out.println(i + " matchId 주소 : " + matchDataUrl);
-
-            String matchDataResult = urlConn(matchDataUrl);
-
-            //String 자료들을 JsonObject 직렬화..
-            JSONObject matchData = (JSONObject) jsonParser.parse(matchDataResult);
-
-            //matchData 중 metaDate : xx 부분
-            JSONObject metaData = (JSONObject) matchData.get("metadata");
-
-            //metaData 중 participants(플레이어 id) list 가져오기 ['','','']
-            JSONArray participants = (JSONArray) metaData.get("participants");
-
-            System.out.println("팀원 puuid (JsonArr) : " + participants);
-
-            //matchData 중 info : xx 부분
-            JSONObject info = (JSONObject) matchData.get("info");
-
-            //게임종류(협곡 칼바람 등) //모드 추가 시 추가 필요
-            String queueId = info.get("queueId").toString();
-            matchDto.setQueueId(getGameType(queueId));
-
-
-            //게임시간 (길이)(초)
-            long gameDuration = Integer.parseInt(info.get("gameDuration").toString());
-            int gameMin = (int) gameDuration / 60;
-            int gameSec = (int) gameDuration % 60;
-
-            matchDto.setGameDuration(gameMin + "분" + gameSec + "초");
-            System.out.println(gameDuration);
-            System.out.println("게임시간" + gameMin + "분" + gameSec + "초");
-
-
-
-            //게임 시작시간 (ago) // Date error
-
-/*            
+        //게임 시작시간 (ago) // Date error
+/*
             SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
             Date date = new Date();
             Long date1;
@@ -393,7 +382,7 @@ public class SummonerService {
             System.out.println("hours : "+hours);
             System.out.println("min : "+min);
 */
-            // x달 전 / x일 전 / x시간 전 / x분 전
+        // x달 전 / x일 전 / x시간 전 / x분 전
 /*
             if (days!=0) {
                 matchMap.put("ago", days+"일 전");
@@ -413,14 +402,50 @@ public class SummonerService {
                 System.out.print(", ");
             }
 */
+        return agoTime;
+    }
 
+
+    /*
+     * forEach 반복문 시작구간
+     * 설명 : 챔피언, 게입타입, 승패, 게임 시간, KDA, 룬, 스펠, 아이템, 플레이어
+     */
+    public SummonerDto matchDtl(SummonerDto summonerDto) throws ParseException, IOException {
+
+        List<SummonerDto> matchIdList = summonerDto.getMatchIdList();
+        List<MatchDto> matchDtoList = new ArrayList<>();
+
+        //매치 당 정보 가져오기 / 20게임 정보의 api 이용 중
+        for (int i = 0; i < matchIdList.size() - 15; i++) {
+
+            String matchId = "";
+            matchId = String.valueOf(matchIdList.get(i));
+            System.out.println("for문 matchId" + matchId);
+
+            MatchDto matchDto = new MatchDto();
+            matchDto.setMatchId(matchId);
+
+            // i번째 matchId에 대한 정보
+
+            //matchData 중 info : xx 부분
+            JSONObject info = matchIdInfo(matchId);
+
+            //게임종류(협곡 칼바람 등) //모드 추가 시 추가 필요
+            matchDto.setQueueId(getGameType(info.get("queueId").toString()));
+
+            //게임시간 (길이)(초)
+            long gameDuration = Integer.parseInt(info.get("gameDuration").toString());
+            int gameMin = (int) gameDuration / 60;
+            int gameSec = (int) gameDuration % 60;
+
+            matchDto.setGameDuration(gameMin + "분" + gameSec + "초");
+            System.out.println(gameDuration);
+            System.out.println("게임시간" + gameMin + "분" + gameSec + "초");
 
             /*
              * participants 키의 배열['participants':{},] 가져오기(플레이어 당 인게임) // 블루 0~4/ 레드 5~9
              * 플레이어 수 만큼 도는 for문
              */
-
-
             JSONArray partiInArr = (JSONArray) info.get("participants");
             System.out.println("포문 진입 전 사이즈체크 : " + partiInArr.size());
 
@@ -428,28 +453,15 @@ public class SummonerService {
 
             for (int p = 0; p < partiInArr.size(); p++) {
                 System.out.println("참가자 포문 진입, p = " + p + "/" + partiInArr.size());
+
                 JSONObject inGame = (JSONObject) partiInArr.get(p);
-
-                ParticipantDto partiDto = new ParticipantDto();
-
-
-                //inGame summoner(p)의 소환사 명
-                String inName = inGame.get("summonerName").toString();
-                partiDto.setInName(inName);
-                System.out.println(inName);
-
-                //inGame summoner(p)의 챔피언
-                String inChamp = inGame.get("championName").toString();
-                partiDto.setInChamp(inChamp);
-                partiDto.setChampImgUrl(ddUrl + ddVer + "/img/champion/" + inChamp + ".png");
-                System.out.println(inChamp);
+                ParticipantDto partiDto = getPartiNameAndChamp(inGame);
 
                 // 해당 parti의 id가 검색된 id인지 비교
-                String compareId = inGame.get("summonerId").toString();
-                System.out.println(compareId);
-
                 // 검색한 소환사(나)의 챔피언 가져오기
-                if (compareId.equals(id)) { // 검색된 id와 비교
+                String compareId = partiDto.getInName();
+                String name = summonerDto.getName();
+                if (name.equals(compareId)) { // 검색된 id와 비교
 
                     // 단일 경기 승리, 패배
                     Boolean win = Boolean.valueOf(inGame.get("win").toString());
@@ -464,9 +476,11 @@ public class SummonerService {
                     }
 
                     MyGameDto myGameDto = new MyGameDto();
+                    String inChamp = partiDto.getInChamp();
                     myGameDto.setMyChamp(inChamp);
                     myGameDto.setMyChampUrl(ddUrl + ddVer + "/img/champion/" + inChamp + ".png");
 
+                    // KDA
                     int myK = Integer.parseInt(inGame.get("kills").toString());
                     int myD = Integer.parseInt(inGame.get("deaths").toString());
                     int myA = Integer.parseInt(inGame.get("assists").toString());
@@ -474,54 +488,22 @@ public class SummonerService {
                     myGameDto.setMyK(myK);
                     myGameDto.setMyD(myD);
                     myGameDto.setMyA(myA);
+                    myGameDto.setMyAvg(getKdaAvg(myK, myD, myA));
+                    System.out.println("myAvg : " + myGameDto.getMyAvg());
                     // 최근 전적 KDA
                     summonerDto.setRecentKill(summonerDto.getRecentKill()+myK);
                     summonerDto.setRecentDeath(summonerDto.getRecentDeath()+myD);
                     summonerDto.setRecentAssist(summonerDto.getRecentAssist()+myA);
                     summonerDto.setRecentTotal(summonerDto.getRecentTotal()+1);
-                    if (summonerDto.getRecentDeath() == 0) {
-                        summonerDto.setRecentAvg("Perfect!");
-                    } else {
-                        summonerDto.setRecentAvg(String.valueOf(summonerDto.getRecentKill() + summonerDto.getRecentAssist() / summonerDto.getRecentDeath()));
-                    }
-
-                    if (myD == 0) {
-                        myGameDto.setMyAvg("Perfect!");
-                    } else {
-                        double kda = (double) Math.round((myK + myA) / myD * 100) / 100; //흠,,,ㅜㅜ소수 2째자리,,,안댐
-                        myGameDto.setMyAvg("평점 1 : " + kda);
-                        System.out.println("kda : " + kda);
-                    }
-
+                    summonerDto.setRecentAvg(getKdaAvg(summonerDto.getRecentKill(), summonerDto.getRecentAssist(), summonerDto.getRecentDeath()));
 
                     // 나의 inGame 룬
-                    JSONObject runes = (JSONObject) inGame.get("perks");
-                    JSONArray styles = (JSONArray) runes.get("styles");
-
-                    // 메인 룬
-                    JSONObject selec1 = (JSONObject) styles.get(0);
-                    myGameDto.setRuneImgUrl1(ddUrl + "img/" + getRuneImgUrl(selec1.get("style").toString()));
-                    // 보조 룬
-                    JSONObject selec2 = (JSONObject) styles.get(1);
-                    myGameDto.setRuneImgUrl2(ddUrl + "img/" + getRuneImgUrl(selec2.get("style").toString()));
-
+                    myGameDto.setRuneImgUrl1(getRune(inGame).get(0));
+                    myGameDto.setRuneImgUrl2(getRune(inGame).get(1));
 
                     // 나의 inGame 스펠 [{"summonerId1:""}]
-                    for (int s = 1; s < 3; s++) {
-                        String smSpell = "";
-                        smSpell = inGame.get("summoner"+s+"Id").toString();
-
-                        smSpell = getSpell(smSpell);
-                        if (s == 1) {
-                            myGameDto.setSpell1(smSpell);
-                            myGameDto.setSpImgUrl1(ddUrl + ddVer + "/img/spell/" + smSpell + ".png");
-                        } else {
-                            myGameDto.setSpell2(smSpell);
-                            myGameDto.setSpImgUrl2(ddUrl + ddVer + "/img/spell/" + smSpell + ".png");
-
-                        }
-                    }
-
+                    myGameDto.setSpImgUrl1(ddUrl + ddVer + "/img/spell/" + getSpell(inGame).get(0) + ".png");
+                    myGameDto.setSpImgUrl2(ddUrl + ddVer + "/img/spell/" + getSpell(inGame).get(1) + ".png");
 
                     // 나의 inGame item 이미지 [{"item":xx}]
                     List<ItemDto> itemList = new ArrayList<>();
@@ -530,8 +512,7 @@ public class SummonerService {
                         String item = "item" + t;
                         String itemNum = inGame.get(item).toString(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
 
-                        ItemDto itemDto = new ItemDto();
-                        itemDto = getItem(itemNum);
+                        ItemDto itemDto = getItem(itemNum);
 
                         itemList.add(itemDto);
                         // ITEM, TOOLTIP 종료
