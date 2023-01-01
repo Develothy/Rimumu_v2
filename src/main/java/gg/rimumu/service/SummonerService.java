@@ -104,8 +104,9 @@ public class SummonerService {
         // matchId 최근 20게임
         matchesUrl(summonerDto, puuid);
 
+
         // matchDtlList
-        matchDtl(summonerDto);
+        matchDtls(summonerDto);
 
         return summonerDto;
     } // smnInfo() 소환사 정보 종료
@@ -213,7 +214,7 @@ public class SummonerService {
     }
 
     // match 당 정보 //  { info : {xx} } 부분
-    public JSONObject matchIdInfo(String matchId) throws IOException, ParseException {
+    public JSONObject getMatchIdInfo(String matchId) throws IOException, ParseException {
 
         String matchDataUrl = matchDtlUrl + matchId + "?api_key=" + API_KEY;
         matchDataUrl = matchDataUrl.replace("\"", "");
@@ -241,7 +242,7 @@ public class SummonerService {
     // rune 구하기
     public List<String> getRune(JSONObject inGame){
 
-        List<String> runeList = new ArrayList<>();
+        List runeList = new ArrayList<>();
         // 나의 inGame 룬
         JSONObject runes = (JSONObject) inGame.get("perks");
         JSONArray styles = (JSONArray) runes.get("styles");
@@ -320,20 +321,18 @@ public class SummonerService {
     }
 
     // match 소환사들 detail_ 소환사명, 챔피언 정보
-    public ParticipantDto getPartiNameAndChamp(JSONObject inGame){
+    public List getPartiNameAndChamp(JSONObject inGame){
 
-        ParticipantDto partiDto = new ParticipantDto();
-
+        List<String> nameAndChamp = new ArrayList<>();
         //inGame summoner(p)의 소환사 명
         String inName = inGame.get("summonerName").toString();
-        partiDto.setInName(inName);
+        nameAndChamp.add(inName);
 
         //inGame summoner(p)의 챔피언
-        String inChamp = inGame.get("championName").toString();
-        partiDto.setInChamp(inChamp);
-        partiDto.setChampImgUrl(ddUrl + ddVer + "/img/champion/" + inChamp + ".png");
+        String inChamp = inGame.get("championId").toString();
+        nameAndChamp.add(inChamp);
 
-        return partiDto;
+        return nameAndChamp;
     }
 
     public String getKdaAvg (double k, double d, double a) {
@@ -405,12 +404,69 @@ public class SummonerService {
         return agoTime;
     }
 
+    public MatchDetailDto matchDtl(String matchId) throws IOException, ParseException {
+
+        MatchDetailDto matchDetailDto = new MatchDetailDto();
+        //matchData 중 info : xx 부분
+        JSONObject info = getMatchIdInfo(matchId);
+        JSONArray partiInArr = (JSONArray) info.get("participants");
+        System.out.println("포문 진입 전 사이즈체크 : " + partiInArr.size());
+
+        List<PartiDetailDto> partiDetailDtoList = new ArrayList<>();
+
+        for (int p = 0; p < partiInArr.size(); p++) {
+            System.out.println("참가자 포문 진입, p = " + p + "/" + partiInArr.size());
+
+            JSONObject inGame = (JSONObject) partiInArr.get(p);
+            PartiDetailDto partiDetailDto = new PartiDetailDto();
+            List<String> nameAndChamp = getPartiNameAndChamp(inGame);
+            partiDetailDto.setInName(nameAndChamp.get(0));
+            String champ = ChampionKey.valueOf("K" + nameAndChamp.get(1)).label();
+            partiDetailDto.setInChamp(champ);
+            partiDetailDto.setChampImgUrl(ddUrl + ddVer + "/img/champion/" + champ + ".png");
+
+            List<String> runes = getRune(inGame);
+            partiDetailDto.setRuneImgUrl1(runes.get(0));
+            partiDetailDto.setRuneImgUrl2(runes.get(1));
+
+            List<String> spells = getSpell(inGame);
+            partiDetailDto.setSpImgUrl1(spells.get(0));
+            partiDetailDto.setSpImgUrl2(spells.get(1));
+
+            partiDetailDto.setPartiK((Integer) inGame.get("kills"));
+            partiDetailDto.setPartiK((Integer) inGame.get("deaths"));
+            partiDetailDto.setPartiK((Integer) inGame.get("assists"));
+            partiDetailDto.setPartiAvg(getKdaAvg(partiDetailDto.getPartiK(),partiDetailDto.getPartiD(),partiDetailDto.getPartiA()));
+
+            partiDetailDto.setPartiDamage((Integer) inGame.get("totalDamageDealtToChampions"));
+            partiDetailDto.setPartiTakenDamage((Integer) inGame.get("totalDamageTaken"));
+            partiDetailDto.setPartiMinions((Integer) inGame.get("totalMinionsKilled"));
+
+            // 나의 inGame item 이미지 [{"item":xx}]
+            List<ItemDto> itemList = new ArrayList<>();
+            for(int t=0; t<7; t++) {
+                String item = "item" + t;
+                String itemNum = inGame.get(item).toString(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
+
+                ItemDto itemDto = getItem(itemNum);
+                itemList.add(itemDto);
+                // ITEM, TOOLTIP 종료
+            }
+            partiDetailDto.setItemDtoList(itemList);
+            System.out.println("partiDetailDto : "+partiDetailDto);
+            partiDetailDtoList.add(partiDetailDto);
+        } // matchId parti(i)의 detail 종료
+        matchDetailDto.setPartiDetailDtoList(partiDetailDtoList);
+
+        return matchDetailDto;
+    }
+
 
     /*
      * forEach 반복문 시작구간
      * 설명 : 챔피언, 게입타입, 승패, 게임 시간, KDA, 룬, 스펠, 아이템, 플레이어
      */
-    public SummonerDto matchDtl(SummonerDto summonerDto) throws ParseException, IOException {
+    public SummonerDto matchDtls(SummonerDto summonerDto) throws ParseException, IOException {
 
         List<SummonerDto> matchIdList = summonerDto.getMatchIdList();
         List<MatchDto> matchDtoList = new ArrayList<>();
@@ -428,7 +484,7 @@ public class SummonerService {
             // i번째 matchId에 대한 정보
 
             //matchData 중 info : xx 부분
-            JSONObject info = matchIdInfo(matchId);
+            JSONObject info = getMatchIdInfo(matchId);
 
             //게임종류(협곡 칼바람 등) //모드 추가 시 추가 필요
             matchDto.setQueueId(getGameType(info.get("queueId").toString()));
@@ -455,7 +511,14 @@ public class SummonerService {
                 System.out.println("참가자 포문 진입, p = " + p + "/" + partiInArr.size());
 
                 JSONObject inGame = (JSONObject) partiInArr.get(p);
-                ParticipantDto partiDto = getPartiNameAndChamp(inGame);
+                ParticipantDto partiDto = new ParticipantDto();
+
+                List<String> nameAndChamp = getPartiNameAndChamp(inGame);
+                partiDto.setInName(nameAndChamp.get(0));
+                // 챔프네임의 대소문자가 match Json과 img API가 동일하지 않은 이유로 에러발생. 때문에 emun에서 가져옴
+                String champ = ChampionKey.valueOf("K" + nameAndChamp.get(1)).label();
+                partiDto.setInChamp(champ);
+                partiDto.setChampImgUrl(ddUrl + ddVer + "/img/champion/" + champ + ".png");
 
                 // 해당 parti의 id가 검색된 id인지 비교
                 // 검색한 소환사(나)의 챔피언 가져오기
@@ -498,22 +561,22 @@ public class SummonerService {
                     summonerDto.setRecentAvg(getKdaAvg(summonerDto.getRecentKill(), summonerDto.getRecentAssist(), summonerDto.getRecentDeath()));
 
                     // 나의 inGame 룬
-                    myGameDto.setRuneImgUrl1(getRune(inGame).get(0));
-                    myGameDto.setRuneImgUrl2(getRune(inGame).get(1));
+                    List<String> runes = getRune(inGame);
+                    myGameDto.setRuneImgUrl1(runes.get(0));
+                    myGameDto.setRuneImgUrl2(runes.get(1));
 
                     // 나의 inGame 스펠 [{"summonerId1:""}]
-                    myGameDto.setSpImgUrl1(ddUrl + ddVer + "/img/spell/" + getSpell(inGame).get(0) + ".png");
-                    myGameDto.setSpImgUrl2(ddUrl + ddVer + "/img/spell/" + getSpell(inGame).get(1) + ".png");
+                    List<String> spells = getSpell(inGame);
+                    myGameDto.setSpImgUrl1(ddUrl + ddVer + "/img/spell/" + spells.get(0) + ".png");
+                    myGameDto.setSpImgUrl2(ddUrl + ddVer + "/img/spell/" + spells.get(1) + ".png");
 
                     // 나의 inGame item 이미지 [{"item":xx}]
                     List<ItemDto> itemList = new ArrayList<>();
-
                     for(int t=0; t<7; t++) {
                         String item = "item" + t;
                         String itemNum = inGame.get(item).toString(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
 
                         ItemDto itemDto = getItem(itemNum);
-
                         itemList.add(itemDto);
                         // ITEM, TOOLTIP 종료
 
@@ -538,8 +601,6 @@ public class SummonerService {
         return summonerDto;
     }
 
-
     //System.out.println("matchDtlList 종료 : "+matchDtoList);
-
 
 }

@@ -33,13 +33,15 @@ public class SummonerCopy {
 
     // 소환사 Summoner(smn) 검색
     @GetMapping("/summoner")
-    public String summoner(@RequestParam("smn") String smn, SummonerDto summonerDto, Model model) throws ParseException, IOException {
+    public String summoner(@RequestParam("smn") String smn, Model model) throws ParseException, IOException {
 
         smn = smn.trim();
         if (smn.length() < 3){ // 2글자 소환사는 가운데에 공백 꼭 필요
-            smn = smn.substring(0,1) + " " + smn.substring(1);
+            smn = smn.charAt(0) + " " + smn.charAt(1);
         }
         smn = URLEncoder.encode(smn, "utf-8");
+
+        SummonerDto summonerDto = new SummonerDto();
 
         summonerDto = summonerService.smnSearch(summonerDto, smn);
 
