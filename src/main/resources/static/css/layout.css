@@ -51,14 +51,14 @@ a {
     margin-left: 200px;
     margin-right: 200px;
 }
-/*
+
 #myChart{
 	display:block;
 	height : 35%;
 	max-height : 130px;
 	width: 35%;
 }
-*/
+
 
 .table-primary {
     border: 1px solid #81beff;
@@ -81,8 +81,11 @@ a {
     color: #f5c6cb;
 }
 
-.back-blue{
-	  align-items:center;
-      background-color: #f0f4fd;
+.summoner-data4{
+    height: 140px;
+    margin: auto 0;
+    align-items: center;
+    background-color: #f0f4fd;
 }
+
 

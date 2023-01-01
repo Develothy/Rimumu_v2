@@ -3,46 +3,6 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 
-<th:block layout:fragment="script">
-    <script th:inline="javascript" type ="text/javascript"
-            th:src="@{//cdn.jsdelivr.net/npm/chart.js@3.8.2/dist/chart.min.js}">
-
-        const data = {
-            datasets: [{
-                label: '# of Votes',
-                data: [60, 40],
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                ],
-                borderWidth: 1
-            }]
-        };
-
-        const config = {
-            type: 'doughnut',
-            data: data,
-            options: {}
-        };
-
-        const myChart = new Chart(
-            document.getElementById('myChart'), config
-        );
-
-
-        function partiClick(smn) {
-            smn = smn.replaceAll(" ","");
-            const url = '/summoner?smn=' + smn;
-
-            location.replace(url);
-        }
-
-    </script>
-</th:block>
 
 <div layout:fragment="content">
     <div class="container main-inner">
@@ -65,59 +25,55 @@
             <!-- 검색한 소환사 info 하단 -->
             <div class="row summoner-data4">
                 <!-- box 1 -->
-                <div class="col-sm-3 back-blue">
-                    <div class="row">
+                <div class="col-sm-3">
                         <!-- 솔로랭크 -->
                         <!-- 언랭일때 -->
                         <th:block th:if="${summonerDto.soloTier == 'Unranked'}">
-                            <img th:src="@{/img/rank1.png}" alt="Unranked" width="190px">
+                            <img th:src="@{/img/rank1.png}" alt="Unranked" width="170px">
                         </th:block>
                         <!-- 솔랭 info -->
                         <th:block th:unless="${summonerDto.soloTier == 'Unranked'}">
-                            <div class="col-sm-5 back-blue">
+                            <div class="col-sm-5">
                                 <img th:src="@{/emblem/}+*{soloTier}+@{.png}" alt="tier" width="70px">
                             </div>
-                            <div class="col-sm-6 back-blue">
+                            <div class="col-sm-6">
                                 <h6 class="small">솔로랭크</h6>
                                 <h6>[[*{soloTier}]] [[*{soloRank}]]</h6>
                                 <h6 class="small">[[*{soloLeaguePoints}]]</h6>
                                 <h6 class="small">[[*{soloWins}]]승 [[*{soloLosses}]]패 </h6>
                             </div>
                         </th:block>
-                    </div>
                 </div>
                 <!-- box 2 -->
-                <div class="col-sm-3 back-blue">
-                    <div class="row">
+                <div class="col-sm-3">
                         <!-- 자유랭크 -->
                         <!-- 언랭일때 -->
                         <th:block th:if="*{flexTier == 'Unranked'}">
-                            <img th:src="@{/img/rank2.png}" alt="Unranked" width="190px">
+                            <img th:src="@{/img/rank2.png}" alt="Unranked" width="170px">
                         </th:block>
                         <!-- 자랭 info -->
                         <th:block th:unless="*{flexTier == 'Unranked'}">
-                            <div class="col-sm-5 back-blue">
+                            <div class="col-sm-5">
                                 <img th:src="@{/emblem/}+*{flexTier}+@{.png}" alt="tier" width="70px">
                             </div>
-                            <div class="col-sm-6 back-blue">
+                            <div class="col-sm-6">
                                 <h6 class="small">자유랭크</h6>
                                 <h6>[[*{flexTier}]] [[*{flexRank}]]</h6>
                                 <h6 class="small">[[*{flexLeaguePoints}]] Point</h6>
                                 <h6 class="small">[[*{flexWins}]]승 [[*{flexLosses}]]패 </h6>
                             </div>
                         </th:block>
-                    </div>
                 </div>
                 <!-- box 3 최근 20전 승률 -->
-                <div class="col-sm-3 back-blue">
+                <div class="col-sm-3">
                     <div class="row">
                         <!-- 도넛 차트 -->
-                        <div class="col-sm-5 back-blue">
+                        <div class="col-sm-5">
                             <canvas id="myChart" width="230" height="330"></canvas>
                             <input type="hidden" th:value="*{recentWin}" id="wins">
                             <input type="hidden" th:value="*{recentLose}" id="lose">
                         </div>
-                        <div class="col-sm-6 back-blue">
+                        <div class="col-sm-6 text-right">
                             <h6>[[*{recentTotal}]]전 [[*{recentWin}]]승 [[*{recentLose}]]패</h6>
                             <h6>[[*{recentAvg}]]</h6>
                             <h6 class="small">[[*{recentKill}]] / [[*{recentDeath}]] / [[*{recentAssist}]]</h6>
@@ -125,9 +81,9 @@
                     </div>
                 </div>
                 <!-- box 4 인게임 여부 -->
-                <div class="col-sm-3 back-blue">
+                <div class="col-sm-3 text-center">
                     <th:block th:if="*{current == false}">
-                        <img th:src="@{/img/current.png}" width="160px">
+                        <img th:src="@{/img/current.png}" width="150px">
                     </th:block>
                     <th:block th:if="*{current == true}">
                         <p th:text="*{curChamp}"></p>
@@ -192,7 +148,7 @@
                             <td width="10%" class="align-middle p-0">
                                 <ul class="d-block text-truncate text-left m-0 px-0 mr-2">
                                     <li th:each="parti,index:${match.partiDtoList}" th:if="${index.index < 5}" class="d-block text-truncate">
-                                        <a href="javascript:void(0);" th:value="${parti.inName}" onclick="partiClick(this.getAttribute('value'))" class="d-block text-truncate text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="small"> [[${parti.inName}]]</span> </a>
+                                        <a th:href="@{/summoner?smn=}+${parti.inName}" th:value="${parti.inName}" class="d-block text-truncate text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="small"> [[${parti.inName}]]</span> </a>
                                     </li>
                                 </ul>
                             </td>
@@ -200,14 +156,13 @@
                             <td width="10%" class="align-middle p-0">
                                 <ul class="d-block text-truncate text-left m-0 px-0 mr-2">
                                     <li th:each="parti,index:${match.partiDtoList}" th:if="${index.index >= 5}" class="d-block text-truncate">
-                                        <a href="javascript:void(0);" th:value="${parti.inName}" onclick="partiClick(this.getAttribute('value'))" class="d-block text-truncate text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="small"> [[${parti.inName}]]</span> </a>
+                                        <a th:href="@{/summoner?smn=}+${parti.inName}" th:value="${parti.inName}" class="d-block text-truncate text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="small"> [[${parti.inName}]]</span> </a>
                                     </li>
                                 </ul>
 
                             </td>
                             <td width="5%" th:classappend="${match.win}">
-                                <a> ∨ </a>
-
+                                <a span id="matchDetailBtn" onclick="matchDetailClick(this.getAttribute('value'))" th:value="${match.matchId}"> ∨ </a></span>
                             </td>
 
 
@@ -222,10 +177,77 @@
                 </table>
             </div>
         </div>
-
-
-
-
-
     </div>
 </div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript" type ="text/javascript">
+
+        /*<![CDATA[*/
+
+
+        function matchDetailClick(matchId) {
+
+            alert("matchId 진입" + matchId);
+
+            const token = $("meta[name='_csrf']").attr("content");
+            const header = $("meta[name='_csrf_header']").attr("content");
+
+            const url = '/summoner/' + matchId;
+            alert("아작 시작" + url);
+
+            $.ajax({
+                beforeSend: function (xhr) {
+                    xhr.setRequesrHeader(header, token);
+                },
+                type: 'POST',
+                url: url,
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(matchId)
+            }).done(function () {
+                alert("아작 끝")
+                window.location.reload();
+            }).fail(function (error) {
+                alert("아작 실패" + JSON.stringify(error))
+            })
+        }
+
+        const context = document.getElementById('myChart').getContext('2d');
+        const w = 60;
+        const l = 40;
+        const myChart = new Chart(context, {
+            type : 'doughnut',
+            data : {
+                datasets: [{
+                    label: '# of Votes',
+                    data: [w,l],
+                    backgroundColor: [
+                        'rgba(255,99,132,0.2)',
+                        'rgba(54,162,235,0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54,162,235,1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: { }
+        });
+
+
+
+        // function partiClick(smn) {
+        //     alert(partiClick);
+        //     smn = smn.replaceAll(" ","");
+        //     const url = '/summoner?smn=' + smn;
+        //     alert(url);
+        //     location.href=url;
+        // }
+        //
+
+        /*]]>*/
+
+    </script>
+</th:block>
+</html>
