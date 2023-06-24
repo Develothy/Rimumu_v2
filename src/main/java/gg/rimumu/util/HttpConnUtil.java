@@ -1,6 +1,6 @@
 package gg.rimumu.util;
 
-import org.springframework.beans.factory.annotation.Value;
+import gg.rimumu.common.RimumuKey;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -15,12 +15,9 @@ import java.time.Duration;
 @Component
 public class HttpConnUtil {
 
-    @Value("${LoL.KEY}")
-    private static String API_KEY;
+    public static String DD_VERSION = "13.12.2";
 
-    private static String VERSION;
-
-    private static HttpClient client = HttpClient.newHttpClient();
+    public static HttpClient client = HttpClient.newHttpClient();
 
     public HttpConnUtil() {
         this.client = HttpClient.newBuilder()
@@ -30,17 +27,10 @@ public class HttpConnUtil {
 
     static {
         try {
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(new URI("https://ddragon.leagueoflegends.com/api/versions.json"))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-            String json = res.body();
+            String json = sendHttpGetRequest(RimumuKey.DD_VERSION_URL);
             int end = json.indexOf("\"", 2);
-            VERSION = json.substring(2, end);
-            System.out.println(VERSION);
-
+            DD_VERSION = json.substring(2, end);
+            System.out.println(DD_VERSION);
         } catch (Exception e) {
             System.out.println("version init fail");
         }
@@ -51,14 +41,14 @@ public class HttpConnUtil {
         try {
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(new URI(url))
-                    .setHeader("X-Riot-Token", API_KEY)
+                    .setHeader("X-Riot-Token", RimumuKey.API_KEY)
                     .GET()
                     .build();
 
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
             return res.body();
         } catch (URISyntaxException | IOException | InterruptedException e) {
-
+            System.out.println("Exception 발생! " + e.getMessage());
         }
         return null;
     }

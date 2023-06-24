@@ -1,11 +1,16 @@
 package gg.rimumu.service;
 
+import gg.rimumu.common.ChampionKey;
+import gg.rimumu.common.GameTypeKey;
+import gg.rimumu.common.RimumuKey;
+import gg.rimumu.common.SpellKey;
 import gg.rimumu.dto.*;
+import gg.rimumu.util.HttpConnUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -21,31 +26,11 @@ import java.util.*;
 @Service
 public class SummonerService {
 
-    @Value("${LoL.KEY}")
-    private String API_KEY;
-
-    @Value("${DDUrl}")
-    private String ddUrl;
-
-    @Value("${DDVer}")
-    private String ddVer;
-
-    @Value("${smnUrl}")
-    private String smnUrl;
-
-    @Value("${tierUrl}")
-    private String tierUrl;
-
-    @Value("${currentUrl}")
-    private String currentUrl;
-
-    @Value("${matchesUrl}")
-    private String matchesUrl;
-
-    @Value("${matchDtlUrl}")
-    private String matchDtlUrl;
-
     final static JSONParser jsonParser = new JSONParser();
+
+    @Autowired
+    private HttpConnUtil httpConnUtil;
+
 
 
     // api 연결
@@ -67,10 +52,10 @@ public class SummonerService {
     // 소환사 검색
     public SummonerDto smnSearch(SummonerDto summonerDto, String smn) throws IOException, ParseException {
 
-        String url = smnUrl + smn + "?api_key=" + API_KEY;
+        String url = RimumuKey.SUMMONER_INFO_URL + smn;
 
         // 존재하는 소환사 // 미존재 시 exception 처리 필요
-        String accResultString= urlConn(url);
+        String accResultString= HttpConnUtil.sendHttpGetRequest(url);
         //검색 소환사 account 정보 가져오기
         JSONObject accResult = (JSONObject) jsonParser.parse(accResultString);
 
@@ -87,7 +72,7 @@ public class SummonerService {
         summonerDto.setSmLv(Integer.parseInt(accResult.get("summonerLevel").toString()));
 
         int profileIconId = Integer.parseInt(accResult.get("profileIconId").toString());
-        summonerDto.setIconImgUrl(ddUrl + ddVer + "/img/profileicon/" + profileIconId + ".png");
+        summonerDto.setIconImgUrl(RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/profileicon/" + profileIconId + ".png");
 
         String id = accResult.get("id").toString();
         summonerDto.setId(id);
@@ -116,12 +101,12 @@ public class SummonerService {
     //ex https://kr.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/x2OV0C24um6oOgMaj-jhhpDO1WAlCaH_yqyYLf6SQxIY4g?api_key=RGAPI-032475c9-844d-4beb-82f9-2a1132ee2666
     public SummonerDto currentGame(SummonerDto summonerDto, String id) throws IOException {
 
-        String curUrl = currentUrl + id + "?api_key=" + API_KEY;
+        String curUrl = RimumuKey.SUMMONER_CURRENT_URL + id;
 
         // exception ------------------------게임중이 아닐 경우 null
         // 현재 게임 중일 경우 실행 //
         try {
-            String curResultString = urlConn(curUrl);
+            String curResultString = HttpConnUtil.sendHttpGetRequest(curUrl);
             JSONObject curResult = (JSONObject) jsonParser.parse(curResultString);
             summonerDto.setCurrent(true);
 
@@ -142,7 +127,7 @@ public class SummonerService {
                 if (compareId.equals(id)) {
                     //Long curTime = (Long) inGame.get("gameStartTime"); // 유닉스 타임
                     String curChamp = ChampionKey.valueOf("K"+inGame.get("championId")).getLabel();
-                    String curChampImg = ddUrl + ddVer + "/img/champion/" + curChamp +".png";
+                    String curChampImg = RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
                     summonerDto.setCurChamp("현재 " + curChamp + "를 게임중!");
                     summonerDto.setCurChampUrl(curChampImg);
                     return summonerDto;
@@ -159,8 +144,8 @@ public class SummonerService {
     // 티어 조회 로직
     public SummonerDto getTier(SummonerDto summonerDto, String id) throws IOException, ParseException {
 
-        String rankUrl = tierUrl + id + "?api_key=" + API_KEY;
-        String rankResultString = urlConn(rankUrl);
+        String rankUrl = RimumuKey.SUMMONER_TIER_URL + id;
+        String rankResultString = HttpConnUtil.sendHttpGetRequest(rankUrl);
         summonerDto.setSoloTier("Unranked");
         summonerDto.setFlexTier("Unranked");
 
@@ -204,8 +189,8 @@ public class SummonerService {
     // 매치 리스트 가져오기 matchId
     public SummonerDto matchesUrl(SummonerDto summonerDto, String puuid) throws IOException, ParseException {
 
-        String matUrl = matchesUrl + puuid + "/ids?start=0&count20&api_key=" + API_KEY;
-        String matchesString = urlConn(matUrl);
+        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + puuid + "/ids?start=0&count20";
+        String matchesString = httpConnUtil.sendHttpGetRequest(matUrl);
         JSONArray matchesArr = (JSONArray) jsonParser.parse(matchesString);
         summonerDto.setMatchIdList(matchesArr);
 
@@ -216,10 +201,10 @@ public class SummonerService {
     // match 당 정보 //  { info : {xx} } 부분
     public JSONObject getMatchIdInfo(String matchId) throws IOException, ParseException {
 
-        String matchDataUrl = matchDtlUrl + matchId + "?api_key=" + API_KEY;
+        String matchDataUrl = RimumuKey.SUMMONER_MATCHDTL_URL + matchId;
         matchDataUrl = matchDataUrl.replace("\"", "");
 
-        String matchResultString = urlConn(matchDataUrl);
+        String matchResultString = HttpConnUtil.sendHttpGetRequest(matchDataUrl);
         JSONObject matchResult = (JSONObject) jsonParser.parse(matchResultString);
         //matchResult 중 info : xx 부분
         JSONObject info = (JSONObject) matchResult.get("info");
@@ -249,10 +234,10 @@ public class SummonerService {
 
         // 메인 룬
         JSONObject selec1 = (JSONObject) styles.get(0);
-        String runeImgUrl1 = ddUrl + "img/" + getRuneImgUrl(selec1.get("style").toString());
+        String runeImgUrl1 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec1.get("style").toString());
         // 보조 룬
         JSONObject selec2 = (JSONObject) styles.get(1);
-        String runeImgUrl2 = ddUrl + "img/" + getRuneImgUrl(selec2.get("style").toString());
+        String runeImgUrl2 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec2.get("style").toString());
         runeList.add(runeImgUrl1);
         runeList.add(runeImgUrl2);
 
@@ -298,13 +283,13 @@ public class SummonerService {
         // item.json URL 연결
 
         itemDto.setItemNum(itemNum);
-        itemDto.setItemImgUrl(ddUrl + ddVer + "/img/item/" + itemNum + ".png");
+        itemDto.setItemImgUrl(RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/item/" + itemNum + ".png");
 
         // item TOOLTIP 템 정보
-        String itemUrl = ddUrl + ddVer + "/data/ko_KR/item.json";
+        String itemUrl = RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/data/ko_KR/item.json";
 
         //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
-        String itemResultString = urlConn(itemUrl);
+        String itemResultString = HttpConnUtil.sendHttpGetRequest(itemUrl);
         JSONObject itemResult = (JSONObject) jsonParser.parse(itemResultString);
         //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
         JSONObject itemData = (JSONObject) itemResult.get("data");
@@ -423,7 +408,7 @@ public class SummonerService {
             partiDetailDto.setInName(nameAndChamp.get(0));
             String champ = ChampionKey.valueOf("K" + nameAndChamp.get(1)).label();
             partiDetailDto.setInChamp(champ);
-            partiDetailDto.setChampImgUrl(ddUrl + ddVer + "/img/champion/" + champ + ".png");
+            partiDetailDto.setChampImgUrl(RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
             List<String> runes = getRune(inGame);
             partiDetailDto.setRuneImgUrl1(runes.get(0));
@@ -518,7 +503,7 @@ public class SummonerService {
                 // 챔프네임의 대소문자가 match Json과 img API가 동일하지 않은 이유로 에러발생. 때문에 emun에서 가져옴
                 String champ = ChampionKey.valueOf("K" + nameAndChamp.get(1)).label();
                 partiDto.setInChamp(champ);
-                partiDto.setChampImgUrl(ddUrl + ddVer + "/img/champion/" + champ + ".png");
+                partiDto.setChampImgUrl(RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
                 // 해당 parti의 id가 검색된 id인지 비교
                 // 검색한 소환사(나)의 챔피언 가져오기
@@ -541,7 +526,7 @@ public class SummonerService {
                     MyGameDto myGameDto = new MyGameDto();
                     String inChamp = partiDto.getInChamp();
                     myGameDto.setMyChamp(inChamp);
-                    myGameDto.setMyChampUrl(ddUrl + ddVer + "/img/champion/" + inChamp + ".png");
+                    myGameDto.setMyChampUrl(RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/champion/" + inChamp + ".png");
 
                     // KDA
                     int myK = Integer.parseInt(inGame.get("kills").toString());
@@ -567,8 +552,8 @@ public class SummonerService {
 
                     // 나의 inGame 스펠 [{"summonerId1:""}]
                     List<String> spells = getSpell(inGame);
-                    myGameDto.setSpImgUrl1(ddUrl + ddVer + "/img/spell/" + spells.get(0) + ".png");
-                    myGameDto.setSpImgUrl2(ddUrl + ddVer + "/img/spell/" + spells.get(1) + ".png");
+                    myGameDto.setSpImgUrl1(RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/spell/" + spells.get(0) + ".png");
+                    myGameDto.setSpImgUrl2(RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/spell/" + spells.get(1) + ".png");
 
                     // 나의 inGame item 이미지 [{"item":xx}]
                     List<ItemDto> itemList = new ArrayList<>();

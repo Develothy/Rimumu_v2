@@ -1,4 +1,4 @@
-package gg.rimumu.dto;
+package gg.rimumu.common;
 
 import lombok.Getter;
 

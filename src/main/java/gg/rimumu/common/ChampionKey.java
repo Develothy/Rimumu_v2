@@ -1,4 +1,4 @@
-package gg.rimumu.dto;
+package gg.rimumu.common;
 
 import lombok.Getter;
 
@@ -81,6 +81,7 @@ public enum ChampionKey {
     K90 ("Malzahar"),
     K57 ("Maokai"),
     K11 ("MasterYi"),
+    K902 ("Milio"),
     K21 ("MissFortune"),
     K62 ("MonkeyKing"),
     K82 ("Mordekaiser"),
