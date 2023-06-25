@@ -1,27 +1,17 @@
 package gg.rimumu.controller;
 
 import gg.rimumu.dto.SummonerDto;
+import gg.rimumu.exception.RimumuException;
 import gg.rimumu.service.SummonerService;
 import lombok.RequiredArgsConstructor;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.nio.charset.StandardCharsets;
 
 
 @Controller
@@ -33,17 +23,22 @@ public class SummonerCopy {
 
     // 소환사 Summoner(smn) 검색
     @GetMapping("/summoner")
-    public String summoner(@RequestParam("smn") String smn, Model model) throws ParseException, IOException {
-
-        smn = smn.trim();
-        if (smn.length() < 3){ // 2글자 소환사는 가운데에 공백 꼭 필요
-            smn = smn.charAt(0) + " " + smn.charAt(1);
+    public String summoner(@RequestParam("smn") String smn, Model model) throws IOException {
+        if (smn.isBlank()) {
+            return "summoner/nameNull";
         }
-        smn = URLEncoder.encode(smn, "utf-8");
 
-        SummonerDto summonerDto = new SummonerDto();
+        String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
 
-        summonerDto = summonerService.smnSearch(summonerDto, smn);
+        SummonerDto summonerDto;
+        try {
+            summonerDto = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8));
+        } catch (RimumuException.SummonerNotFoundException e) {
+            model.addAttribute("smn", smn);
+            return "summoner/nameNull";
+        } catch (RimumuException e) {
+            throw new RuntimeException(e);
+        }
 
         model.addAttribute("summonerDto", summonerDto);
         return "summoner/smnResult";

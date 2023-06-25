@@ -15,11 +15,10 @@ public class SummonerDto {
 
     private String id;
     private String puuid;
-
     private String name;
-    // 레벨
-    private int smLv;
+    private int summonerLevel;
     // 아이콘 이미지 주소
+    private int profileIconId;
     private String iconImgUrl;
 
     // 솔랭 기록

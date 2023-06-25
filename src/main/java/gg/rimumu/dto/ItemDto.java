@@ -9,7 +9,7 @@ import lombok.ToString;
 @ToString
 public class ItemDto {
 
-    private String itemNum;
+    private int itemNum;
 
     private String itemName;
 

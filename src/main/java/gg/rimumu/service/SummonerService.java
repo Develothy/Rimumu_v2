@@ -1,93 +1,62 @@
 package gg.rimumu.service;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import gg.rimumu.common.ChampionKey;
 import gg.rimumu.common.GameTypeKey;
 import gg.rimumu.common.RimumuKey;
 import gg.rimumu.common.SpellKey;
 import gg.rimumu.dto.*;
+import gg.rimumu.exception.RimumuException;
 import gg.rimumu.util.HttpConnUtil;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
+import java.net.http.HttpResponse;
 import java.util.*;
 
 
 @Service
 public class SummonerService {
 
-    final static JSONParser jsonParser = new JSONParser();
-
-    @Autowired
-    private HttpConnUtil httpConnUtil;
-
-
-
-    // api 연결
-    public String urlConn(String urlConn) throws IOException, ParseException {
-
-        String apiResultString = "";
-
-        URL url = new URL(urlConn);
-        BufferedReader bf; //buffer reread 전송 전 임시 보관소(입출력 속도향상)
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        urlConnection.setRequestMethod("GET");
-        bf = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
-
-        apiResultString = bf.readLine();
-        //JSONObject apiResult = (JSONObject) jsonParser.parse(apiResultString);
-        return apiResultString;
-    }
+    static final Gson gson = new Gson();
 
     // 소환사 검색
-    public SummonerDto smnSearch(SummonerDto summonerDto, String smn) throws IOException, ParseException {
-
+    public SummonerDto smnSearch(String smn) throws RimumuException{
         String url = RimumuKey.SUMMONER_INFO_URL + smn;
 
-        // 존재하는 소환사 // 미존재 시 exception 처리 필요
-        String accResultString= HttpConnUtil.sendHttpGetRequest(url);
-        //검색 소환사 account 정보 가져오기
-        JSONObject accResult = (JSONObject) jsonParser.parse(accResultString);
+        HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
+        String accResultStr;
 
-        smnInfo(summonerDto, accResult);
+        switch (smnSearchResponse.statusCode()) {
+            case 200 -> accResultStr = smnSearchResponse.body();
+            case 404 -> throw new RimumuException.SummonerNotFoundException(smn);
+            default -> throw new RimumuException.ServerException();
+        }
+
+        // 검색 소환사 account 정보 가져오기
+        SummonerDto summonerDto = gson.fromJson(accResultStr, SummonerDto.class);
+        smnInfo(summonerDto);
 
         return summonerDto;
     }
 
     //소환사 정보
-    public SummonerDto smnInfo(SummonerDto summonerDto, JSONObject accResult) throws IOException, ParseException {
+    public SummonerDto smnInfo(SummonerDto summonerDto) throws RimumuException.MatchNotFoundException {
 
-        //result를 Json화 해준 후 이름, 아이콘, 고유id 가져오기
-        summonerDto.setName(accResult.get("name").toString());
-        summonerDto.setSmLv(Integer.parseInt(accResult.get("summonerLevel").toString()));
-
-        int profileIconId = Integer.parseInt(accResult.get("profileIconId").toString());
-        summonerDto.setIconImgUrl(RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/profileicon/" + profileIconId + ".png");
-
-        String id = accResult.get("id").toString();
-        summonerDto.setId(id);
-        String puuid = accResult.get("puuid").toString();
-        summonerDto.setPuuid(puuid);
-
+        // 아이콘 이미지 주소
+        summonerDto.setIconImgUrl(RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/profileicon/" + summonerDto.getProfileIconId() + ".png");
 
         // 티어 조회
-        getTier(summonerDto, id);
+        getTier(summonerDto);
 
         // 게임중 여부 조회 (riot developer api 막힘)
-        currentGame(summonerDto, id);
+        currentGame(summonerDto);
 
         // matchId 최근 20게임
-        matchesUrl(summonerDto, puuid);
+        matchesUrl(summonerDto);
 
 
         // matchDtlList
@@ -98,82 +67,91 @@ public class SummonerService {
 
 
     // current 현재 게임 여부 ---------------
-    //ex https://kr.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/x2OV0C24um6oOgMaj-jhhpDO1WAlCaH_yqyYLf6SQxIY4g?api_key=RGAPI-032475c9-844d-4beb-82f9-2a1132ee2666
-    public SummonerDto currentGame(SummonerDto summonerDto, String id) throws IOException {
+    public SummonerDto currentGame(SummonerDto summonerDto) {
 
-        String curUrl = RimumuKey.SUMMONER_CURRENT_URL + id;
+        String curUrl = RimumuKey.SUMMONER_CURRENT_URL + summonerDto.getId();
 
-        // exception ------------------------게임중이 아닐 경우 null
         // 현재 게임 중일 경우 실행 //
         try {
-            String curResultString = HttpConnUtil.sendHttpGetRequest(curUrl);
-            JSONObject curResult = (JSONObject) jsonParser.parse(curResultString);
+            String curResultStr;
+
+            HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(curUrl);
+
+            switch (smnSearchResponse.statusCode()) {
+                case 200 -> curResultStr = smnSearchResponse.body();
+                default -> {
+                    System.out.println("not playing now");
+                    return summonerDto;
+                }
+            }
+
+            JsonObject curResult = gson.fromJson(curResultStr, JsonObject.class);
             summonerDto.setCurrent(true);
 
             // 큐 타입
-            String queueId = curResult.get("gameQueueConfigId").toString();
+            String queueId = curResult.get("gameQueueConfigId").getAsString();
             summonerDto.setQueueId(getGameType(queueId));
 
             // participants : ['x','x'] 부분 arr
-            JSONArray partiArr = (JSONArray) curResult.get("participants");
+            JsonArray partiArr = curResult.getAsJsonArray("participants");
 
-            for (int p = 0; p < partiArr.size(); p++) {
-                //JSONArray partiDtlArr = (JSONArray) partiArr.get(p);
+            for (JsonElement parti : partiArr) {
 
                 // i번째 participant
-                JSONObject inGame = (JSONObject) partiArr.get(p);
+                JsonObject inGame = partiArr.getAsJsonObject();
                 //inGame participant(p)의 id == myId 비교
-                String compareId = (String) inGame.get("summonerId");
-                if (compareId.equals(id)) {
-                    //Long curTime = (Long) inGame.get("gameStartTime"); // 유닉스 타임
+                String compareId = inGame.get("summonerId").getAsString();
+                if (compareId.equals(summonerDto.getId())) {
+                    // Long curTime = inGame.get("gameStartTime").getAsLong(); // 유닉스 타임
                     String curChamp = ChampionKey.valueOf("K"+inGame.get("championId")).getLabel();
                     String curChampImg = RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
-                    summonerDto.setCurChamp("현재 " + curChamp + "를 게임중!");
+                    summonerDto.setCurChamp("현재 " + curChamp + " 게임중!");
                     summonerDto.setCurChampUrl(curChampImg);
                     return summonerDto;
                 }
             }
             // 게임 중 아님 current 404
         } catch (Exception e) {
-            System.out.println("not play now");
+            System.out.println("인게임 체크 중 오류");
         }
         return summonerDto;
     }
     // current 현재 게임 여부 종료
 
     // 티어 조회 로직
-    public SummonerDto getTier(SummonerDto summonerDto, String id) throws IOException, ParseException {
+    public SummonerDto getTier(SummonerDto summonerDto) {
 
-        String rankUrl = RimumuKey.SUMMONER_TIER_URL + id;
-        String rankResultString = HttpConnUtil.sendHttpGetRequest(rankUrl);
+        String rankUrl = RimumuKey.SUMMONER_TIER_URL + summonerDto.getId();
+        String rankResultStr = (String) HttpConnUtil.sendHttpGetRequest(rankUrl).body();
+
         summonerDto.setSoloTier("Unranked");
         summonerDto.setFlexTier("Unranked");
 
         //언랭아닐 경우 [] 값
-        if (ObjectUtils.isEmpty(rankResultString)) {
-            JSONArray rankArr = (JSONArray) jsonParser.parse(rankResultString);
+        if (!ObjectUtils.isEmpty(rankResultStr)) {
+            JsonArray rankArr = gson.fromJson(rankResultStr, JsonArray.class);
             //솔랭, 자랭 구분하기
             for (int i = 0; i < rankArr.size(); i++) {
 
-                JSONObject ranks = (JSONObject) rankArr.get(i);
-                String rankType = ranks.get("queueType").toString();
+                JsonObject ranks = rankArr.get(i).getAsJsonObject();
+                String rankType = ranks.get("queueType").getAsString();
 
                 // 솔랭, 자랭 값이 존재 한다면 해당 tier값으로 덮음
                 //솔랭
                 if ("RANKED_SOLO_5x5".equals(rankType)) {
-                    summonerDto.setSoloTier(ranks.get("tier").toString()); // 챌, 다이아, 플레 등
-                    summonerDto.setSoloRank(ranks.get("rank").toString()); // 1 ~ 4
-                    summonerDto.setSoloLeaguePoints(ranks.get("leaguePoints").toString()); // 티어 LP
-                    summonerDto.setSoloWins(ranks.get("wins").toString()); //랭크 전체 승
-                    summonerDto.setSoloLosses(ranks.get("losses").toString()); //랭크 전체 패
+                    summonerDto.setSoloTier(ranks.get("tier").getAsString()); // 챌, 다이아, 플레 등
+                    summonerDto.setSoloRank(ranks.get("rank").getAsString()); // 1 ~ 4
+                    summonerDto.setSoloLeaguePoints(ranks.get("leaguePoints").getAsString()); // 티어 LP
+                    summonerDto.setSoloWins(ranks.get("wins").getAsString()); //랭크 전체 승
+                    summonerDto.setSoloLosses(ranks.get("losses").getAsString()); //랭크 전체 패
                 }
                 //자랭
                 if ("RANKED_FLEX_SR".equals(rankType)) {
-                    summonerDto.setFlexTier(ranks.get("tier").toString());
-                    summonerDto.setFlexRank(ranks.get("rank").toString());
-                    summonerDto.setFlexLeaguePoints(ranks.get("leaguePoints").toString());
-                    summonerDto.setFlexWins(ranks.get("wins").toString());
-                    summonerDto.setFlexLosses(ranks.get("losses").toString());
+                    summonerDto.setFlexTier(ranks.get("tier").getAsString());
+                    summonerDto.setFlexRank(ranks.get("rank").getAsString());
+                    summonerDto.setFlexLeaguePoints(ranks.get("leaguePoints").getAsString());
+                    summonerDto.setFlexWins(ranks.get("wins").getAsString());
+                    summonerDto.setFlexLosses(ranks.get("losses").getAsString());
                 }
             } // 솔랭, 자랭 구분 종료
         } // 랭크 정보 등록 종료
@@ -187,11 +165,20 @@ public class SummonerService {
     }
 
     // 매치 리스트 가져오기 matchId
-    public SummonerDto matchesUrl(SummonerDto summonerDto, String puuid) throws IOException, ParseException {
+    public SummonerDto matchesUrl(SummonerDto summonerDto) throws RimumuException.MatchNotFoundException {
 
-        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + puuid + "/ids?start=0&count20";
-        String matchesString = httpConnUtil.sendHttpGetRequest(matUrl);
-        JSONArray matchesArr = (JSONArray) jsonParser.parse(matchesString);
+        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + summonerDto.getPuuid() + "/ids?start=0&count20";
+        HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
+
+        String matchesStr;
+
+        switch (smnMatchResponse.statusCode()) {
+            case 200 -> matchesStr = smnMatchResponse.body();
+            default -> {
+                throw new RimumuException.MatchNotFoundException(summonerDto.getName());
+            }
+        }
+        List<SummonerDto> matchesArr = gson.fromJson(matchesStr, List.class);
         summonerDto.setMatchIdList(matchesArr);
 
         System.out.println("matchesUrl() matcheIdList : " + summonerDto.getMatchIdList().toString());
@@ -199,25 +186,34 @@ public class SummonerService {
     }
 
     // match 당 정보 //  { info : {xx} } 부분
-    public JSONObject getMatchIdInfo(String matchId) throws IOException, ParseException {
+    public JsonObject getMatchIdInfo(String matchId) throws RimumuException.MatchNotFoundException {
 
-        String matchDataUrl = RimumuKey.SUMMONER_MATCHDTL_URL + matchId;
-        matchDataUrl = matchDataUrl.replace("\"", "");
+        String matchDataUrl = RimumuKey.SUMMONER_MATCHDTL_URL + matchId.replace("\"", "");
 
-        String matchResultString = HttpConnUtil.sendHttpGetRequest(matchDataUrl);
-        JSONObject matchResult = (JSONObject) jsonParser.parse(matchResultString);
+        HttpResponse<String> MatchInfoResponse = HttpConnUtil.sendHttpGetRequest(matchDataUrl);
+
+        String matchResultStr;
+
+        switch (MatchInfoResponse.statusCode()) {
+            case 200 -> matchResultStr = MatchInfoResponse.body();
+            default -> {
+                throw new RimumuException.MatchNotFoundException(matchId);
+            }
+        }
+
+        JsonObject matchResult = gson.fromJson(matchResultStr, JsonObject.class);
         //matchResult 중 info : xx 부분
-        JSONObject info = (JSONObject) matchResult.get("info");
+        JsonObject info = matchResult.getAsJsonObject("info");
 
         return info;
     }
 
     // Spell 구하기
-    public List<String> getSpell(JSONObject inGame) {
+    public List<String> getSpell(JsonObject inGame) {
 
         List spImgList = new ArrayList<>();
         for (int s = 1; s < 3; s++){
-            String smSpell = inGame.get("summoner" + s + "Id").toString();
+            String smSpell = inGame.get("summoner" + s + "Id").getAsString();
             smSpell = SpellKey.valueOf("SP" + smSpell).label();
             spImgList.add(smSpell);
         }
@@ -225,19 +221,19 @@ public class SummonerService {
     }
 
     // rune 구하기
-    public List<String> getRune(JSONObject inGame){
+    public List<String> getRune(JsonObject inGame){
 
         List runeList = new ArrayList<>();
         // 나의 inGame 룬
-        JSONObject runes = (JSONObject) inGame.get("perks");
-        JSONArray styles = (JSONArray) runes.get("styles");
+        JsonObject runes = inGame.getAsJsonObject("perks");
+        JsonArray styles = runes.getAsJsonArray("styles");
 
         // 메인 룬
-        JSONObject selec1 = (JSONObject) styles.get(0);
-        String runeImgUrl1 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec1.get("style").toString());
+        JsonObject selec1 = (JsonObject) styles.get(0);
+        String runeImgUrl1 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec1.get("style").getAsString());
         // 보조 룬
-        JSONObject selec2 = (JSONObject) styles.get(1);
-        String runeImgUrl2 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec2.get("style").toString());
+        JsonObject selec2 = (JsonObject) styles.get(1);
+        String runeImgUrl2 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec2.get("style").getAsString());
         runeList.add(runeImgUrl1);
         runeList.add(runeImgUrl2);
 
@@ -248,32 +244,22 @@ public class SummonerService {
     public String getRuneImgUrl(String rune) {
 
         switch (rune) {
-            case "8000":
-                rune = "perk-images/Styles/7201_Precision.png";
-                break;
-            case "8100":
-                rune = "perk-images/Styles/7200_Domination.png";
-                break;
-            case "8200":
-                rune = "perk-images/Styles/7202_Sorcery.png";
-                break;
-            case "8300":
-                rune = "perk-images/Styles/7203_Whimsy.png";
-                break;
-            case "8400":
-                rune = "perk-images/Styles/7204_Resolve.png";
-                break;
+            case "8000" -> rune = "perk-images/Styles/7201_Precision.png";
+            case "8100" -> rune = "perk-images/Styles/7200_Domination.png";
+            case "8200" -> rune = "perk-images/Styles/7202_Sorcery.png";
+            case "8300" -> rune = "perk-images/Styles/7203_Whimsy.png";
+            case "8400" -> rune = "perk-images/Styles/7204_Resolve.png";
         }
         return rune;
     }
 
     // item 구하기
-    public ItemDto getItem(String itemNum) throws IOException, ParseException {
+    public ItemDto getItem(int itemNum) {
 
         ItemDto itemDto = new ItemDto();
 
         // item이 없는 칸 회색템 표시
-        if (itemNum.equals("0")) {
+        if (itemNum == 0) {
             itemDto.setItemNum(itemNum);
             itemDto.setItemImgUrl("/img/itemNull.png");
             itemDto.setItemTooltip("보이지 않는 검이 가장 무서운 법.....");
@@ -289,16 +275,16 @@ public class SummonerService {
         String itemUrl = RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/data/ko_KR/item.json";
 
         //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
-        String itemResultString = HttpConnUtil.sendHttpGetRequest(itemUrl);
-        JSONObject itemResult = (JSONObject) jsonParser.parse(itemResultString);
+        String itemResultStr = (String) HttpConnUtil.sendHttpGetRequest(itemUrl).body();
+        JsonObject itemResult = gson.fromJson(itemResultStr, JsonObject.class);
         //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
-        JSONObject itemData = (JSONObject) itemResult.get("data");
+        JsonObject itemData = itemResult.getAsJsonObject("data");
         //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
-        JSONObject itemDtl = (JSONObject) itemData.get(itemNum);
+        JsonObject itemDtl = itemData.getAsJsonObject(String.valueOf(itemNum));
 
-        String itemName = itemDtl.get("name").toString();
-        String itemDesc = itemDtl.get("description").toString();
-        String itemText = itemDtl.get("plaintext").toString();
+        String itemName = itemDtl.get("name").getAsString();
+        String itemDesc = itemDtl.get("description").getAsString();
+        String itemText = itemDtl.get("plaintext").getAsString();
 
         itemDto.setItemTooltip("<b>" + itemName + "</b>" + "/n <hr>" + itemDesc + "<br>" + itemText);
 
@@ -306,16 +292,12 @@ public class SummonerService {
     }
 
     // match 소환사들 detail_ 소환사명, 챔피언 정보
-    public List getPartiNameAndChamp(JSONObject inGame){
+    public List getPartiNameAndChamp(JsonObject inGame){
 
         List<String> nameAndChamp = new ArrayList<>();
-        //inGame summoner(p)의 소환사 명
-        String inName = inGame.get("summonerName").toString();
-        nameAndChamp.add(inName);
-
-        //inGame summoner(p)의 챔피언
-        String inChamp = inGame.get("championId").toString();
-        nameAndChamp.add(inChamp);
+        //inGame summoner(p)의 소환사 명, 챔피언
+        nameAndChamp.add(inGame.get("summonerName").getAsString());
+        nameAndChamp.add(inGame.get("championId").getAsString());
 
         return nameAndChamp;
     }
@@ -389,21 +371,23 @@ public class SummonerService {
         return agoTime;
     }
 
-    public MatchDetailDto matchDtl(String matchId) throws IOException, ParseException {
+    public MatchDetailDto matchDtl(String matchId) throws RimumuException.MatchNotFoundException {
 
         MatchDetailDto matchDetailDto = new MatchDetailDto();
         //matchData 중 info : xx 부분
-        JSONObject info = getMatchIdInfo(matchId);
-        JSONArray partiInArr = (JSONArray) info.get("participants");
+        JsonObject info = getMatchIdInfo(matchId);
+        JsonArray partiInArr = info.getAsJsonArray("participants");
         System.out.println("포문 진입 전 사이즈체크 : " + partiInArr.size());
 
         List<PartiDetailDto> partiDetailDtoList = new ArrayList<>();
 
-        for (int p = 0; p < partiInArr.size(); p++) {
-            System.out.println("참가자 포문 진입, p = " + p + "/" + partiInArr.size());
+        for (JsonElement parti : partiInArr) {
+            System.out.println("참가자 포문 진입, p = " + partiInArr.size());
 
-            JSONObject inGame = (JSONObject) partiInArr.get(p);
+            JsonObject inGame = parti.getAsJsonObject();
+
             PartiDetailDto partiDetailDto = new PartiDetailDto();
+
             List<String> nameAndChamp = getPartiNameAndChamp(inGame);
             partiDetailDto.setInName(nameAndChamp.get(0));
             String champ = ChampionKey.valueOf("K" + nameAndChamp.get(1)).label();
@@ -418,27 +402,25 @@ public class SummonerService {
             partiDetailDto.setSpImgUrl1(spells.get(0));
             partiDetailDto.setSpImgUrl2(spells.get(1));
 
-            partiDetailDto.setPartiK((Integer) inGame.get("kills"));
-            partiDetailDto.setPartiK((Integer) inGame.get("deaths"));
-            partiDetailDto.setPartiK((Integer) inGame.get("assists"));
+            partiDetailDto.setPartiK(inGame.get("kills").getAsInt());
+            partiDetailDto.setPartiK(inGame.get("deaths").getAsInt());
+            partiDetailDto.setPartiK(inGame.get("assists").getAsInt());
             partiDetailDto.setPartiAvg(getKdaAvg(partiDetailDto.getPartiK(),partiDetailDto.getPartiD(),partiDetailDto.getPartiA()));
 
-            partiDetailDto.setPartiDamage((Integer) inGame.get("totalDamageDealtToChampions"));
-            partiDetailDto.setPartiTakenDamage((Integer) inGame.get("totalDamageTaken"));
-            partiDetailDto.setPartiMinions((Integer) inGame.get("totalMinionsKilled"));
+            partiDetailDto.setPartiDamage(inGame.get("totalDamageDealtToChampions").getAsInt());
+            partiDetailDto.setPartiTakenDamage(inGame.get("totalDamageTaken").getAsInt());
+            partiDetailDto.setPartiMinions(inGame.get("totalMinionsKilled").getAsInt());
 
             // 나의 inGame item 이미지 [{"item":xx}]
             List<ItemDto> itemList = new ArrayList<>();
             for(int t=0; t<7; t++) {
-                String item = "item" + t;
-                String itemNum = inGame.get(item).toString(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
+                int itemNum = inGame.get("item" + t).getAsInt();
 
                 ItemDto itemDto = getItem(itemNum);
                 itemList.add(itemDto);
                 // ITEM, TOOLTIP 종료
             }
             partiDetailDto.setItemDtoList(itemList);
-            System.out.println("partiDetailDto : "+partiDetailDto);
             partiDetailDtoList.add(partiDetailDto);
         } // matchId parti(i)의 detail 종료
         matchDetailDto.setPartiDetailDtoList(partiDetailDtoList);
@@ -451,7 +433,7 @@ public class SummonerService {
      * forEach 반복문 시작구간
      * 설명 : 챔피언, 게입타입, 승패, 게임 시간, KDA, 룬, 스펠, 아이템, 플레이어
      */
-    public SummonerDto matchDtls(SummonerDto summonerDto) throws ParseException, IOException {
+    public SummonerDto matchDtls(SummonerDto summonerDto) throws RimumuException.MatchNotFoundException {
 
         List<SummonerDto> matchIdList = summonerDto.getMatchIdList();
         List<MatchDto> matchDtoList = new ArrayList<>();
@@ -469,13 +451,13 @@ public class SummonerService {
             // i번째 matchId에 대한 정보
 
             //matchData 중 info : xx 부분
-            JSONObject info = getMatchIdInfo(matchId);
+            JsonObject info = getMatchIdInfo(matchId);
 
             //게임종류(협곡 칼바람 등) //모드 추가 시 추가 필요
-            matchDto.setQueueId(getGameType(info.get("queueId").toString()));
+            matchDto.setQueueId(getGameType(info.get("queueId").getAsString()));
 
             //게임시간 (길이)(초)
-            long gameDuration = Integer.parseInt(info.get("gameDuration").toString());
+            long gameDuration = Integer.parseInt(info.get("gameDuration").getAsString());
             int gameMin = (int) gameDuration / 60;
             int gameSec = (int) gameDuration % 60;
 
@@ -487,15 +469,15 @@ public class SummonerService {
              * participants 키의 배열['participants':{},] 가져오기(플레이어 당 인게임) // 블루 0~4/ 레드 5~9
              * 플레이어 수 만큼 도는 for문
              */
-            JSONArray partiInArr = (JSONArray) info.get("participants");
+            JsonArray partiInArr = info.getAsJsonArray("participants");
             System.out.println("포문 진입 전 사이즈체크 : " + partiInArr.size());
 
             List<ParticipantDto> partiDtoList = new ArrayList<>();
 
-            for (int p = 0; p < partiInArr.size(); p++) {
-                System.out.println("참가자 포문 진입, p = " + p + "/" + partiInArr.size());
+            for (JsonElement parti : partiInArr) {
+                System.out.println("참가자 포문 진입, p = " + partiInArr.size());
 
-                JSONObject inGame = (JSONObject) partiInArr.get(p);
+                JsonObject inGame = parti.getAsJsonObject();
                 ParticipantDto partiDto = new ParticipantDto();
 
                 List<String> nameAndChamp = getPartiNameAndChamp(inGame);
@@ -512,7 +494,7 @@ public class SummonerService {
                 if (name.equals(compareId)) { // 검색된 id와 비교
 
                     // 단일 경기 승리, 패배
-                    Boolean win = Boolean.valueOf(inGame.get("win").toString());
+                    Boolean win = inGame.get("win").getAsBoolean();
                     if (win) {
                         matchDto.setWin("WIN");
                         matchDto.setTable("table-primary");
@@ -529,9 +511,10 @@ public class SummonerService {
                     myGameDto.setMyChampUrl(RimumuKey.DD_URL + HttpConnUtil.DD_VERSION + "/img/champion/" + inChamp + ".png");
 
                     // KDA
-                    int myK = Integer.parseInt(inGame.get("kills").toString());
-                    int myD = Integer.parseInt(inGame.get("deaths").toString());
-                    int myA = Integer.parseInt(inGame.get("assists").toString());
+                    int myK = inGame.get("kills").getAsInt();
+                    int myD = inGame.get("deaths").getAsInt();
+                    int myA = inGame.get("assists").getAsInt();
+
                     // 해당 판 KDA
                     myGameDto.setMyK(myK);
                     myGameDto.setMyD(myD);
@@ -559,9 +542,9 @@ public class SummonerService {
                     List<ItemDto> itemList = new ArrayList<>();
                     for(int t=0; t<7; t++) {
                         String item = "item" + t;
-                        String itemNum = inGame.get(item).toString(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
+                        int itemNum = inGame.get(item).getAsInt(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
 
-                        ItemDto itemDto = getItem(itemNum);
+                        ItemDto itemDto = getItem(inGame.get(item).getAsInt());
                         itemList.add(itemDto);
                         // ITEM, TOOLTIP 종료
 
@@ -569,20 +552,15 @@ public class SummonerService {
                     myGameDto.setItemDtoList(itemList);
                     matchDto.setMyGameDto(myGameDto);
                 }
-                System.out.println("partiDto : "+partiDto);
                 partiDtoList.add(partiDto);
             } // 1 matchId 종료
             matchDto.setPartiDtoList(partiDtoList);
-            System.out.println("partiDtoList : "+partiDtoList.toString());
 
             //test
-            System.out.println("matchDto : "+matchDto);
             matchDtoList.add(matchDto);
-            System.out.println("matchDtoList : "+matchDtoList);
             summonerDto.setMatchDtoList(matchDtoList);
         } // 20 MatchId forEach 반복문 종료
 
-        System.out.println("summonerDto : "+summonerDto);
         return summonerDto;
     }
 

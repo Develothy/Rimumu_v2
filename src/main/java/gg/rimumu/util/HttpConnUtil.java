@@ -15,7 +15,7 @@ import java.time.Duration;
 @Component
 public class HttpConnUtil {
 
-    public static String DD_VERSION = "13.12.2";
+    public static String DD_VERSION = "13.12.1";
 
     public static HttpClient client = HttpClient.newHttpClient();
 
@@ -27,16 +27,21 @@ public class HttpConnUtil {
 
     static {
         try {
-            String json = sendHttpGetRequest(RimumuKey.DD_VERSION_URL);
-            int end = json.indexOf("\"", 2);
-            DD_VERSION = json.substring(2, end);
-            System.out.println(DD_VERSION);
+            HttpResponse response = sendHttpGetRequest(RimumuKey.DD_VERSION_URL);
+            if (response.statusCode() == 200) {
+                String json = (String) response.body();
+                int end = json.indexOf("\"", 2);
+                String DD_VERSION = json.substring(2, end);
+                System.out.println(DD_VERSION);
+            }
         } catch (Exception e) {
-            System.out.println("version init fail");
+            DD_VERSION = "13.12.1";
+            System.out.println("version sendHttpGetRequest fail. version : " + DD_VERSION);
         }
+
     }
 
-    public static String sendHttpGetRequest(String url) {
+    public static HttpResponse sendHttpGetRequest(String url) {
 
         try {
             HttpRequest req = HttpRequest.newBuilder()
@@ -45,8 +50,8 @@ public class HttpConnUtil {
                     .GET()
                     .build();
 
-            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-            return res.body();
+            return client.send(req, HttpResponse.BodyHandlers.ofString());
+
         } catch (URISyntaxException | IOException | InterruptedException e) {
             System.out.println("Exception 발생! " + e.getMessage());
         }
