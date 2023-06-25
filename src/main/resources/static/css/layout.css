@@ -84,7 +84,9 @@ a {
 .summoner-data4{
     height: 140px;
     margin: auto 0;
+    margin: 10px;
     align-items: center;
+    text-align: center;
     background-color: #f0f4fd;
 }
 

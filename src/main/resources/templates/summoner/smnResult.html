@@ -12,20 +12,21 @@
             <div class="row summoner-date2">
 
                 <!-- 아이콘 -->
-                <div class="col-sm-3 summoner">
+                <div class="col-sm-3 m-4 summoner">
                     <img th:src="*{iconImgUrl}" alt="소환사 아이콘" width="120px">
                 </div>
 
                 <!-- 소환사 명 -->
-                <div class="summoner col-sm-7">
+                <div class="col-sm-7 mt-4 summoner">
                     <h1 class="mt-3">[[*{name}]]</h1>
                     <h5><span class="badge badge-secondary">Lv.[[*{smLv}]]</span> </h5>
                 </div>
             </div>
             <!-- 검색한 소환사 info 하단 -->
-            <div class="row summoner-data4">
+            <div class="row summoner-data4 m-3">
                 <!-- box 1 -->
                 <div class="col-sm-3">
+                    <div class="row text-right">
                         <!-- 솔로랭크 -->
                         <!-- 언랭일때 -->
                         <th:block th:if="${summonerDto.soloTier == 'Unranked'}">
@@ -34,7 +35,7 @@
                         <!-- 솔랭 info -->
                         <th:block th:unless="${summonerDto.soloTier == 'Unranked'}">
                             <div class="col-sm-5">
-                                <img th:src="@{/emblem/}+*{soloTier}+@{.png}" alt="tier" width="70px">
+                                <img th:src="@{/emblem/}+*{soloTier}+@{.png}" alt="tier" width="80px">
                             </div>
                             <div class="col-sm-6">
                                 <h6 class="small">솔로랭크</h6>
@@ -43,9 +44,11 @@
                                 <h6 class="small">[[*{soloWins}]]승 [[*{soloLosses}]]패 </h6>
                             </div>
                         </th:block>
+                    </div>
                 </div>
                 <!-- box 2 -->
                 <div class="col-sm-3">
+                    <div class="row text-right">
                         <!-- 자유랭크 -->
                         <!-- 언랭일때 -->
                         <th:block th:if="*{flexTier == 'Unranked'}">
@@ -54,7 +57,7 @@
                         <!-- 자랭 info -->
                         <th:block th:unless="*{flexTier == 'Unranked'}">
                             <div class="col-sm-5">
-                                <img th:src="@{/emblem/}+*{flexTier}+@{.png}" alt="tier" width="70px">
+                                <img th:src="@{/emblem/}+*{flexTier}+@{.png}" alt="tier" width="80px">
                             </div>
                             <div class="col-sm-6">
                                 <h6 class="small">자유랭크</h6>
@@ -63,6 +66,7 @@
                                 <h6 class="small">[[*{flexWins}]]승 [[*{flexLosses}]]패 </h6>
                             </div>
                         </th:block>
+                    </div>
                 </div>
                 <!-- box 3 최근 20전 승률 -->
                 <div class="col-sm-3">
@@ -95,7 +99,7 @@
         </div>
         <!-- info 컨테이너 종료 -->
 
-        <p th:text="${summonerDto.matchDtoList}"></p>
+        <!-- 전문 <p th:text="${summonerDto.matchDtoList}"></p> -->
 
         <!-- 매치 리스트 -->
         <div class="main-card2 mb-3 card">
