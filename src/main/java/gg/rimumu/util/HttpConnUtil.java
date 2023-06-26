@@ -15,30 +15,12 @@ import java.time.Duration;
 @Component
 public class HttpConnUtil {
 
-    public static String DD_VERSION = "13.12.1";
-
     public static HttpClient client = HttpClient.newHttpClient();
 
     public HttpConnUtil() {
         this.client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
-    }
-
-    static {
-        try {
-            HttpResponse response = sendHttpGetRequest(RimumuKey.DD_VERSION_URL);
-            if (response.statusCode() == 200) {
-                String json = (String) response.body();
-                int end = json.indexOf("\"", 2);
-                String DD_VERSION = json.substring(2, end);
-                System.out.println(DD_VERSION);
-            }
-        } catch (Exception e) {
-            DD_VERSION = "13.12.1";
-            System.out.println("version sendHttpGetRequest fail. version : " + DD_VERSION);
-        }
-
     }
 
     public static HttpResponse sendHttpGetRequest(String url) {

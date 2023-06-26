@@ -2,6 +2,9 @@ package gg.rimumu.common;
 
 import lombok.Getter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Getter
 public enum ChampionKey {
     K266("Aatrox"),
@@ -168,13 +171,37 @@ public enum ChampionKey {
     K142 ("Zoe"),
     K143 ("Zyra");
 
-    private final String label;
+    private String label;
 
     ChampionKey(String label) {
     this.label = label;
     }
     public String label() {
     return label;
+    }
+
+    public static String addChampion(String key, String label) {
+        for (ChampionKey championKey : ChampionKey.values()) {
+            if (championKey.name().equalsIgnoreCase(key)) {
+                return key + " 이미 존재하는 KEY입니다!";
+            }
+        }
+
+        ChampionKey championKey = ChampionKey.valueOf(key);
+        if (championKey != null) {
+            championKey.label = label;
+            return key + " 정상 등록 되었습니다!";
+        }
+
+        return  key + "등록에 실패했습니다!";
+    }
+
+    public static Map<String, String> valuesWithLabel() {
+        Map<String, String> championMap = new HashMap<>();
+        for (ChampionKey championKey : ChampionKey.values()) {
+            championMap.put(championKey.name(), championKey.getLabel());
+        }
+        return championMap;
     }
 
 }
