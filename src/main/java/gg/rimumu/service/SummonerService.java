@@ -10,6 +10,7 @@ import gg.rimumu.common.RimumuKey;
 import gg.rimumu.common.SpellKey;
 import gg.rimumu.dto.*;
 import gg.rimumu.exception.RimumuException;
+import gg.rimumu.util.DateTimeUtil;
 import gg.rimumu.util.HttpConnUtil;
 import gg.rimumu.util.VersionSet;
 import org.springframework.stereotype.Service;
@@ -313,65 +314,6 @@ public class SummonerService {
         return avg;
     }
 
-    public String getAgoTime(Long gameTime) {
-
-        String agoTime = "";
-
-        //게임 시작시간 (ago) // Date error
-/*
-            SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-            Date date = new Date();
-            Long date1;
-            try {
-                date1 = Long.valueOf(sdf.format(info.get("gameEndTimestamp")));
-                System.out.println("date try");
-            } catch (Exception e) {
-  //              date = sdf.format(info.get("gameStartTimestamp").toString());
-                System.out.println("date catch");
-            }
-            String now = sdf.format(LocalDateTime.now());
-            System.out.println("date : " + date);
-            System.out.println("now : " + now);
-
-            Date inDate = sdf.parse(date);
-            Date nowDate = sdf.parse(now);
-            System.out.println("parse in : "+inDate);
-            System.out.println("parse now: "+nowDate);
-
-            //24시간->1일 / 60분->1시간 / 60초->1분 표기
-            int days = (int)(nowDate.getTime()-inDate.getTime())/(24*60*60*1000);
-            int hours = (int)(nowDate.getTime()-inDate.getTime())/(60*60*1000);
-            int min = (int)(nowDate.getTime()-inDate.getTime())/(60*1000);
-//	    	int sec = (int)(nowDate.getTime()-inDate.getTime())/(1000%60);
-
-
-            System.out.println("days : "+days);
-            System.out.println("hours : "+hours);
-            System.out.println("min : "+min);
-*/
-        // x달 전 / x일 전 / x시간 전 / x분 전
-/*
-            if (days!=0) {
-                matchMap.put("ago", days+"일 전");
-                System.out.println(days+"일 전");
-            }else if(hours==0){
-                matchMap.put("ago", min+"분 전");
-                System.out.println(min+" 분 전");
-            }else {
-                matchMap.put("ago",hours%24+"시간 전");
-                System.out.println(hours%24+"시간 전");
-            }
-            //확인용
-            for(String keys : matchMap.keySet()) {
-                System.out.print(keys);
-                System.out.print(" : ");
-                System.out.print(matchMap.get(keys));
-                System.out.print(", ");
-            }
-*/
-        return agoTime;
-    }
-
     public MatchDetailDto matchDtl(String matchId) throws RimumuException.MatchNotFoundException {
 
         MatchDetailDto matchDetailDto = new MatchDetailDto();
@@ -457,14 +399,14 @@ public class SummonerService {
             //게임종류(협곡 칼바람 등) //모드 추가 시 추가 필요
             matchDto.setQueueId(getGameType(info.get("queueId").getAsString()));
 
-            //게임시간 (길이)(초)
-            long gameDuration = Integer.parseInt(info.get("gameDuration").getAsString());
-            int gameMin = (int) gameDuration / 60;
-            int gameSec = (int) gameDuration % 60;
+            //게임시간
+            long gameDuration = info.get("gameDuration").getAsLong();
+            matchDto.setGameDuration(DateTimeUtil.convertDuration(gameDuration));
+            long gameStarted = info.get("gameStartTimestamp").getAsLong();
+            matchDto.setGamePlayedAt(DateTimeUtil.convertBetween(gameStarted) + " 전");
 
-            matchDto.setGameDuration(gameMin + "분" + gameSec + "초");
-            System.out.println(gameDuration);
-            System.out.println("게임시간" + gameMin + "분" + gameSec + "초");
+            System.out.println("게임시간 : " + matchDto.getGameDuration());
+            System.out.println(matchDto.getGamePlayedAt());
 
             /*
              * participants 키의 배열['participants':{},] 가져오기(플레이어 당 인게임) // 블루 0~4/ 레드 5~9
