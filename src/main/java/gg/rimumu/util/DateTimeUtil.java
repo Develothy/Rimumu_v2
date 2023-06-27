@@ -33,8 +33,8 @@ public class DateTimeUtil {
         return ZonedDateTime.now(KST).format(DateTimeFormatter.ofPattern(yyyyMMddHHmm));
     }
 
-    public static String convertBetween(Long to) {
-        return convertBetween(System.currentTimeMillis(), to);
+    public static String convertBetween(Long from) {
+        return convertBetween(from, Instant.now().getEpochSecond());
     }
 
     public static String convertBetween(Long from, Long to) {

@@ -402,7 +402,7 @@ public class SummonerService {
             //게임시간
             long gameDuration = info.get("gameDuration").getAsLong();
             matchDto.setGameDuration(DateTimeUtil.convertDuration(gameDuration));
-            long gameStarted = info.get("gameStartTimestamp").getAsLong();
+            long gameStarted = info.get("gameStartTimestamp").getAsLong() / 1000;
             matchDto.setGamePlayedAt(DateTimeUtil.convertBetween(gameStarted) + " 전");
 
             System.out.println("게임시간 : " + matchDto.getGameDuration());
