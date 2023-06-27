@@ -19,6 +19,8 @@ public class MatchDto {
 
     private String gameDuration;
 
+    private String gamePlayedAt;
+
     private String win;
     private String table;
 
