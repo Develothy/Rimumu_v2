@@ -40,7 +40,6 @@ a {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
     width: 100%;
     padding: 15px 0;
     text-align: center;
@@ -71,13 +70,11 @@ a {
 .table-primary .WIN{
     background-color : #81beff;
     writing-mode: vertical-rl;
-    text-orientation: upright;
     color: #b8daff;
 }
 .table-danger .LOSE{
     background-color : #f78d8d;
     writing-mode: vertical-rl;
-    text-orientation: upright;
     color: #f5c6cb;
 }
 
