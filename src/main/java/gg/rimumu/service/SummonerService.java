@@ -18,6 +18,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.net.http.HttpResponse;
 import java.util.*;
+import java.util.stream.Stream;
 
 
 @Service
@@ -314,63 +315,6 @@ public class SummonerService {
         return avg;
     }
 
-    public MatchDetailDto matchDtl(String matchId) throws RimumuException.MatchNotFoundException {
-
-        MatchDetailDto matchDetailDto = new MatchDetailDto();
-        //matchData 중 info : xx 부분
-        JsonObject info = getMatchIdInfo(matchId);
-        JsonArray partiInArr = info.getAsJsonArray("participants");
-        System.out.println("포문 진입 전 사이즈체크 : " + partiInArr.size());
-
-        List<PartiDetailDto> partiDetailDtoList = new ArrayList<>();
-
-        for (JsonElement parti : partiInArr) {
-            System.out.println("참가자 포문 진입, p = " + partiInArr.size());
-
-            JsonObject inGame = parti.getAsJsonObject();
-
-            PartiDetailDto partiDetailDto = new PartiDetailDto();
-
-            List<String> nameAndChamp = getPartiNameAndChamp(inGame);
-            partiDetailDto.setInName(nameAndChamp.get(0));
-            String champ = ChampionKey.valueOf("K" + nameAndChamp.get(1)).label();
-            partiDetailDto.setInChamp(champ);
-            partiDetailDto.setChampImgUrl(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/champion/" + champ + ".png");
-
-            List<String> runes = getRune(inGame);
-            partiDetailDto.setRuneImgUrl1(runes.get(0));
-            partiDetailDto.setRuneImgUrl2(runes.get(1));
-
-            List<String> spells = getSpell(inGame);
-            partiDetailDto.setSpImgUrl1(spells.get(0));
-            partiDetailDto.setSpImgUrl2(spells.get(1));
-
-            partiDetailDto.setPartiK(inGame.get("kills").getAsInt());
-            partiDetailDto.setPartiK(inGame.get("deaths").getAsInt());
-            partiDetailDto.setPartiK(inGame.get("assists").getAsInt());
-            partiDetailDto.setPartiAvg(getKdaAvg(partiDetailDto.getPartiK(),partiDetailDto.getPartiD(),partiDetailDto.getPartiA()));
-
-            partiDetailDto.setPartiDamage(inGame.get("totalDamageDealtToChampions").getAsInt());
-            partiDetailDto.setPartiTakenDamage(inGame.get("totalDamageTaken").getAsInt());
-            partiDetailDto.setPartiMinions(inGame.get("totalMinionsKilled").getAsInt());
-
-            // 나의 inGame item 이미지 [{"item":xx}]
-            List<ItemDto> itemList = new ArrayList<>();
-            for(int t=0; t<7; t++) {
-                int itemNum = inGame.get("item" + t).getAsInt();
-
-                ItemDto itemDto = getItem(itemNum);
-                itemList.add(itemDto);
-                // ITEM, TOOLTIP 종료
-            }
-            partiDetailDto.setItemDtoList(itemList);
-            partiDetailDtoList.add(partiDetailDto);
-        } // matchId parti(i)의 detail 종료
-        matchDetailDto.setPartiDetailDtoList(partiDetailDtoList);
-
-        return matchDetailDto;
-    }
-
 
     /*
      * forEach 반복문 시작구간
@@ -405,20 +349,15 @@ public class SummonerService {
             long gameStarted = info.get("gameStartTimestamp").getAsLong() / 1000;
             matchDto.setGamePlayedAt(DateTimeUtil.convertBetween(gameStarted) + " 전");
 
-            System.out.println("게임시간 : " + matchDto.getGameDuration());
-            System.out.println(matchDto.getGamePlayedAt());
-
             /*
              * participants 키의 배열['participants':{},] 가져오기(플레이어 당 인게임) // 블루 0~4/ 레드 5~9
              * 플레이어 수 만큼 도는 for문
              */
             JsonArray partiInArr = info.getAsJsonArray("participants");
-            System.out.println("포문 진입 전 사이즈체크 : " + partiInArr.size());
 
             List<ParticipantDto> partiDtoList = new ArrayList<>();
 
             for (JsonElement parti : partiInArr) {
-                System.out.println("참가자 포문 진입, p = " + partiInArr.size());
 
                 JsonObject inGame = parti.getAsJsonObject();
                 ParticipantDto partiDto = new ParticipantDto();
@@ -431,80 +370,79 @@ public class SummonerService {
                 partiDto.setChampImgUrl(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/champion/" + champ + ".png");
 
                 // 해당 parti의 id가 검색된 id인지 비교
-                // 검색한 소환사(나)의 챔피언 가져오기
-                String compareId = partiDto.getInName();
-                String name = summonerDto.getName();
-                if (name.equals(compareId)) { // 검색된 id와 비교
+                if (summonerDto.getName().equals(partiDto.getInName())) {
 
-                    // 단일 경기 승리, 패배
-                    Boolean win = inGame.get("win").getAsBoolean();
-                    if (win) {
-                        matchDto.setWin("WIN");
-                        matchDto.setTable("table-primary");
-                        summonerDto.setRecentWin(summonerDto.getRecentWin()+1);
-                    } else {
-                        matchDto.setWin("LOSE");
-                        matchDto.setTable("table-danger");
-                        summonerDto.setRecentLose(summonerDto.getRecentLose()+1);
-                    }
-
-                    MyGameDto myGameDto = new MyGameDto();
-                    String inChamp = partiDto.getInChamp();
-                    myGameDto.setMyChamp(inChamp);
-                    myGameDto.setMyChampUrl(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/champion/" + inChamp + ".png");
-
-                    // KDA
-                    int myK = inGame.get("kills").getAsInt();
-                    int myD = inGame.get("deaths").getAsInt();
-                    int myA = inGame.get("assists").getAsInt();
-
-                    // 해당 판 KDA
-                    myGameDto.setMyK(myK);
-                    myGameDto.setMyD(myD);
-                    myGameDto.setMyA(myA);
-                    myGameDto.setMyAvg(getKdaAvg(myK, myD, myA));
-                    System.out.println("myAvg : " + myGameDto.getMyAvg());
-                    // 최근 전적 KDA
-                    summonerDto.setRecentKill(summonerDto.getRecentKill()+myK);
-                    summonerDto.setRecentDeath(summonerDto.getRecentDeath()+myD);
-                    summonerDto.setRecentAssist(summonerDto.getRecentAssist()+myA);
-                    summonerDto.setRecentTotal(summonerDto.getRecentTotal()+1);
-                    summonerDto.setRecentAvg(getKdaAvg(summonerDto.getRecentKill(), summonerDto.getRecentAssist(), summonerDto.getRecentDeath()));
-
-                    // 나의 inGame 룬
-                    List<String> runes = getRune(inGame);
-                    myGameDto.setRuneImgUrl1(runes.get(0));
-                    myGameDto.setRuneImgUrl2(runes.get(1));
-
-                    // 나의 inGame 스펠 [{"summonerId1:""}]
-                    List<String> spells = getSpell(inGame);
-                    myGameDto.setSpImgUrl1(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/spell/" + spells.get(0) + ".png");
-                    myGameDto.setSpImgUrl2(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/spell/" + spells.get(1) + ".png");
-
-                    // 나의 inGame item 이미지 [{"item":xx}]
-                    List<ItemDto> itemList = new ArrayList<>();
-                    for(int t=0; t<7; t++) {
-                        String item = "item" + t;
-                        int itemNum = inGame.get(item).getAsInt(); //itemNum 가져오기 위해 String,불필요 시 int ㄱㄱ
-
-                        ItemDto itemDto = getItem(inGame.get(item).getAsInt());
-                        itemList.add(itemDto);
-                        // ITEM, TOOLTIP 종료
-
-                    }
-                    myGameDto.setItemDtoList(itemList);
-                    matchDto.setMyGameDto(myGameDto);
+                    // participant가 나일 경우 추가 정보 세팅
+                    setMyGame(summonerDto, matchDto, inGame, champ);
                 }
+
                 partiDtoList.add(partiDto);
+
             } // 1 matchId 종료
             matchDto.setPartiDtoList(partiDtoList);
-
-            //test
             matchDtoList.add(matchDto);
             summonerDto.setMatchDtoList(matchDtoList);
         } // 20 MatchId forEach 반복문 종료
 
         return summonerDto;
+    }
+
+    private void setMyGame(SummonerDto summonerDto, MatchDto matchDto, JsonObject inGame, String inChamp) {
+
+        // 단일 경기 승리, 패배
+        Boolean win = inGame.get("win").getAsBoolean();
+        if (win) {
+            matchDto.setWin("WIN");
+            matchDto.setTable("table-primary");
+            summonerDto.setRecentWin(summonerDto.getRecentWin()+1);
+        } else {
+            matchDto.setWin("LOSE");
+            matchDto.setTable("table-danger");
+            summonerDto.setRecentLose(summonerDto.getRecentLose()+1);
+        }
+
+        MyGameDto myGameDto = new MyGameDto();
+        myGameDto.setMyChamp(inChamp);
+        myGameDto.setMyChampUrl(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/champion/" + inChamp + ".png");
+
+        // KDA
+        int myK = inGame.get("kills").getAsInt();
+        int myD = inGame.get("deaths").getAsInt();
+        int myA = inGame.get("assists").getAsInt();
+
+        // 해당 판 KDA
+        myGameDto.setMyK(myK);
+        myGameDto.setMyD(myD);
+        myGameDto.setMyA(myA);
+        myGameDto.setMyAvg(getKdaAvg(myK, myD, myA));
+        System.out.println("myAvg : " + myGameDto.getMyAvg());
+        // 최근 전적 KDA
+        summonerDto.setRecentKill(summonerDto.getRecentKill()+myK);
+        summonerDto.setRecentDeath(summonerDto.getRecentDeath()+myD);
+        summonerDto.setRecentAssist(summonerDto.getRecentAssist()+myA);
+        summonerDto.setRecentTotal(summonerDto.getRecentTotal()+1);
+        summonerDto.setRecentAvg(getKdaAvg(summonerDto.getRecentKill(), summonerDto.getRecentAssist(), summonerDto.getRecentDeath()));
+
+        // 나의 inGame 룬
+        List<String> runes = getRune(inGame);
+        myGameDto.setRuneImgUrl1(runes.get(0));
+        myGameDto.setRuneImgUrl2(runes.get(1));
+
+        // 나의 inGame 스펠 [{"summonerId1:""}]
+        List<String> spells = getSpell(inGame);
+        myGameDto.setSpImgUrl1(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/spell/" + spells.get(0) + ".png");
+        myGameDto.setSpImgUrl2(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/spell/" + spells.get(1) + ".png");
+
+        // 나의 inGame item 이미지 [{"item":xx}]
+        List<ItemDto> itemList = Stream.iterate(0, t -> t < 7, t -> t + 1)
+                .map(t -> "item" + t)
+                .map(inGame::get)
+                .map(JsonElement::getAsInt)
+                .map(this::getItem)
+                .toList();
+
+        myGameDto.setItemDtoList(itemList);
+        matchDto.setMyGameDto(myGameDto);
     }
 
     //System.out.println("matchDtlList 종료 : "+matchDtoList);

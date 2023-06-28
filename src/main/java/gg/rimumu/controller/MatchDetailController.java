@@ -14,6 +14,7 @@ public class MatchDetailController {
 
     private final SummonerService summonerService;
 
+    /*
     @PostMapping("/summoner/{matchId}")
     public MatchDetailDto matchDetail(@PathVariable("matchId") String matchId) {
 
@@ -27,6 +28,6 @@ public class MatchDetailController {
         System.out.println(matchId+"controller 호출됨");
         return matchDetail;
     }
-
+*/
 
 }
