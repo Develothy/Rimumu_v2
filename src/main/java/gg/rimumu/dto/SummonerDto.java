@@ -22,14 +22,14 @@ public class SummonerDto {
     private String iconImgUrl;
 
     // 솔랭 기록
-    private String soloTier;
+    private String soloTier = "Unranked";
     private String soloRank;
     private String soloLeaguePoints;
     private String soloWins;
     private String soloLosses;
 
     // 자유랭크 기록
-    private String flexTier;
+    private String flexTier = "Unranked";
     private String flexRank;
     private String flexLeaguePoints;
     private String flexWins;

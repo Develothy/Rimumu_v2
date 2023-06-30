@@ -130,9 +130,6 @@ public class SummonerService {
         String rankUrl = RimumuKey.SUMMONER_TIER_URL + summonerDto.getId();
         String rankResultStr = (String) HttpConnUtil.sendHttpGetRequest(rankUrl).body();
 
-        summonerDto.setSoloTier("Unranked");
-        summonerDto.setFlexTier("Unranked");
-
         //언랭아닐 경우 [] 값
         if (!ObjectUtils.isEmpty(rankResultStr)) {
             JsonArray rankArr = gson.fromJson(rankResultStr, JsonArray.class);
@@ -152,7 +149,7 @@ public class SummonerService {
                     summonerDto.setSoloLosses(ranks.get("losses").getAsString()); //랭크 전체 패
                 }
                 //자랭
-                if ("RANKED_FLEX_SR".equals(rankType)) {
+                else if ("RANKED_FLEX_SR".equals(rankType)) {
                     summonerDto.setFlexTier(ranks.get("tier").getAsString());
                     summonerDto.setFlexRank(ranks.get("rank").getAsString());
                     summonerDto.setFlexLeaguePoints(ranks.get("leaguePoints").getAsString());
