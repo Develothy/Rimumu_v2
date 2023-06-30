@@ -13,6 +13,8 @@ import gg.rimumu.exception.RimumuException;
 import gg.rimumu.util.DateTimeUtil;
 import gg.rimumu.util.HttpConnUtil;
 import gg.rimumu.util.VersionSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -23,6 +25,8 @@ import java.util.stream.Stream;
 
 @Service
 public class SummonerService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SummonerService.class);
 
     static final Gson gson = new Gson();
 
@@ -83,7 +87,7 @@ public class SummonerService {
             switch (smnSearchResponse.statusCode()) {
                 case 200 -> curResultStr = smnSearchResponse.body();
                 default -> {
-                    System.out.println("not playing now");
+                    LOGGER.info("Not playing now");
                     return summonerDto;
                 }
             }
@@ -113,9 +117,8 @@ public class SummonerService {
                     return summonerDto;
                 }
             }
-            // 게임 중 아님 current 404
         } catch (Exception e) {
-            System.out.println("인게임 체크 중 오류");
+            LOGGER.error("인게임 체크 중 오류 발생");
         }
         return summonerDto;
     }
@@ -178,13 +181,14 @@ public class SummonerService {
         switch (smnMatchResponse.statusCode()) {
             case 200 -> matchesStr = smnMatchResponse.body();
             default -> {
+                LOGGER.error("Match List 정보를 찾을 수 없습니다.");
                 throw new RimumuException.MatchNotFoundException(summonerDto.getName());
             }
         }
         List<SummonerDto> matchesArr = gson.fromJson(matchesStr, List.class);
         summonerDto.setMatchIdList(matchesArr);
 
-        System.out.println("matchesUrl() matcheIdList : " + summonerDto.getMatchIdList().toString());
+        LOGGER.info("matchesUrl() matcheIdList : " + summonerDto.getMatchIdList().toString());
         return summonerDto;
     }
 
@@ -200,6 +204,7 @@ public class SummonerService {
         switch (MatchInfoResponse.statusCode()) {
             case 200 -> matchResultStr = MatchInfoResponse.body();
             default -> {
+                LOGGER.error("Match 정보를 찾을 수 없습니다.");
                 throw new RimumuException.MatchNotFoundException(matchId);
             }
         }
@@ -330,7 +335,7 @@ public class SummonerService {
 
             String matchId = "";
             matchId = String.valueOf(matchIdList.get(i));
-            System.out.println("for문 matchId" + matchId);
+            LOGGER.info("{}번 Match : {}", i, matchId);
 
             MatchDto matchDto = new MatchDto();
             matchDto.setMatchId(matchId);
@@ -349,11 +354,15 @@ public class SummonerService {
             long gameStarted = info.get("gameStartTimestamp").getAsLong() / 1000;
             matchDto.setGamePlayedAt(DateTimeUtil.convertBetween(gameStarted) + " 전");
 
+            LOGGER.info("== 게임시간 : {}", matchDto.getGameDuration());
+            LOGGER.info("== {}", matchDto.getGamePlayedAt());
+
             /*
              * participants 키의 배열['participants':{},] 가져오기(플레이어 당 인게임) // 블루 0~4/ 레드 5~9
              * 플레이어 수 만큼 도는 for문
              */
             JsonArray partiInArr = info.getAsJsonArray("participants");
+            LOGGER.info("== Participants  사이즈 체크 : {}", partiInArr.size());
 
             List<ParticipantDto> partiDtoList = new ArrayList<>();
 
@@ -382,8 +391,8 @@ public class SummonerService {
             matchDto.setPartiDtoList(partiDtoList);
             matchDtoList.add(matchDto);
             summonerDto.setMatchDtoList(matchDtoList);
-        } // 20 MatchId forEach 반복문 종료
-
+        }
+        LOGGER.info("{} 조회 종료", summonerDto.getName());
         return summonerDto;
     }
 
@@ -415,7 +424,7 @@ public class SummonerService {
         myGameDto.setMyD(myD);
         myGameDto.setMyA(myA);
         myGameDto.setMyAvg(getKdaAvg(myK, myD, myA));
-        System.out.println("myAvg : " + myGameDto.getMyAvg());
+        LOGGER.info("== myAvg : {}", myGameDto.getMyAvg());
         // 최근 전적 KDA
         summonerDto.setRecentKill(summonerDto.getRecentKill()+myK);
         summonerDto.setRecentDeath(summonerDto.getRecentDeath()+myD);
@@ -444,7 +453,4 @@ public class SummonerService {
         myGameDto.setItemDtoList(itemList);
         matchDto.setMyGameDto(myGameDto);
     }
-
-    //System.out.println("matchDtlList 종료 : "+matchDtoList);
-
 }
