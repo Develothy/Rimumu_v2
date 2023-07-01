@@ -31,7 +31,7 @@ public class SummonerService {
     static final Gson gson = new Gson();
 
     // 소환사 검색
-    public SummonerDto smnSearch(String smn) throws RimumuException{
+    public SummonerDto smnSearch(String smn, int offset) throws RimumuException{
         String url = RimumuKey.SUMMONER_INFO_URL + smn;
 
         HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
@@ -45,13 +45,13 @@ public class SummonerService {
 
         // 검색 소환사 account 정보 가져오기
         SummonerDto summonerDto = gson.fromJson(accResultStr, SummonerDto.class);
-        smnInfo(summonerDto);
+        smnInfo(summonerDto, offset);
 
         return summonerDto;
     }
 
     //소환사 정보
-    public SummonerDto smnInfo(SummonerDto summonerDto) throws RimumuException.MatchNotFoundException {
+    public SummonerDto smnInfo(SummonerDto summonerDto, int offset) throws RimumuException.MatchNotFoundException {
 
         // 아이콘 이미지 주소
         summonerDto.setIconImgUrl(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/profileicon/" + summonerDto.getProfileIconId() + ".png");
@@ -63,7 +63,7 @@ public class SummonerService {
         currentGame(summonerDto);
 
         // matchId 최근 20게임
-        matchesUrl(summonerDto);
+        matchesUrl(summonerDto, offset);
 
 
         // matchDtlList
@@ -105,11 +105,10 @@ public class SummonerService {
             for (JsonElement parti : partiArr) {
 
                 // i번째 participant
-                JsonObject inGame = partiArr.getAsJsonObject();
+                JsonObject inGame = parti.getAsJsonObject();
                 //inGame participant(p)의 id == myId 비교
                 String compareId = inGame.get("summonerId").getAsString();
                 if (compareId.equals(summonerDto.getId())) {
-                    // Long curTime = inGame.get("gameStartTime").getAsLong(); // 유닉스 타임
                     String curChamp = ChampionKey.valueOf("K"+inGame.get("championId")).getLabel();
                     String curChampImg = RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/champion/" + curChamp +".png";
                     summonerDto.setCurChamp("현재 " + curChamp + " 게임중!");
@@ -168,9 +167,9 @@ public class SummonerService {
     }
 
     // 매치 리스트 가져오기 matchId
-    public SummonerDto matchesUrl(SummonerDto summonerDto) throws RimumuException.MatchNotFoundException {
+    public SummonerDto matchesUrl(SummonerDto summonerDto, int offset) throws RimumuException.MatchNotFoundException {
 
-        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + summonerDto.getPuuid() + "/ids?start=0&count20";
+        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + summonerDto.getPuuid() + "/ids?start=" + offset + "&count20";
         HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
 
         String matchesStr;

@@ -23,7 +23,9 @@ public class SummonerCopy {
 
     // 소환사 Summoner(smn) 검색
     @GetMapping("/summoner")
-    public String summoner(@RequestParam("smn") String smn, Model model) throws IOException {
+    public String summoner(@RequestParam("smn") String smn,
+                           @RequestParam(required = false, defaultValue = "0") int offset,
+                           Model model) throws IOException {
         if (smn.isBlank()) {
             return "summoner/nameNull";
         }
@@ -32,7 +34,7 @@ public class SummonerCopy {
 
         SummonerDto summonerDto;
         try {
-            summonerDto = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8));
+            summonerDto = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8), offset);
         } catch (RimumuException.SummonerNotFoundException e) {
             model.addAttribute("smn", smn);
             return "summoner/nameNull";
