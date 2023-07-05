@@ -22,4 +22,16 @@ public class MemberService {
         return memberRepository.save(Member.of(memberDto)).getEmail();
     }
 
+    public String login(String email, String password) throws RimumuException.MemberValidationException {
+
+        Member member = memberRepository.findByEmail(email).orElseThrow(() ->
+                    new RimumuException.MemberValidationException());
+
+        if (!password.equals(member.getPassword())) {
+            throw new RimumuException.MemberValidationException();
+        }
+
+        return "로그인 성공";
+    }
+
 }

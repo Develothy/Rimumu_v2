@@ -28,4 +28,10 @@ public sealed class RimumuException extends Exception {
             super(email + " 이미 가입된 회원입니다.");
         }
     }
+
+    public static final class MemberValidationException extends RimumuException {
+        public MemberValidationException() {
+            super("이메일 또는 비밀번호를 확인해주세요.");
+        }
+    }
 }
