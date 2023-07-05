@@ -22,4 +22,10 @@ public sealed class RimumuException extends Exception {
             super(match + " match가 존재하지 않습니다.");
         }
     }
+
+    public static final class MemberAlreadyRegisteredException extends RimumuException {
+        public MemberAlreadyRegisteredException(String email) {
+            super(email + " 이미 가입된 회원입니다.");
+        }
+    }
 }
