@@ -1,6 +1,7 @@
 package gg.rimumu.util;
 
 import gg.rimumu.common.RimumuKey;
+import gg.rimumu.exception.RimumuException;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class HttpConnUtil {
             return client.send(req, HttpResponse.BodyHandlers.ofString());
 
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            System.out.println("Exception 발생! " + e.getMessage());
+            new RimumuException (e.getMessage());
         }
         return null;
     }

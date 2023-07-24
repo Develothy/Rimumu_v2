@@ -12,7 +12,7 @@ import gg.rimumu.dto.*;
 import gg.rimumu.exception.RimumuException;
 import gg.rimumu.util.DateTimeUtil;
 import gg.rimumu.util.HttpConnUtil;
-import gg.rimumu.util.VersionSet;
+import gg.rimumu.util.VersionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -54,7 +54,7 @@ public class SummonerService {
     public SummonerDto smnInfo(SummonerDto summonerDto, int offset) throws RimumuException.MatchNotFoundException {
 
         // 아이콘 이미지 주소
-        summonerDto.setIconImgUrl(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/profileicon/" + summonerDto.getProfileIconId() + ".png");
+        summonerDto.setIconImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/profileicon/" + summonerDto.getProfileIconId() + ".png");
 
         // 티어 조회
         getTier(summonerDto);
@@ -110,7 +110,7 @@ public class SummonerService {
                 String compareId = inGame.get("summonerId").getAsString();
                 if (compareId.equals(summonerDto.getId())) {
                     String curChamp = ChampionKey.valueOf("K"+inGame.get("championId")).getLabel();
-                    String curChampImg = RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/champion/" + curChamp +".png";
+                    String curChampImg = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
                     summonerDto.setCurChamp("현재 " + curChamp + " 게임중!");
                     summonerDto.setCurChampUrl(curChampImg);
                     return summonerDto;
@@ -273,10 +273,10 @@ public class SummonerService {
         // item.json URL 연결
 
         itemDto.setItemNum(itemNum);
-        itemDto.setItemImgUrl(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/item/" + itemNum + ".png");
+        itemDto.setItemImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/item/" + itemNum + ".png");
 
         // item TOOLTIP 템 정보
-        String itemUrl = RimumuKey.DD_URL + VersionSet.DD_VERSION + "/data/ko_KR/item.json";
+        String itemUrl = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/data/ko_KR/item.json";
 
         //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
         String itemResultStr = (String) HttpConnUtil.sendHttpGetRequest(itemUrl).body();
@@ -372,7 +372,7 @@ public class SummonerService {
                 // 챔프네임의 대소문자가 match Json과 img API가 동일하지 않은 이유로 에러발생. 때문에 emun에서 가져옴
                 String champ = ChampionKey.valueOf("K" + nameAndChamp.get(1)).label();
                 partiDto.setInChamp(champ);
-                partiDto.setChampImgUrl(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/champion/" + champ + ".png");
+                partiDto.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
                 // 해당 parti의 id가 검색된 id인지 비교
                 if (summonerDto.getName().equals(partiDto.getInName())) {
@@ -408,7 +408,7 @@ public class SummonerService {
 
         MyGameDto myGameDto = new MyGameDto();
         myGameDto.setMyChamp(inChamp);
-        myGameDto.setMyChampUrl(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/champion/" + inChamp + ".png");
+        myGameDto.setMyChampUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + inChamp + ".png");
 
         // KDA
         int myK = inGame.get("kills").getAsInt();
@@ -435,8 +435,8 @@ public class SummonerService {
 
         // 나의 inGame 스펠 [{"summonerId1:""}]
         List<String> spells = getSpell(inGame);
-        myGameDto.setSpImgUrl1(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/spell/" + spells.get(0) + ".png");
-        myGameDto.setSpImgUrl2(RimumuKey.DD_URL + VersionSet.DD_VERSION + "/img/spell/" + spells.get(1) + ".png");
+        myGameDto.setSpImgUrl1(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get(0) + ".png");
+        myGameDto.setSpImgUrl2(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get(1) + ".png");
 
         // 나의 inGame item 이미지 [{"item":xx}]
         List<ItemDto> itemList = Stream.iterate(0, t -> t < 7, t -> t + 1)
