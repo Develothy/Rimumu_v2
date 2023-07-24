@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-@UtilityClass
+
 public class DateTimeUtil {
 
     public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
@@ -33,28 +33,28 @@ public class DateTimeUtil {
         return ZonedDateTime.now(KST).format(DateTimeFormatter.ofPattern(yyyyMMddHHmm));
     }
 
-    public static String convertBetween(Long from) {
-        return convertBetween(from, Instant.now().getEpochSecond());
+    public static String fromBetweenNow(Long from) {
+        return fromBetweenNow(from, Instant.now().getEpochSecond());
     }
 
-    public static String convertBetween(Long from, Long to) {
+    public static String fromBetweenNow(Long from, Long to) {
 
         Instant fromSecond = Instant.ofEpochSecond(from);
         Instant toSecond = Instant.ofEpochSecond(to);
         Duration duration = Duration.between(fromSecond, toSecond);
 
-        return convertTimeStr(duration);
+        return DurationToTimeStr(duration);
     }
 
-    public static String convertDuration(Long at) {
+    public static String toDuration(Long at) {
 
         Instant instant = Instant.ofEpochSecond(at);
         Duration duration = Duration.ofSeconds(instant.getEpochSecond());
 
-        return convertTimeStr(duration);
+        return DurationToTimeStr(duration);
     }
 
-    private String convertTimeStr(Duration duration) {
+    public static String DurationToTimeStr(Duration duration) {
 
         int days = (int) duration.toDays();
         int hours = duration.toHoursPart();
