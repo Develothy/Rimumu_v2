@@ -107,11 +107,10 @@ public class SummonerService {
                 // i번째 participant
                 JsonObject inGame = parti.getAsJsonObject();
                 //inGame participant(p)의 id == myId 비교
-                String compareId = inGame.get("summonerId").getAsString();
-                if (compareId.equals(summoner.getId())) {
+                if (summoner.getId().equals(inGame.get("summonerId").getAsString())) {
                     String curChamp = ChampionKey.valueOf("K"+inGame.get("championId")).getLabel();
                     String curChampImg = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
-                    summoner.setCurChamp("현재 " + curChamp + " 게임중!");
+                    summoner.setCurChamp(curChamp);
                     summoner.setCurChampUrl(curChampImg);
                     return summoner;
                 }

@@ -90,7 +90,7 @@
                         <img th:src="@{/img/current.png}" width="150px">
                     </th:block>
                     <th:block th:if="*{current == true}">
-                        <p th:text="*{curChamp}"></p>
+                        <p th:text="*{curChamp}"> playing!</p>
                         <img th:src="*{curChampUrl}" alt="현재 챔프" width="70px">
                     </th:block>
                 </div>

@@ -33,8 +33,4 @@ public class LoLController {
         return ChampionKey.valuesWithLabel();
     }
 
-    @PostMapping("/champion")
-    public String add(@RequestParam String key, @RequestParam String champion) {
-        return ChampionKey.addChampion(key, champion);
-    }
 }
