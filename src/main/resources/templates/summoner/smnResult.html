@@ -8,7 +8,7 @@
     <div class="container main-inner">
 
         <!-- 검색한 소환사 info 컨테이터 -->
-        <div th:object="${summonerDto}" class="main-card mb-3 card">
+        <div th:object="${summoner}" class="main-card mb-3 card">
             <div class="row summoner-date2">
 
                 <!-- 아이콘 -->
@@ -29,11 +29,11 @@
                     <div class="row text-right">
                         <!-- 솔로랭크 -->
                         <!-- 언랭일때 -->
-                        <th:block th:if="${summonerDto.soloTier == 'Unranked'}">
+                        <th:block th:if="${summoner.soloTier == 'Unranked'}">
                             <img th:src="@{/img/rank1.png}" alt="Unranked" width="170px">
                         </th:block>
                         <!-- 솔랭 info -->
-                        <th:block th:unless="${summonerDto.soloTier == 'Unranked'}">
+                        <th:block th:unless="${summoner.soloTier == 'Unranked'}">
                             <div class="col-sm-5">
                                 <img th:src="@{/emblem/}+*{soloTier}+@{.png}" alt="tier" width="80px">
                             </div>
@@ -99,7 +99,7 @@
         </div>
         <!-- info 컨테이너 종료 -->
 
-        <!-- 전문 <p th:text="${summonerDto.matchDtoList}"></p> -->
+        <!-- 전문 <p th:text="${summoner.matchList}"></p> -->
 
         <!-- 매치 리스트 -->
         <div class="main-card2 mb-3 card">
@@ -107,7 +107,7 @@
 
                 <table class="table align-middle text-truncate mb-0 table-borderless table-hover">
                         <!-- match list -->
-                        <tr class="text-center align-middle" th:each="match:${summonerDto.matchDtoList}" th:classappend="${match.table}">
+                        <tr class="text-center align-middle" th:each="match:${summoner.matchList}" th:classappend="${match.table}">
                             <!-- match win or lose -->
                             <th scope="row" th:classappend="${match.win}" width="5%">
                                 <span th:text="${match.win}">승패</span>
@@ -115,32 +115,32 @@
                             <!-- match info -->
                             <td width="20%">
                                 <p class="small" th:text="${match.queueId}">게임타입</p>
-                                <h6><b>[[${match.myGameDto.myChamp}]]</b></h6>
+                                <h6><b>[[${match.myGame.inChamp}]]</b></h6>
                                 <span th:text="${match.gameDuration}"> 시간</span>
                                 <p class="small text-secondary" th:text="${match.GamePlayedAt}"> 플레이 시점</p>
                             </td>
                             <!-- match champ -->
                             <td width="10%">
-                                <img th:src="${match.myGameDto.myChampUrl}" width="100px">
+                                <img th:src="${match.myGame.champImgUrl}" width="100px">
 
                             </td>
                             <!-- match rune -->
                             <td width="5%" >
-                                <img th:src="${match.myGameDto.runeImgUrl1}" width="20px" class="m-1 d-block">
-                                <img th:src="${match.myGameDto.runeImgUrl2}" width="20px" class="m-1 d-block">
-                                <img th:src="${match.myGameDto.spImgUrl1}" width="20px" class="m-1 d-block">
-                                <img th:src="${match.myGameDto.spImgUrl2}" width="20px" class="m-1 d-block">
+                                <img th:src="${match.myGame.runeImgUrl1}" width="20px" class="m-1 d-block">
+                                <img th:src="${match.myGame.runeImgUrl2}" width="20px" class="m-1 d-block">
+                                <img th:src="${match.myGame.spImgUrl1}" width="20px" class="m-1 d-block">
+                                <img th:src="${match.myGame.spImgUrl2}" width="20px" class="m-1 d-block">
 
                             </td>
                             <!-- match KDA -->
                             <td width="20%" class="align-middle">
-                                <h5><b>[[${match.myGameDto.myK}]] / [[${match.myGameDto.myD}]] / [[${match.myGameDto.myA}]]</b></h5>
-                                <p>평점 [[${match.myGameDto.myAvg}]]</p>
+                                <h5><b>[[${match.myGame.kill}]] / [[${match.myGame.death}]] / [[${match.myGame.avg}]]</b></h5>
+                                <p>평점 [[${match.myGame.avg}]]</p>
 
                             </td>
                             <!-- match items -->
                             <td width="15%" class="align-middle" >
-                                <span th:each="item,index:${match.myGameDto.itemDtoList}">
+                                <span th:each="item,index:${match.myGame.itemList}">
                                     <img th:src="${item.itemImgUrl}" alt="itemImg" width="20px" th:title="${item.itemTooltip}" class="tooltip_event">
                                     <br th:if="${index.index == 3 }">
                                 </span>
@@ -152,7 +152,7 @@
                                 <!-- parti 1 win team  -->
                             <td width="10%" class="align-middle p-0">
                                 <ul class="d-block text-truncate text-left m-0 px-0 mr-2">
-                                    <li th:each="parti,index:${match.partiDtoList}" th:if="${index.index < 5}" class="d-block text-truncate">
+                                    <li th:each="parti,index:${match.participants}" th:if="${index.index < 5}" class="d-block text-truncate">
                                         <a th:href="@{/summoner?smn=}+${parti.inName}" th:value="${parti.inName}" class="d-block text-truncate text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="small"> [[${parti.inName}]]</span> </a>
                                     </li>
                                 </ul>
@@ -160,7 +160,7 @@
                                 <!-- parti 2 lose team  -->
                             <td width="10%" class="align-middle p-0">
                                 <ul class="d-block text-truncate text-left m-0 px-0 mr-2">
-                                    <li th:each="parti,index:${match.partiDtoList}" th:if="${index.index >= 5}" class="d-block text-truncate">
+                                    <li th:each="parti,index:${match.participants}" th:if="${index.index >= 5}" class="d-block text-truncate">
                                         <a th:href="@{/summoner?smn=}+${parti.inName}" th:value="${parti.inName}" class="d-block text-truncate text-secondary m-0"><img th:src="${parti.champImgUrl}" alt="champ" width="17px"> <span class="small"> [[${parti.inName}]]</span> </a>
                                     </li>
                                 </ul>

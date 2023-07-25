@@ -1,12 +1,8 @@
 package gg.rimumu.controller;
 
-import gg.rimumu.dto.MatchDetailDto;
-import gg.rimumu.exception.RimumuException;
 import gg.rimumu.service.SummonerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor

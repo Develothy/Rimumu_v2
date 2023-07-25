@@ -11,7 +11,7 @@ import java.util.ArrayList;
 @Getter
 @Setter
 @ToString
-public class SummonerDto {
+public class Summoner {
 
     private String id;
     private String puuid;
@@ -51,9 +51,9 @@ public class SummonerDto {
     private String recentAvg;
 
     // matchId list
-    private List<SummonerDto> matchIdList = new ArrayList<>();
+    private List<Summoner> matchIdList = new ArrayList<>();
 
-    private List<MatchDto> matchDtoList = new ArrayList<>();
+    private List<Match> matchList = new ArrayList<>();
 
 
 

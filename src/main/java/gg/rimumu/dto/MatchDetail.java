@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class MatchDetailDto {
+public class MatchDetail {
 
     private String killRed;
     private String killBlue;
@@ -27,6 +27,6 @@ public class MatchDetailDto {
     private String baronRed;
     private String baronBlue;
 
-    private List<PartiDetailDto> partiDetailDtoList;
+    private List<Participant> participants;
 
 }

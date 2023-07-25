@@ -1,6 +1,6 @@
 package gg.rimumu.controller;
 
-import gg.rimumu.dto.SummonerDto;
+import gg.rimumu.dto.Summoner;
 import gg.rimumu.exception.RimumuException;
 import gg.rimumu.service.SummonerService;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +32,9 @@ public class SummonerCopy {
 
         String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
 
-        SummonerDto summonerDto;
+        Summoner summoner;
         try {
-            summonerDto = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8), offset);
+            summoner = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8), offset);
         } catch (RimumuException.SummonerNotFoundException e) {
             model.addAttribute("smn", smn);
             return "summoner/nameNull";
@@ -42,7 +42,7 @@ public class SummonerCopy {
             throw new RuntimeException(e);
         }
 
-        model.addAttribute("summonerDto", summonerDto);
+        model.addAttribute("summoner", summoner);
         return "summoner/smnResult";
     }
 }

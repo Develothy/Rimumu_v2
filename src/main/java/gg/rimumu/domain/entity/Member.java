@@ -1,7 +1,6 @@
 package gg.rimumu.domain.entity;
 
 
-import gg.rimumu.dto.MemberDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,10 +32,10 @@ public class Member {
         GEUST, MEMBER, ADMIN
     }
 
-    public static Member of(MemberDto memberDto) {
-        return Member.builder()
-                .email(memberDto.getEmail())
-                .password(memberDto.getPassword())
+    public static Member of(gg.rimumu.dto.Member member) {
+        return gg.rimumu.domain.entity.Member.builder()
+                .email(member.getEmail())
+                .password(member.getPassword())
                 .role(Role.MEMBER)
                 .build();
     }

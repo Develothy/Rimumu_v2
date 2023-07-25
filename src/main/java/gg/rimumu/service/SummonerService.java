@@ -31,7 +31,7 @@ public class SummonerService {
     static final Gson gson = new Gson();
 
     // 소환사 검색
-    public SummonerDto smnSearch(String smn, int offset) throws RimumuException{
+    public Summoner smnSearch(String smn, int offset) throws RimumuException{
         String url = RimumuKey.SUMMONER_INFO_URL + smn;
 
         HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
@@ -44,39 +44,39 @@ public class SummonerService {
         }
 
         // 검색 소환사 account 정보 가져오기
-        SummonerDto summonerDto = gson.fromJson(accResultStr, SummonerDto.class);
-        smnInfo(summonerDto, offset);
+        Summoner summoner = gson.fromJson(accResultStr, Summoner.class);
+        smnInfo(summoner, offset);
 
-        return summonerDto;
+        return summoner;
     }
 
     //소환사 정보
-    public SummonerDto smnInfo(SummonerDto summonerDto, int offset) throws RimumuException.MatchNotFoundException {
+    public Summoner smnInfo(Summoner summoner, int offset) throws RimumuException.MatchNotFoundException {
 
         // 아이콘 이미지 주소
-        summonerDto.setIconImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/profileicon/" + summonerDto.getProfileIconId() + ".png");
+        summoner.setIconImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/profileicon/" + summoner.getProfileIconId() + ".png");
 
         // 티어 조회
-        getTier(summonerDto);
+        getTier(summoner);
 
         // 게임중 여부 조회 (riot developer api 막힘)
-        currentGame(summonerDto);
+        currentGame(summoner);
 
         // matchId 최근 20게임
-        matchesUrl(summonerDto, offset);
+        matchesUrl(summoner, offset);
 
 
         // matchDtlList
-        matchDtls(summonerDto);
+        matchDtls(summoner);
 
-        return summonerDto;
+        return summoner;
     } // smnInfo() 소환사 정보 종료
 
 
     // current 현재 게임 여부 ---------------
-    public SummonerDto currentGame(SummonerDto summonerDto) {
+    public Summoner currentGame(Summoner summoner) {
 
-        String curUrl = RimumuKey.SUMMONER_CURRENT_URL + summonerDto.getId();
+        String curUrl = RimumuKey.SUMMONER_CURRENT_URL + summoner.getId();
 
         // 현재 게임 중일 경우 실행 //
         try {
@@ -88,16 +88,16 @@ public class SummonerService {
                 case 200 -> curResultStr = smnSearchResponse.body();
                 default -> {
                     LOGGER.info("Not playing now");
-                    return summonerDto;
+                    return summoner;
                 }
             }
 
             JsonObject curResult = gson.fromJson(curResultStr, JsonObject.class);
-            summonerDto.setCurrent(true);
+            summoner.setCurrent(true);
 
             // 큐 타입
             String queueId = curResult.get("gameQueueConfigId").getAsString();
-            summonerDto.setQueueId(getGameType(queueId));
+            summoner.setQueueId(getGameType(queueId));
 
             // participants : ['x','x'] 부분 arr
             JsonArray partiArr = curResult.getAsJsonArray("participants");
@@ -108,25 +108,25 @@ public class SummonerService {
                 JsonObject inGame = parti.getAsJsonObject();
                 //inGame participant(p)의 id == myId 비교
                 String compareId = inGame.get("summonerId").getAsString();
-                if (compareId.equals(summonerDto.getId())) {
+                if (compareId.equals(summoner.getId())) {
                     String curChamp = ChampionKey.valueOf("K"+inGame.get("championId")).getLabel();
                     String curChampImg = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
-                    summonerDto.setCurChamp("현재 " + curChamp + " 게임중!");
-                    summonerDto.setCurChampUrl(curChampImg);
-                    return summonerDto;
+                    summoner.setCurChamp("현재 " + curChamp + " 게임중!");
+                    summoner.setCurChampUrl(curChampImg);
+                    return summoner;
                 }
             }
         } catch (Exception e) {
             LOGGER.error("인게임 체크 중 오류 발생");
         }
-        return summonerDto;
+        return summoner;
     }
     // current 현재 게임 여부 종료
 
     // 티어 조회 로직
-    public SummonerDto getTier(SummonerDto summonerDto) {
+    public Summoner getTier(Summoner summoner) {
 
-        String rankUrl = RimumuKey.SUMMONER_TIER_URL + summonerDto.getId();
+        String rankUrl = RimumuKey.SUMMONER_TIER_URL + summoner.getId();
         String rankResultStr = (String) HttpConnUtil.sendHttpGetRequest(rankUrl).body();
 
         //언랭아닐 경우 [] 값
@@ -141,23 +141,23 @@ public class SummonerService {
                 // 솔랭, 자랭 값이 존재 한다면 해당 tier값으로 덮음
                 //솔랭
                 if ("RANKED_SOLO_5x5".equals(rankType)) {
-                    summonerDto.setSoloTier(ranks.get("tier").getAsString()); // 챌, 다이아, 플레 등
-                    summonerDto.setSoloRank(ranks.get("rank").getAsString()); // 1 ~ 4
-                    summonerDto.setSoloLeaguePoints(ranks.get("leaguePoints").getAsString()); // 티어 LP
-                    summonerDto.setSoloWins(ranks.get("wins").getAsString()); //랭크 전체 승
-                    summonerDto.setSoloLosses(ranks.get("losses").getAsString()); //랭크 전체 패
+                    summoner.setSoloTier(ranks.get("tier").getAsString()); // 챌, 다이아, 플레 등
+                    summoner.setSoloRank(ranks.get("rank").getAsString()); // 1 ~ 4
+                    summoner.setSoloLeaguePoints(ranks.get("leaguePoints").getAsString()); // 티어 LP
+                    summoner.setSoloWins(ranks.get("wins").getAsString()); //랭크 전체 승
+                    summoner.setSoloLosses(ranks.get("losses").getAsString()); //랭크 전체 패
                 }
                 //자랭
                 else if ("RANKED_FLEX_SR".equals(rankType)) {
-                    summonerDto.setFlexTier(ranks.get("tier").getAsString());
-                    summonerDto.setFlexRank(ranks.get("rank").getAsString());
-                    summonerDto.setFlexLeaguePoints(ranks.get("leaguePoints").getAsString());
-                    summonerDto.setFlexWins(ranks.get("wins").getAsString());
-                    summonerDto.setFlexLosses(ranks.get("losses").getAsString());
+                    summoner.setFlexTier(ranks.get("tier").getAsString());
+                    summoner.setFlexRank(ranks.get("rank").getAsString());
+                    summoner.setFlexLeaguePoints(ranks.get("leaguePoints").getAsString());
+                    summoner.setFlexWins(ranks.get("wins").getAsString());
+                    summoner.setFlexLosses(ranks.get("losses").getAsString());
                 }
             } // 솔랭, 자랭 구분 종료
         } // 랭크 정보 등록 종료
-        return summonerDto;
+        return summoner;
     } // smnTier() 티어 죄회 로직 종료
 
     // GameType 구하기
@@ -167,9 +167,9 @@ public class SummonerService {
     }
 
     // 매치 리스트 가져오기 matchId
-    public SummonerDto matchesUrl(SummonerDto summonerDto, int offset) throws RimumuException.MatchNotFoundException {
+    public Summoner matchesUrl(Summoner summoner, int offset) throws RimumuException.MatchNotFoundException {
 
-        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + summonerDto.getPuuid() + "/ids?start=" + offset + "&count20";
+        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + summoner.getPuuid() + "/ids?start=" + offset + "&count20";
         HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
 
         String matchesStr;
@@ -178,14 +178,14 @@ public class SummonerService {
             case 200 -> matchesStr = smnMatchResponse.body();
             default -> {
                 LOGGER.error("Match List 정보를 찾을 수 없습니다.");
-                throw new RimumuException.MatchNotFoundException(summonerDto.getName());
+                throw new RimumuException.MatchNotFoundException(summoner.getName());
             }
         }
-        List<SummonerDto> matchesArr = gson.fromJson(matchesStr, List.class);
-        summonerDto.setMatchIdList(matchesArr);
+        List<Summoner> matchesArr = gson.fromJson(matchesStr, List.class);
+        summoner.setMatchIdList(matchesArr);
 
-        LOGGER.info("matchesUrl() matcheIdList : " + summonerDto.getMatchIdList().toString());
-        return summonerDto;
+        LOGGER.info("matchesUrl() matcheIdList : " + summoner.getMatchIdList().toString());
+        return summoner;
     }
 
     // match 당 정보 //  { info : {xx} } 부분
@@ -258,22 +258,22 @@ public class SummonerService {
     }
 
     // item 구하기
-    public ItemDto getItem(int itemNum) {
+    public Item getItem(int itemNum) {
 
-        ItemDto itemDto = new ItemDto();
+        Item item = new Item();
 
         // item이 없는 칸 회색템 표시
         if (itemNum == 0) {
-            itemDto.setItemNum(itemNum);
-            itemDto.setItemImgUrl("/img/itemNull.png");
-            itemDto.setItemTooltip("보이지 않는 검이 가장 무서운 법.....");
-            return itemDto;
+            item.setItemNum(itemNum);
+            item.setItemImgUrl("/img/itemNull.png");
+            item.setItemTooltip("보이지 않는 검이 가장 무서운 법.....");
+            return item;
         }
         // inGame 나의 item 설명 (툴팁)
         // item.json URL 연결
 
-        itemDto.setItemNum(itemNum);
-        itemDto.setItemImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/item/" + itemNum + ".png");
+        item.setItemNum(itemNum);
+        item.setItemImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/item/" + itemNum + ".png");
 
         // item TOOLTIP 템 정보
         String itemUrl = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/data/ko_KR/item.json";
@@ -290,9 +290,9 @@ public class SummonerService {
         String itemDesc = itemDtl.get("description").getAsString();
         String itemText = itemDtl.get("plaintext").getAsString();
 
-        itemDto.setItemTooltip("<b>" + itemName + "</b>" + "/n <hr>" + itemDesc + "<br>" + itemText);
+        item.setItemTooltip("<b>" + itemName + "</b>" + "/n <hr>" + itemDesc + "<br>" + itemText);
 
-        return itemDto;
+        return item;
     }
 
     // match 소환사들 detail_ 소환사명, 챔피언 정보
@@ -321,10 +321,10 @@ public class SummonerService {
      * forEach 반복문 시작구간
      * 설명 : 챔피언, 게입타입, 승패, 게임 시간, KDA, 룬, 스펠, 아이템, 플레이어
      */
-    public SummonerDto matchDtls(SummonerDto summonerDto) throws RimumuException.MatchNotFoundException {
+    public Summoner matchDtls(Summoner summoner) throws RimumuException.MatchNotFoundException {
 
-        List<SummonerDto> matchIdList = summonerDto.getMatchIdList();
-        List<MatchDto> matchDtoList = new ArrayList<>();
+        List<Summoner> matchIdList = summoner.getMatchIdList();
+        List<Match> matchList = new ArrayList<>();
 
         //매치 당 정보 가져오기 / 20게임 정보의 api 이용 중
         for (int i = 0; i < matchIdList.size() - 15; i++) {
@@ -333,8 +333,8 @@ public class SummonerService {
             matchId = String.valueOf(matchIdList.get(i));
             LOGGER.info("{}번 Match : {}", i, matchId);
 
-            MatchDto matchDto = new MatchDto();
-            matchDto.setMatchId(matchId);
+            Match match = new Match();
+            match.setMatchId(matchId);
 
             // i번째 matchId에 대한 정보
 
@@ -342,16 +342,16 @@ public class SummonerService {
             JsonObject info = getMatchIdInfo(matchId);
 
             //게임종류(협곡 칼바람 등) //모드 추가 시 추가 필요
-            matchDto.setQueueId(getGameType(info.get("queueId").getAsString()));
+            match.setQueueId(getGameType(info.get("queueId").getAsString()));
 
             //게임시간
             long gameDuration = info.get("gameDuration").getAsLong();
-            matchDto.setGameDuration(DateTimeUtil.toDuration(gameDuration));
+            match.setGameDuration(DateTimeUtil.toDuration(gameDuration));
             long gameStarted = info.get("gameStartTimestamp").getAsLong() / 1000;
-            matchDto.setGamePlayedAt(DateTimeUtil.fromBetweenNow(gameStarted) + " 전");
+            match.setGamePlayedAt(DateTimeUtil.fromBetweenNow(gameStarted) + " 전");
 
-            LOGGER.info("== 게임시간 : {}", matchDto.getGameDuration());
-            LOGGER.info("== {}", matchDto.getGamePlayedAt());
+            LOGGER.info("== 게임시간 : {}", match.getGameDuration());
+            LOGGER.info("== {}", match.getGamePlayedAt());
 
             /*
              * participants 키의 배열['participants':{},] 가져오기(플레이어 당 인게임) // 블루 0~4/ 레드 5~9
@@ -360,55 +360,55 @@ public class SummonerService {
             JsonArray partiInArr = info.getAsJsonArray("participants");
             LOGGER.info("== Participants  사이즈 체크 : {}", partiInArr.size());
 
-            List<ParticipantDto> partiDtoList = new ArrayList<>();
+            List<Participant> Participants = new ArrayList<>();
 
             for (JsonElement parti : partiInArr) {
 
                 JsonObject inGame = parti.getAsJsonObject();
-                ParticipantDto partiDto = new ParticipantDto();
+                Participant participant = new Participant();
 
                 List<String> nameAndChamp = getPartiNameAndChamp(inGame);
-                partiDto.setInName(nameAndChamp.get(0));
+                participant.setInName(nameAndChamp.get(0));
                 // 챔프네임의 대소문자가 match Json과 img API가 동일하지 않은 이유로 에러발생. 때문에 emun에서 가져옴
                 String champ = ChampionKey.valueOf("K" + nameAndChamp.get(1)).label();
-                partiDto.setInChamp(champ);
-                partiDto.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + champ + ".png");
+                participant.setInChamp(champ);
+                participant.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
                 // 해당 parti의 id가 검색된 id인지 비교
-                if (summonerDto.getName().equals(partiDto.getInName())) {
+                if (summoner.getName().equals(participant.getInName())) {
 
                     // participant가 나일 경우 추가 정보 세팅
-                    setMyGame(summonerDto, matchDto, inGame, champ);
+                    setMyGame(summoner, match, inGame, champ);
                 }
 
-                partiDtoList.add(partiDto);
+                Participants.add(participant);
 
             } // 1 matchId 종료
-            matchDto.setPartiDtoList(partiDtoList);
-            matchDtoList.add(matchDto);
-            summonerDto.setMatchDtoList(matchDtoList);
+            match.setParticipants(Participants);
+            matchList.add(match);
+            summoner.setMatchList(matchList);
         }
-        LOGGER.info("{} 조회 종료", summonerDto.getName());
-        return summonerDto;
+        LOGGER.info("{} 조회 종료", summoner.getName());
+        return summoner;
     }
 
-    private void setMyGame(SummonerDto summonerDto, MatchDto matchDto, JsonObject inGame, String inChamp) {
+    private void setMyGame(Summoner summoner, Match match, JsonObject inGame, String inChamp) {
 
         // 단일 경기 승리, 패배
         Boolean win = inGame.get("win").getAsBoolean();
         if (win) {
-            matchDto.setWin("WIN");
-            matchDto.setTable("table-primary");
-            summonerDto.setRecentWin(summonerDto.getRecentWin()+1);
+            match.setWin("WIN");
+            match.setTable("table-primary");
+            summoner.setRecentWin(summoner.getRecentWin()+1);
         } else {
-            matchDto.setWin("LOSE");
-            matchDto.setTable("table-danger");
-            summonerDto.setRecentLose(summonerDto.getRecentLose()+1);
+            match.setWin("LOSE");
+            match.setTable("table-danger");
+            summoner.setRecentLose(summoner.getRecentLose()+1);
         }
 
-        MyGameDto myGameDto = new MyGameDto();
-        myGameDto.setMyChamp(inChamp);
-        myGameDto.setMyChampUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + inChamp + ".png");
+        MyGame myGame = new MyGame();
+        myGame.setInChamp(inChamp);
+        myGame.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + inChamp + ".png");
 
         // KDA
         int myK = inGame.get("kills").getAsInt();
@@ -416,37 +416,37 @@ public class SummonerService {
         int myA = inGame.get("assists").getAsInt();
 
         // 해당 판 KDA
-        myGameDto.setMyK(myK);
-        myGameDto.setMyD(myD);
-        myGameDto.setMyA(myA);
-        myGameDto.setMyAvg(getKdaAvg(myK, myD, myA));
-        LOGGER.info("== myAvg : {}", myGameDto.getMyAvg());
+        myGame.setKill(myK);
+        myGame.setDeath(myD);
+        myGame.setAssist(myA);
+        myGame.setAvg(getKdaAvg(myK, myD, myA));
+        LOGGER.info("== myAvg : {}", myGame.getAvg());
         // 최근 전적 KDA
-        summonerDto.setRecentKill(summonerDto.getRecentKill()+myK);
-        summonerDto.setRecentDeath(summonerDto.getRecentDeath()+myD);
-        summonerDto.setRecentAssist(summonerDto.getRecentAssist()+myA);
-        summonerDto.setRecentTotal(summonerDto.getRecentTotal()+1);
-        summonerDto.setRecentAvg(getKdaAvg(summonerDto.getRecentKill(), summonerDto.getRecentAssist(), summonerDto.getRecentDeath()));
+        summoner.setRecentKill(summoner.getRecentKill()+myK);
+        summoner.setRecentDeath(summoner.getRecentDeath()+myD);
+        summoner.setRecentAssist(summoner.getRecentAssist()+myA);
+        summoner.setRecentTotal(summoner.getRecentTotal()+1);
+        summoner.setRecentAvg(getKdaAvg(summoner.getRecentKill(), summoner.getRecentAssist(), summoner.getRecentDeath()));
 
         // 나의 inGame 룬
         List<String> runes = getRune(inGame);
-        myGameDto.setRuneImgUrl1(runes.get(0));
-        myGameDto.setRuneImgUrl2(runes.get(1));
+        myGame.setRuneImgUrl1(runes.get(0));
+        myGame.setRuneImgUrl2(runes.get(1));
 
         // 나의 inGame 스펠 [{"summonerId1:""}]
         List<String> spells = getSpell(inGame);
-        myGameDto.setSpImgUrl1(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get(0) + ".png");
-        myGameDto.setSpImgUrl2(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get(1) + ".png");
+        myGame.setSpImgUrl1(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get(0) + ".png");
+        myGame.setSpImgUrl2(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get(1) + ".png");
 
         // 나의 inGame item 이미지 [{"item":xx}]
-        List<ItemDto> itemList = Stream.iterate(0, t -> t < 7, t -> t + 1)
+        List<Item> itemList = Stream.iterate(0, t -> t < 7, t -> t + 1)
                 .map(t -> "item" + t)
                 .map(inGame::get)
                 .map(JsonElement::getAsInt)
                 .map(this::getItem)
                 .toList();
 
-        myGameDto.setItemDtoList(itemList);
-        matchDto.setMyGameDto(myGameDto);
+        myGame.setItemList(itemList);
+        match.setMyGame(myGame);
     }
 }

@@ -4,14 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 @Getter
 @Setter
 @ToString
-public class MatchDto {
+public class Match {
 
     private String matchId;
 
@@ -25,6 +24,6 @@ public class MatchDto {
     private String table;
 
 
-    private List<ParticipantDto> partiDtoList;
-    private MyGameDto myGameDto;
+    private List<Participant> Participants;
+    private MyGame myGame;
 }

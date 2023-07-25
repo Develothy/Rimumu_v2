@@ -1,6 +1,6 @@
 package gg.rimumu.controller;
 
-import gg.rimumu.dto.MemberDto;
+import gg.rimumu.dto.Member;
 import gg.rimumu.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.ObjectUtils;
@@ -14,19 +14,19 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping
-    public String create(@RequestBody MemberDto memberDto) {
+    public String create(@RequestBody Member member) {
 
-        if (ObjectUtils.isEmpty(memberDto)) {
+        if (ObjectUtils.isEmpty(member)) {
             return "회원가입 정보를 정확히 입력해주세요!";
         }
-        return memberService.createMember(memberDto);
+        return memberService.createMember(member);
     }
 
     @PostMapping
-    public String login(@RequestBody MemberDto memberDto) {
+    public String login(@RequestBody Member member) {
 
-        String email = memberDto.getEmail();
-        String password = memberDto.getPassword();
+        String email = member.getEmail();
+        String password = member.getPassword();
 
         if ( email.isBlank() || password.isBlank()) {
             return "아이디 또는 비밀번호가 입력되지 않았습니다.";
