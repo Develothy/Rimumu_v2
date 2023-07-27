@@ -212,21 +212,21 @@ public class SummonerService {
     }
 
     // Spell 구하기
-    public List<String> getSpell(JsonObject inGame) {
+    public Map<String, String> getSpell(JsonObject inGame) {
 
-        List spImgList = new ArrayList<>();
+        Map<String, String> spell = new HashMap();
         for (int s = 1; s < 3; s++){
             String smSpell = inGame.get("summoner" + s + "Id").getAsString();
             smSpell = SpellKey.valueOf("SP" + smSpell).label();
-            spImgList.add(smSpell);
+            spell.put("spell" + s, smSpell);
         }
-        return spImgList;
+        return spell;
     }
 
     // rune 구하기
-    public List<String> getRune(JsonObject inGame){
+    public Map<String, String> getRune(JsonObject inGame){
 
-        List runeList = new ArrayList<>();
+        Map<String, String> rune = new HashMap<>();
         // 나의 inGame 룬
         JsonObject runes = inGame.getAsJsonObject("perks");
         JsonArray styles = runes.getAsJsonArray("styles");
@@ -237,10 +237,10 @@ public class SummonerService {
         // 보조 룬
         JsonObject selec2 = (JsonObject) styles.get(1);
         String runeImgUrl2 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec2.get("style").getAsString());
-        runeList.add(runeImgUrl1);
-        runeList.add(runeImgUrl2);
+        rune.put("rune1", runeImgUrl1);
+        rune.put("rune2", runeImgUrl2);
 
-        return runeList;
+        return rune;
     }
 
     // rune 이미지 주소 변환
@@ -292,17 +292,6 @@ public class SummonerService {
         item.setItemTooltip("<b>" + itemName + "</b>" + "/n <hr>" + itemDesc + "<br>" + itemText);
 
         return item;
-    }
-
-    // match 소환사들 detail_ 소환사명, 챔피언 정보
-    public List getPartiNameAndChamp(JsonObject inGame){
-
-        List<String> nameAndChamp = new ArrayList<>();
-        //inGame summoner(p)의 소환사 명, 챔피언
-        nameAndChamp.add(inGame.get("summonerName").getAsString());
-        nameAndChamp.add(inGame.get("championId").getAsString());
-
-        return nameAndChamp;
     }
 
     public String getKdaAvg (double k, double d, double a) {
@@ -366,18 +355,20 @@ public class SummonerService {
                 JsonObject inGame = parti.getAsJsonObject();
                 Participant participant = new Participant();
 
-                List<String> nameAndChamp = getPartiNameAndChamp(inGame);
-                participant.setInName(nameAndChamp.get(0));
+                participant.setInName(inGame.get("summonerName").getAsString());
                 // 챔프네임의 대소문자가 match Json과 img API가 동일하지 않은 이유로 에러발생. 때문에 emun에서 가져옴
-                String champ = ChampionKey.valueOf("K" + nameAndChamp.get(1)).label();
+                String champ = ChampionKey.valueOf("K" + inGame.get("championId").getAsString()).label();
                 participant.setInChamp(champ);
                 participant.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
                 // 해당 parti의 id가 검색된 id인지 비교
-                if (summoner.getName().equals(participant.getInName())) {
-
+                if (!summoner.getName().equals(participant.getInName())) {
                     // participant가 나일 경우 추가 정보 세팅
-                    setMyGame(summoner, match, inGame, champ);
+                    setGameDetail(summoner, match, inGame, participant);
+                } else {
+                    MyGame myGame = new MyGame();
+                    // participant가 나일 경우 추가 정보 세팅
+                    setGameDetail(summoner, match, inGame, myGame);
                 }
 
                 Participants.add(participant);
@@ -391,61 +382,60 @@ public class SummonerService {
         return summoner;
     }
 
-    private void setMyGame(Summoner summoner, Match match, JsonObject inGame, String inChamp) {
+    private void setGameDetail(Summoner summoner, Match match, JsonObject inGame, GameDetail gameDetail) {
 
-        // 단일 경기 승리, 패배
-        Boolean win = inGame.get("win").getAsBoolean();
-        if (win) {
-            match.setWin("WIN");
-            match.setTable("table-primary");
-            summoner.setRecentWin(summoner.getRecentWin()+1);
-        } else {
-            match.setWin("LOSE");
-            match.setTable("table-danger");
-            summoner.setRecentLose(summoner.getRecentLose()+1);
-        }
-
-        MyGame myGame = new MyGame();
-        myGame.setInChamp(inChamp);
-        myGame.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + inChamp + ".png");
+        gameDetail.setInChamp(gameDetail.getInChamp());
+        gameDetail.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + gameDetail.getInChamp() + ".png");
 
         // KDA
-        int myK = inGame.get("kills").getAsInt();
-        int myD = inGame.get("deaths").getAsInt();
-        int myA = inGame.get("assists").getAsInt();
+        int kill = inGame.get("kills").getAsInt();
+        int death = inGame.get("deaths").getAsInt();
+        int avg = inGame.get("assists").getAsInt();
 
         // 해당 판 KDA
-        myGame.setKill(myK);
-        myGame.setDeath(myD);
-        myGame.setAssist(myA);
-        myGame.setAvg(getKdaAvg(myK, myD, myA));
-        LOGGER.info("== myAvg : {}", myGame.getAvg());
-        // 최근 전적 KDA
-        summoner.setRecentKill(summoner.getRecentKill()+myK);
-        summoner.setRecentDeath(summoner.getRecentDeath()+myD);
-        summoner.setRecentAssist(summoner.getRecentAssist()+myA);
-        summoner.setRecentTotal(summoner.getRecentTotal()+1);
-        summoner.setRecentAvg(getKdaAvg(summoner.getRecentKill(), summoner.getRecentAssist(), summoner.getRecentDeath()));
+        gameDetail.setKill(kill);
+        gameDetail.setDeath(death);
+        gameDetail.setAssist(avg);
+        gameDetail.setAvg(getKdaAvg(kill, death, avg));
 
-        // 나의 inGame 룬
-        List<String> runes = getRune(inGame);
-        myGame.setRuneImgUrl1(runes.get(0));
-        myGame.setRuneImgUrl2(runes.get(1));
+        // inGame 룬
+        Map<String, String> runes = getRune(inGame);
+        gameDetail.setRuneImgUrl1(runes.get("rune1"));
+        gameDetail.setRuneImgUrl2(runes.get("rune2"));
 
-        // 나의 inGame 스펠 [{"summonerId1:""}]
-        List<String> spells = getSpell(inGame);
-        myGame.setSpImgUrl1(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get(0) + ".png");
-        myGame.setSpImgUrl2(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get(1) + ".png");
+        // inGame 스펠 [{"summonerId1:""}]
+        Map<String, String> spells = getSpell(inGame);
+        gameDetail.setSpImgUrl1(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell1") + ".png");
+        gameDetail.setSpImgUrl2(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell2") + ".png");
 
-        // 나의 inGame item 이미지 [{"item":xx}]
+        // inGame item 이미지 [{"item":xx}]
         List<Item> itemList = Stream.iterate(0, t -> t < 7, t -> t + 1)
                 .map(t -> "item" + t)
                 .map(inGame::get)
                 .map(JsonElement::getAsInt)
                 .map(this::getItem)
                 .toList();
+        gameDetail.setItemList(itemList);
 
-        myGame.setItemList(itemList);
-        match.setMyGame(myGame);
+        if (gameDetail instanceof MyGame) {
+
+            // 단일 경기 승리, 패배
+            Boolean win = inGame.get("win").getAsBoolean();
+            if (win) {
+                match.setWin("WIN");
+                match.setTable("table-primary");
+                summoner.setRecentWin(summoner.getRecentWin()+1);
+            } else {
+                match.setWin("LOSE");
+                match.setTable("table-danger");
+                summoner.setRecentLose(summoner.getRecentLose()+1);
+            }
+            // 최근 전적 KDA
+            summoner.setRecentKill(summoner.getRecentKill() + kill);
+            summoner.setRecentDeath(summoner.getRecentDeath() + death);
+            summoner.setRecentAssist(summoner.getRecentAssist() + avg);
+            summoner.setRecentTotal(summoner.getRecentTotal() + 1);
+            summoner.setRecentAvg(getKdaAvg(summoner.getRecentKill(), summoner.getRecentAssist(), summoner.getRecentDeath()));
+        }
     }
 }
