@@ -51,7 +51,7 @@ public class Summoner {
     private String recentAvg;
 
     // matchId list
-    private List<Summoner> matchIdList = new ArrayList<>();
+    private List<String> matchIdList = new ArrayList<>();
 
     private List<Match> matchList = new ArrayList<>();
 

@@ -180,7 +180,7 @@ public class SummonerService {
                 throw new RimumuException.MatchNotFoundException(summoner.getName());
             }
         }
-        List<Summoner> matchesArr = gson.fromJson(matchesStr, List.class);
+        List<String> matchesArr = gson.fromJson(matchesStr, List.class);
         summoner.setMatchIdList(matchesArr);
 
         LOGGER.info("matchesUrl() matcheIdList : " + summoner.getMatchIdList().toString());
@@ -311,7 +311,7 @@ public class SummonerService {
      */
     public Summoner matchDtls(Summoner summoner) throws RimumuException.MatchNotFoundException {
 
-        List<Summoner> matchIdList = summoner.getMatchIdList();
+        List<String> matchIdList = summoner.getMatchIdList();
         List<Match> matchList = new ArrayList<>();
 
         //매치 당 정보 가져오기 / 20게임 정보의 api 이용 중
@@ -348,7 +348,7 @@ public class SummonerService {
             JsonArray partiInArr = info.getAsJsonArray("participants");
             LOGGER.info("== Participants  사이즈 체크 : {}", partiInArr.size());
 
-            List<Participant> Participants = new ArrayList<>();
+            List<Participant> participants = new ArrayList<>();
 
             for (JsonElement parti : partiInArr) {
 
@@ -371,13 +371,13 @@ public class SummonerService {
                     setGameDetail(summoner, match, inGame, myGame);
                 }
 
-                Participants.add(participant);
+                participants.add(participant);
 
             } // 1 matchId 종료
-            match.setParticipants(Participants);
+            match.setParticipants(participants);
             matchList.add(match);
-            summoner.setMatchList(matchList);
         }
+        summoner.setMatchList(matchList);
         LOGGER.info("{} 조회 종료", summoner.getName());
         return summoner;
     }
