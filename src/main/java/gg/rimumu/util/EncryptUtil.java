@@ -1,10 +1,9 @@
 package gg.rimumu.util;
 
-import gg.rimumu.common.RimumuProperties;
+import gg.rimumu.common.RimumuKey;
 import gg.rimumu.exception.RimumuException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
@@ -14,8 +13,6 @@ import java.security.Key;
 
 @Component
 public class EncryptUtil {
-    @Autowired
-    private static RimumuProperties rimumuKey ;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EncryptUtil.class);
 
@@ -53,7 +50,7 @@ public class EncryptUtil {
     }
 
     protected static Key getGenerateKey() {
-        String key = rimumuKey.getEncrypt_key();
+        String key = RimumuKey.ENCRYPT_KEY;
         byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
         return new SecretKeySpec(keyBytes, ALGORITHM);
     }
