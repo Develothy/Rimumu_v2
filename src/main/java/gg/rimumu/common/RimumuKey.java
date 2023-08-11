@@ -13,6 +13,7 @@ public class RimumuKey {
     private Environment environment ;
 
     public static String API_KEY ;
+    public static String ENCRYPT_KEY ;
     public static String DD_VERSION_URL;
     public static String DD_URL;
     public static String SUMMONER_INFO_URL ;
@@ -25,6 +26,7 @@ public class RimumuKey {
     private void initialize() {
 
         API_KEY = environment.getProperty("API_KEY");
+        ENCRYPT_KEY = environment.getProperty("ENCRYPT_KEY");
         DD_VERSION_URL = environment.getProperty("DD_VERSION_URL");
         DD_URL = environment.getProperty("DD_URL");
         SUMMONER_INFO_URL = environment.getProperty("SUMMONER_INFO_URL");

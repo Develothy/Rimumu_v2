@@ -17,6 +17,12 @@ public sealed class RimumuException extends Exception {
         }
     }
 
+    public static final class EncryptException extends RimumuException {
+        public EncryptException(String str) {
+            super(str + ErrorMsg.EncryptException.getMsg());
+        }
+    }
+
 
     /**
      * SUMMONER EXCEPTION

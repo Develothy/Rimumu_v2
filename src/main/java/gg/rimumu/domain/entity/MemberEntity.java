@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Member {
+public class MemberEntity {
 
     @Id
     @Column(name = "member_id")
@@ -32,8 +32,8 @@ public class Member {
         GEUST, MEMBER, ADMIN
     }
 
-    public static Member of(gg.rimumu.dto.Member member) {
-        return gg.rimumu.domain.entity.Member.builder()
+    public static MemberEntity of(gg.rimumu.dto.Member member) {
+        return MemberEntity.builder()
                 .email(member.getEmail())
                 .password(member.getPassword())
                 .role(Role.MEMBER)

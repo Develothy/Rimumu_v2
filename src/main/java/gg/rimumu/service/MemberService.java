@@ -1,8 +1,10 @@
 package gg.rimumu.service;
 
+import gg.rimumu.domain.entity.MemberEntity;
 import gg.rimumu.domain.repository.MemberRepository;
 import gg.rimumu.dto.Member;
 import gg.rimumu.exception.RimumuException;
+import gg.rimumu.util.EncryptUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,19 +13,29 @@ import org.springframework.stereotype.Service;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final EncryptUtil encryptUtil;
 
-    public String createMember(Member memberDto) {
+    public String createMember(Member member) throws RimumuException {
 
-        memberRepository.findByEmail(memberDto.getEmail()).ifPresent( member -> {
-                    new RimumuException.MemberAlreadyRegisteredException(memberDto.getEmail());
-        });
+        memberRepository.findByEmail(member.getEmail()).ifPresent( it ->
+                    new RimumuException.MemberAlreadyRegisteredException(member.getEmail())
+        );
 
-        return memberRepository.save(gg.rimumu.domain.entity.Member.of(memberDto)).getEmail();
+        try {
+            member.setPassword(encryptUtil.encrypt(member.getPassword()));
+            return memberRepository.save(MemberEntity.of(member)).getEmail();
+
+        } catch (RimumuException.EncryptException e) {
+            throw new RimumuException.EncryptException(member.getPassword());
+        } catch (Exception e) {
+            throw new RimumuException.MemberValidationException();
+        }
+
     }
 
-    public String login(String email, String password) throws RimumuException.MemberValidationException {
+    public String login(String email, String password) throws RimumuException {
 
-        gg.rimumu.domain.entity.Member member = memberRepository.findByEmail(email).orElseThrow(() ->
+        MemberEntity member = memberRepository.findByEmail(email).orElseThrow(() ->
                     new RimumuException.MemberValidationException());
 
         if (!password.equals(member.getPassword())) {
