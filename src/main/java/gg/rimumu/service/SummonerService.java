@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import gg.rimumu.common.ChampionKey;
 import gg.rimumu.common.GameTypeKey;
-import gg.rimumu.common.RimumuKey;
+import gg.rimumu.common.RimumuProperties;
 import gg.rimumu.common.SpellKey;
 import gg.rimumu.dto.*;
 import gg.rimumu.exception.RimumuException;
@@ -32,7 +32,7 @@ public class SummonerService {
 
     // 소환사 검색
     public Summoner smnSearch(String smn, int offset) throws RimumuException{
-        String url = RimumuKey.SUMMONER_INFO_URL + smn;
+        String url = RimumuProperties.summoner_info_url + smn;
 
         HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
         String accResultStr;
@@ -54,7 +54,7 @@ public class SummonerService {
     public Summoner smnInfo(Summoner summoner, int offset) throws RimumuException.MatchNotFoundException {
 
         // 아이콘 이미지 주소
-        summoner.setIconImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/profileicon/" + summoner.getProfileIconId() + ".png");
+        summoner.setIconImgUrl(RimumuProperties.dd_url + VersionUtil.DD_VERSION + "/img/profileicon/" + summoner.getProfileIconId() + ".png");
 
         // 티어 조회
         getTier(summoner);
@@ -76,7 +76,7 @@ public class SummonerService {
     // current 현재 게임 여부 ---------------
     public Summoner currentGame(Summoner summoner) {
 
-        String curUrl = RimumuKey.SUMMONER_CURRENT_URL + summoner.getId();
+        String curUrl = RimumuProperties.summoner_current_url + summoner.getId();
 
         // 현재 게임 중일 경우 실행 //
         try {
@@ -109,7 +109,7 @@ public class SummonerService {
                 //inGame participant(p)의 id == myId 비교
                 if (summoner.getId().equals(inGame.get("summonerId").getAsString())) {
                     String curChamp = ChampionKey.valueOf("K"+inGame.get("championId")).getLabel();
-                    String curChampImg = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
+                    String curChampImg = RimumuProperties.dd_url + VersionUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
                     summoner.setCurChamp(curChamp);
                     summoner.setCurChampUrl(curChampImg);
                     return summoner;
@@ -125,7 +125,7 @@ public class SummonerService {
     // 티어 조회 로직
     public Summoner getTier(Summoner summoner) {
 
-        String rankUrl = RimumuKey.SUMMONER_TIER_URL + summoner.getId();
+        String rankUrl = RimumuProperties.summoner_tier_url + summoner.getId();
         String rankResultStr = (String) HttpConnUtil.sendHttpGetRequest(rankUrl).body();
 
         //언랭아닐 경우 [] 값
@@ -168,7 +168,7 @@ public class SummonerService {
     // 매치 리스트 가져오기 matchId
     public Summoner matchesUrl(Summoner summoner, int offset) throws RimumuException.MatchNotFoundException {
 
-        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + summoner.getPuuid() + "/ids?start=" + offset + "&count20";
+        String matUrl = RimumuProperties.summoner_matches_url + summoner.getPuuid() + "/ids?start=" + offset + "&count20";
         HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
 
         String matchesStr;
@@ -190,7 +190,7 @@ public class SummonerService {
     // match 당 정보 //  { info : {xx} } 부분
     public JsonObject getMatchIdInfo(String matchId) throws RimumuException.MatchNotFoundException {
 
-        String matchDataUrl = RimumuKey.SUMMONER_MATCHDTL_URL + matchId.replace("\"", "");
+        String matchDataUrl = RimumuProperties.summoner_matchdtl_url + matchId.replace("\"", "");
 
         HttpResponse<String> MatchInfoResponse = HttpConnUtil.sendHttpGetRequest(matchDataUrl);
 
@@ -233,10 +233,10 @@ public class SummonerService {
 
         // 메인 룬
         JsonObject selec1 = (JsonObject) styles.get(0);
-        String runeImgUrl1 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec1.get("style").getAsString());
+        String runeImgUrl1 = RimumuProperties.dd_url + "img/" + getRuneImgUrl(selec1.get("style").getAsString());
         // 보조 룬
         JsonObject selec2 = (JsonObject) styles.get(1);
-        String runeImgUrl2 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec2.get("style").getAsString());
+        String runeImgUrl2 = RimumuProperties.dd_url + "img/" + getRuneImgUrl(selec2.get("style").getAsString());
         rune.put("rune1", runeImgUrl1);
         rune.put("rune2", runeImgUrl2);
 
@@ -272,10 +272,10 @@ public class SummonerService {
         // item.json URL 연결
 
         item.setItemNum(itemNum);
-        item.setItemImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/item/" + itemNum + ".png");
+        item.setItemImgUrl(RimumuProperties.dd_url + VersionUtil.DD_VERSION + "/img/item/" + itemNum + ".png");
 
         // item TOOLTIP 템 정보
-        String itemUrl = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/data/ko_KR/item.json";
+        String itemUrl = RimumuProperties.dd_url + VersionUtil.DD_VERSION + "/data/ko_KR/item.json";
 
         //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
         String itemResultStr = (String) HttpConnUtil.sendHttpGetRequest(itemUrl).body();
@@ -359,7 +359,7 @@ public class SummonerService {
                 // 챔프네임의 대소문자가 match Json과 img API가 동일하지 않은 이유로 에러발생. 때문에 emun에서 가져옴
                 String champ = ChampionKey.valueOf("K" + inGame.get("championId").getAsString()).label();
                 participant.setInChamp(champ);
-                participant.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + champ + ".png");
+                participant.setChampImgUrl(RimumuProperties.dd_url + VersionUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
                 // 해당 parti의 id가 검색된 id인지 비교
                 if (!summoner.getName().equals(participant.getInName())) {
@@ -385,7 +385,7 @@ public class SummonerService {
     private void setGameDetail(Summoner summoner, Match match, JsonObject inGame, GameDetail gameDetail) {
 
         gameDetail.setInChamp(gameDetail.getInChamp());
-        gameDetail.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + gameDetail.getInChamp() + ".png");
+        gameDetail.setChampImgUrl(RimumuProperties.dd_url + VersionUtil.DD_VERSION + "/img/champion/" + gameDetail.getInChamp() + ".png");
 
         // KDA
         int kill = inGame.get("kills").getAsInt();
@@ -405,8 +405,8 @@ public class SummonerService {
 
         // inGame 스펠 [{"summonerId1:""}]
         Map<String, String> spells = getSpell(inGame);
-        gameDetail.setSpImgUrl1(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell1") + ".png");
-        gameDetail.setSpImgUrl2(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell2") + ".png");
+        gameDetail.setSpImgUrl1(RimumuProperties.dd_url + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell1") + ".png");
+        gameDetail.setSpImgUrl2(RimumuProperties.dd_url + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell2") + ".png");
 
         // inGame item 이미지 [{"item":xx}]
         List<Item> itemList = Stream.iterate(0, t -> t < 7, t -> t + 1)

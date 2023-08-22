@@ -1,7 +1,6 @@
 package gg.rimumu.util;
 
-import gg.rimumu.common.RimumuKey;
-import gg.rimumu.service.SummonerService;
+import gg.rimumu.common.RimumuProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -24,7 +23,7 @@ public class VersionUtil implements ApplicationRunner {
 
     public String versionInit() {
         try {
-            HttpResponse response = HttpConnUtil.sendHttpGetRequest(RimumuKey.DD_VERSION_URL);
+            HttpResponse response = HttpConnUtil.sendHttpGetRequest(RimumuProperties.dd_version_url);
             if (response.statusCode() == 200) {
                 String json = (String) response.body();
                 int end = json.indexOf("\"", 2);
