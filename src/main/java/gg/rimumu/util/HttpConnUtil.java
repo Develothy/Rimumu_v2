@@ -1,5 +1,6 @@
 package gg.rimumu.util;
 
+import gg.rimumu.common.RimumuKey;
 import gg.rimumu.exception.RimumuException;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +29,7 @@ public class HttpConnUtil {
         try {
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(new URI(url))
-                    .setHeader("X-Riot-Token", RimumuProperties.api_key)
+                    .setHeader("X-Riot-Token", RimumuKey.API_KEY)
                     .GET()
                     .build();
 
