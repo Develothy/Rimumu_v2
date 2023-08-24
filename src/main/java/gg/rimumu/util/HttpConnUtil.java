@@ -1,6 +1,5 @@
 package gg.rimumu.util;
 
-import gg.rimumu.common.RimumuProperties;
 import gg.rimumu.exception.RimumuException;
 import org.springframework.stereotype.Component;
 

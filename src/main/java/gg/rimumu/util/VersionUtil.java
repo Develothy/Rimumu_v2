@@ -1,6 +1,5 @@
 package gg.rimumu.util;
 
-import gg.rimumu.common.RimumuProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
