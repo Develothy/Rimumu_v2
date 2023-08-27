@@ -1,7 +1,5 @@
 package gg.rimumu.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;

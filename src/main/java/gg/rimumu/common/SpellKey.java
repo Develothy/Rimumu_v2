@@ -20,7 +20,9 @@ public enum SpellKey {
     SP32("SummonerSnowball"),
     SP39("SummonerSnowURFSnowball_Mark"),
     SP54("Summoner_UltBookPlaceholder"),
-    SP55("Summoner_UltBookSmitePlaceholder");
+    SP55("Summoner_UltBookSmitePlaceholder"),
+    SP2201("SummonerCherryHold"),
+    SP2202("SummonerCherryFlash");
 
 
     private final String label;

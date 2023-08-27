@@ -29,7 +29,7 @@ public class MemberController {
 
     }
 
-    @PostMapping
+    @PostMapping("/login")
     public String login(@RequestBody Member member) {
 
         String email = member.getEmail();

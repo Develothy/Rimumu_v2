@@ -89,6 +89,7 @@ public enum ChampionKey {
     K62 ("MonkeyKing"),
     K82 ("Mordekaiser"),
     K25 ("Morgana"),
+    K950 ("Naafiri"),
     K267 ("Nami"),
     K75 ("Nasus"),
     K111 ("Nautilus"),

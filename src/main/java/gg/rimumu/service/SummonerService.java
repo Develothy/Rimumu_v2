@@ -69,6 +69,7 @@ public class SummonerService {
         // matchDtlList
         matchDtls(summoner);
 
+        LOGGER.info("::::summoner:::: {}", summoner);
         return summoner;
     } // smnInfo() 소환사 정보 종료
 
@@ -190,7 +191,7 @@ public class SummonerService {
     // match 당 정보 //  { info : {xx} } 부분
     public JsonObject getMatchIdInfo(String matchId) throws RimumuException.MatchNotFoundException {
 
-        String matchDataUrl = RimumuKey.SUMMONER_MATCHES_URL + matchId.replace("\"", "");
+        String matchDataUrl = RimumuKey.SUMMONER_MATCHDTL_URL + matchId.replace("\"", "");
 
         HttpResponse<String> MatchInfoResponse = HttpConnUtil.sendHttpGetRequest(matchDataUrl);
 
@@ -231,12 +232,28 @@ public class SummonerService {
         JsonObject runes = inGame.getAsJsonObject("perks");
         JsonArray styles = runes.getAsJsonArray("styles");
 
+        String rune1 = ((JsonObject) styles.get(0)).get("style").getAsString();;
+        String rune2;
+        String runeImgUrl1;
+        String runeImgUrl2;
         // 메인 룬
-        JsonObject selec1 = (JsonObject) styles.get(0);
-        String runeImgUrl1 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec1.get("style").getAsString());
-        // 보조 룬
-        JsonObject selec2 = (JsonObject) styles.get(1);
-        String runeImgUrl2 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(selec2.get("style").getAsString());
+        if (!"0".equals(rune1)) {
+            runeImgUrl1 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(rune1);
+            // 보조 룬
+            rune2 = ((JsonObject) styles.get(1)).get("style").getAsString();
+            runeImgUrl2 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(rune2);
+
+        } else {
+            rune1 = null;
+            rune2 = null;
+            runeImgUrl1 = null;
+            runeImgUrl2 = null;
+            /*            rune1 = inGame.get("playerAugment1").getAsString();
+            rune2 = inGame.get("playerAugment2").getAsString();
+            runeImgUrl1 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(rune1);
+            runeImgUrl2 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(rune2);*/
+
+        }
         rune.put("rune1", runeImgUrl1);
         rune.put("rune2", runeImgUrl2);
 
@@ -356,19 +373,23 @@ public class SummonerService {
                 Participant participant = new Participant();
 
                 participant.setInName(inGame.get("summonerName").getAsString());
+
                 // 챔프네임의 대소문자가 match Json과 img API가 동일하지 않은 이유로 에러발생. 때문에 emun에서 가져옴
                 String champ = ChampionKey.valueOf("K" + inGame.get("championId").getAsString()).label();
                 participant.setInChamp(champ);
                 participant.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
                 // 해당 parti의 id가 검색된 id인지 비교
-                if (!summoner.getName().equals(participant.getInName())) {
-                    // participant가 나일 경우 추가 정보 세팅
+/*                if (!summoner.getName().equals(participant.getInName())) {
                     setGameDetail(summoner, match, inGame, participant);
-                } else {
+                } else {*/
+                if(summoner.getName().equals(participant.getInName())) {
                     MyGame myGame = new MyGame();
                     // participant가 나일 경우 추가 정보 세팅
                     setGameDetail(summoner, match, inGame, myGame);
+                    myGame.setInChamp(champ);
+                    myGame.setChampImgUrl(participant.getChampImgUrl());
+                    match.setMyGame(myGame);
                 }
 
                 participants.add(participant);
@@ -383,9 +404,6 @@ public class SummonerService {
     }
 
     private void setGameDetail(Summoner summoner, Match match, JsonObject inGame, GameDetail gameDetail) {
-
-        gameDetail.setInChamp(gameDetail.getInChamp());
-        gameDetail.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + gameDetail.getInChamp() + ".png");
 
         // KDA
         int kill = inGame.get("kills").getAsInt();
@@ -437,5 +455,6 @@ public class SummonerService {
             summoner.setRecentTotal(summoner.getRecentTotal() + 1);
             summoner.setRecentAvg(getKdaAvg(summoner.getRecentKill(), summoner.getRecentAssist(), summoner.getRecentDeath()));
         }
+        //return gameDetail;
     }
 }
