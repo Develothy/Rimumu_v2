@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -44,5 +45,23 @@ public class SummonerCopy {
 
         model.addAttribute("summoner", summoner);
         return "summoner/smnResult";
+    }
+
+    @GetMapping("/api/summoner")
+    @ResponseBody
+    public Summoner getSummonerData(@RequestParam String smn,
+                                    @RequestParam(required = false, defaultValue = "0") int offset) throws IOException, RimumuException.SummonerNotFoundException {
+        String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
+
+        Summoner summoner;
+        try {
+            summoner = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8), offset);
+        } catch (RimumuException.SummonerNotFoundException e) {
+            throw new RimumuException.SummonerNotFoundException(smn);
+        } catch (RimumuException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println(summoner);
+        return summoner;
     }
 }

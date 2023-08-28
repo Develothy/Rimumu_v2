@@ -65,11 +65,9 @@ public class SummonerService {
         // matchId 최근 20게임
         matchesUrl(summoner, offset);
 
-
         // matchDtlList
         matchDtls(summoner);
 
-        LOGGER.info("::::summoner:::: {}", summoner);
         return summoner;
     } // smnInfo() 소환사 정보 종료
 
