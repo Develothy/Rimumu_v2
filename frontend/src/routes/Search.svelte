@@ -6,16 +6,8 @@
 
     async function handleSubmit(event) {
         event.preventDefault();
-        const response = await fetch('/api/summoner', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ smn }),
-        });
-        const data = await response.json();
-        console.log(data);
-        goto(`/summoner?data=${encodeURIComponent(JSON.stringify(data))}`);
+
+        await goto(`/summoner?smn=${encodeURIComponent(smn)}`);
     }
 </script>
 
