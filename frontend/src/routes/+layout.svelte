@@ -11,7 +11,9 @@
 	</main>
 
 	<footer>
-		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
+		<p>  2022 Rimumu.gg
+			<i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://github.com/Develothy/rimumu.gg" target="_blank">Develothy</a>
+		</p>
 	</footer>
 </div>
 
