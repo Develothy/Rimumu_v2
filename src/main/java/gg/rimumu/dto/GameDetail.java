@@ -18,6 +18,7 @@ public class GameDetail {
 
     // 닉네임?
     private String inName;
+    private String puuid;
 
     //myK, partiK
     private int kill;

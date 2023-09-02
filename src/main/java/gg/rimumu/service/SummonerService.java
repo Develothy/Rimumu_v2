@@ -31,27 +31,27 @@ public class SummonerService {
     static final Gson gson = new Gson();
 
     // 소환사 검색
-    public Summoner smnSearch(String smn, int offset) throws RimumuException{
+    public Summoner smnSearch(String smn, int offset) throws RimumuException {
         String url = RimumuKey.SUMMONER_INFO_URL + smn;
 
-        HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
-        String accResultStr;
+        Summoner summoner;
+        try {
+            HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
+            String accResultStr = smnSearchResponse.body();
 
-        switch (smnSearchResponse.statusCode()) {
-            case 200 -> accResultStr = smnSearchResponse.body();
-            case 404 -> throw new RimumuException.SummonerNotFoundException(smn);
-            default -> throw new RimumuException.ServerException();
+            // 검색 소환사 account 정보 가져오기
+            summoner = gson.fromJson(accResultStr, Summoner.class);
+            smnInfo(summoner, offset);
+
+        } catch (RimumuException e) {
+            throw new RimumuException(e.getMessage());
         }
-
-        // 검색 소환사 account 정보 가져오기
-        Summoner summoner = gson.fromJson(accResultStr, Summoner.class);
-        smnInfo(summoner, offset);
 
         return summoner;
     }
 
     //소환사 정보
-    public Summoner smnInfo(Summoner summoner, int offset) throws RimumuException.MatchNotFoundException {
+    public Summoner smnInfo(Summoner summoner, int offset) throws RimumuException {
 
         // 아이콘 이미지 주소
         summoner.setIconImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/profileicon/" + summoner.getProfileIconId() + ".png");
@@ -62,14 +62,15 @@ public class SummonerService {
         // 게임중 여부 조회 (riot developer api 막힘)
         currentGame(summoner);
 
-        // matchId 최근 20게임
-        matchesUrl(summoner, offset);
-
-        // matchDtlList
-        matchDtls(summoner);
-
         return summoner;
     } // smnInfo() 소환사 정보 종료
+
+    public List<Match> smnMatches(String puuid, int offset ) throws RimumuException.MatchNotFoundException {
+        // matchId 최근 20게임
+        return matchesUrl(puuid, offset);
+
+        // matchDtlList
+    }
 
 
     // current 현재 게임 여부 ---------------
@@ -165,9 +166,9 @@ public class SummonerService {
     }
 
     // 매치 리스트 가져오기 matchId
-    public Summoner matchesUrl(Summoner summoner, int offset) throws RimumuException.MatchNotFoundException {
+    public List<Match> matchesUrl(String userPuuid, int offset) throws RimumuException.MatchNotFoundException {
 
-        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + summoner.getPuuid() + "/ids?start=" + offset + "&count20";
+        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + userPuuid + "/ids?start=" + offset + "&count20";
         HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
 
         String matchesStr;
@@ -176,14 +177,14 @@ public class SummonerService {
             case 200 -> matchesStr = smnMatchResponse.body();
             default -> {
                 LOGGER.error("Match List 정보를 찾을 수 없습니다.");
-                throw new RimumuException.MatchNotFoundException(summoner.getName());
+                throw new RimumuException.MatchNotFoundException(userPuuid);
             }
         }
-        List<String> matchesArr = gson.fromJson(matchesStr, List.class);
-        summoner.setMatchIdList(matchesArr);
+        List<String> matcheIds = gson.fromJson(matchesStr, List.class);
 
-        LOGGER.info("matchesUrl() matcheIdList : " + summoner.getMatchIdList().toString());
-        return summoner;
+        LOGGER.info("matchesUrl() matcheIds : " + matcheIds.size());
+
+        return matchDtls(userPuuid, matcheIds);
     }
 
     // match 당 정보 //  { info : {xx} } 부분
@@ -324,16 +325,15 @@ public class SummonerService {
      * forEach 반복문 시작구간
      * 설명 : 챔피언, 게입타입, 승패, 게임 시간, KDA, 룬, 스펠, 아이템, 플레이어
      */
-    public Summoner matchDtls(Summoner summoner) throws RimumuException.MatchNotFoundException {
+    public List<Match> matchDtls(String userPuuid, List<String> matcheIds) throws RimumuException.MatchNotFoundException {
 
-        List<String> matchIdList = summoner.getMatchIdList();
         List<Match> matchList = new ArrayList<>();
 
         //매치 당 정보 가져오기 / 20게임 정보의 api 이용 중
-        for (int i = 0; i < matchIdList.size() - 15; i++) {
+        for (int i = 0; i < matcheIds.size() - 15; i++) {
 
             String matchId = "";
-            matchId = String.valueOf(matchIdList.get(i));
+            matchId = String.valueOf(matcheIds.get(i));
             LOGGER.info("{}번 Match : {}", i, matchId);
 
             Match match = new Match();
@@ -377,14 +377,10 @@ public class SummonerService {
                 participant.setInChamp(champ);
                 participant.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
-                // 해당 parti의 id가 검색된 id인지 비교
-/*                if (!summoner.getName().equals(participant.getInName())) {
-                    setGameDetail(summoner, match, inGame, participant);
-                } else {*/
-                if(summoner.getName().equals(participant.getInName())) {
+                if(userPuuid.equals(participant.getPuuid())) {
                     MyGame myGame = new MyGame();
                     // participant가 나일 경우 추가 정보 세팅
-                    setGameDetail(summoner, match, inGame, myGame);
+                    setGameDetail(match, inGame, myGame);
                     myGame.setInChamp(champ);
                     myGame.setChampImgUrl(participant.getChampImgUrl());
                     match.setMyGame(myGame);
@@ -396,12 +392,11 @@ public class SummonerService {
             match.setParticipants(participants);
             matchList.add(match);
         }
-        summoner.setMatchList(matchList);
-        LOGGER.info("{} 조회 종료", summoner.getName());
-        return summoner;
+        LOGGER.info("matchList {} 조회 종료", matchList.size());
+        return matchList;
     }
 
-    private void setGameDetail(Summoner summoner, Match match, JsonObject inGame, GameDetail gameDetail) {
+    private void setGameDetail(Match match, JsonObject inGame, GameDetail gameDetail) {
 
         // KDA
         int kill = inGame.get("kills").getAsInt();
@@ -440,18 +435,18 @@ public class SummonerService {
             if (win) {
                 match.setWin("WIN");
                 match.setTable("table-primary");
-                summoner.setRecentWin(summoner.getRecentWin()+1);
+                //summoner.setRecentWin(summoner.getRecentWin()+1);
             } else {
                 match.setWin("LOSE");
                 match.setTable("table-danger");
-                summoner.setRecentLose(summoner.getRecentLose()+1);
+                //summoner.setRecentLose(summoner.getRecentLose()+1);
             }
-            // 최근 전적 KDA
+/*            // 최근 전적 KDA
             summoner.setRecentKill(summoner.getRecentKill() + kill);
             summoner.setRecentDeath(summoner.getRecentDeath() + death);
             summoner.setRecentAssist(summoner.getRecentAssist() + avg);
             summoner.setRecentTotal(summoner.getRecentTotal() + 1);
-            summoner.setRecentAvg(getKdaAvg(summoner.getRecentKill(), summoner.getRecentAssist(), summoner.getRecentDeath()));
+            summoner.setRecentAvg(getKdaAvg(summoner.getRecentKill(), summoner.getRecentAssist(), summoner.getRecentDeath()));*/
         }
         //return gameDetail;
     }
