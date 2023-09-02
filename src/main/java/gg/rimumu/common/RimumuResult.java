@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 @Setter
 @Getter
-
+@AllArgsConstructor
 public class RimumuResult<T> implements Serializable {
 
     private int code = 0;
