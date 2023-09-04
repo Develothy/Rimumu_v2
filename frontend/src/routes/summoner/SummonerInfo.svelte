@@ -25,10 +25,10 @@
                 <!-- 솔로랭크 -->
                 <!-- 언랭일때 -->
                 {#if info.soloTier == 'Unranked'}
-                    <img src="lib/images/img/rank1.png" alt="Unranked" width="170px">
+                    <img src="/src/lib/images/img/rank1.png" alt="Unranked" width="170px">
                 {:else}
                     <div class="col-sm-5">
-                        <img src={`lib/images/emblem/${info.soloTier}.png`} alt="tier" width="80px">
+                        <img src={`/src/lib/images/emblem/${info.soloTier}.png`} alt="tier" width="80px">
                     </div>
                     <div class="col-sm-6">
                         <h6 class="small">솔로랭크</h6>
@@ -45,10 +45,10 @@
                 <!-- 자유랭크 -->
                 <!-- 언랭일때 -->
                 {#if info.flexTier == 'Unranked'}
-                    <img src="lib/images/img/rank2.png" alt="Unranked" width="170px">
+                    <img src="/src/lib/images/img/rank2.png" alt="Unranked" width="170px">
                 {:else}
                     <div class="col-sm-5">
-                        <img src={`lib/images/emblem/${info.flexTier}.png`} alt="tier" width="80px">
+                        <img src={`/src/lib/images/emblem/${info.flexTier}.png`} alt="tier" width="80px">
                     </div>
                     <div class="col-sm-6">
                         <h6 class="small">자유랭크</h6>
@@ -78,7 +78,7 @@
         <!-- box 4 인게임 여부 -->
         <div class="col-sm-3 text-center">
             {#if !info.current}
-                <img src="lib/images/img/current.png" alt="게임중 아님" width="150px">
+                <img src="/src/lib/images/img/current.png" alt="게임중 아님" width="150px">
             {:else}
                 <p>{info.curChamp} playing!</p>
                 <img src={info.curChampUrl} alt="현재 챔프" width="70px">
@@ -86,4 +86,4 @@
         </div>
     </div>
     <!-- info 하단 종료 -->
-</div>>
+</div>
