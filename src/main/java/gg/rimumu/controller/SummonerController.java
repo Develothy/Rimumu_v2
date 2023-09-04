@@ -3,6 +3,7 @@ package gg.rimumu.controller;
 import gg.rimumu.common.RimumuResult;
 import gg.rimumu.dto.Match;
 import gg.rimumu.dto.Summoner;
+import gg.rimumu.exception.RimumuException;
 import gg.rimumu.service.SummonerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -33,23 +35,31 @@ public class SummonerController extends BaseController {
             System.out.println(summoner);
             return new RimumuResult(summoner);
 
-        } catch (Exception e) {
-            return new RimumuResult<>(500, e.getMessage(), null);
+        } catch (RimumuException e) {
+            return new RimumuResult<>(e.code, e.getMessage(), null);
         }
     }
 
     @GetMapping("/matches")
     @ResponseBody
-    public RimumuResult matches (@RequestParam String userPuuid,
-                                    @RequestParam(required = false, defaultValue = "0") int offset) {
+    public RimumuResult matches (@RequestParam(required = false) String smnPuuid,
+                                 @RequestParam(required = false) String smn,
+                                 @RequestParam(required = false, defaultValue = "0") int offset) {
 
         try {
-            List<Match> matches = summonerService.smnMatches(userPuuid, offset);
-            System.out.println(matches.size());
-            return new RimumuResult<>(matches);
+            if (smnPuuid == null) {
+                String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
+                smnPuuid = summonerService.getSmnPuuid(adjustSmn);
+            }
 
-        } catch (Exception e) {
-            return new RimumuResult<>(500, e.getMessage(), null);
+            List<Match> matches = summonerService.getMatches(smnPuuid, offset);
+
+            RimumuResult result = new RimumuResult<>(matches);
+            System.out.println(result.getData());
+            return result;
+
+        } catch (RimumuException e) {
+            return new RimumuResult<>(e.code, e.getMessage(), null);
         }
     }
 }

@@ -32,6 +32,14 @@ public class SummonerService {
 
     // 소환사 검색
     public Summoner smnSearch(String smn) throws RimumuException {
+
+        Summoner summoner = getSummoner(smn);
+        setSmnInfo(summoner);
+
+        return summoner;
+    }
+
+    public Summoner getSummoner(String smn) throws RimumuException {
         String url = RimumuKey.SUMMONER_INFO_URL + smn;
 
         Summoner summoner;
@@ -43,13 +51,11 @@ public class SummonerService {
 
         // 검색 소환사 account 정보 가져오기
         summoner = gson.fromJson(smnSearchResponse.body(), Summoner.class);
-        smnInfo(summoner);
-
         return summoner;
     }
 
     //소환사 정보
-    public Summoner smnInfo(Summoner summoner) throws RimumuException {
+    public void setSmnInfo(Summoner summoner) throws RimumuException {
 
         // 아이콘 이미지 주소
         summoner.setIconImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/profileicon/" + summoner.getProfileIconId() + ".png");
@@ -58,19 +64,23 @@ public class SummonerService {
         getTier(summoner);
 
         // 게임중 여부 조회 (riot developer api 막힘)
-        currentGame(summoner);
+        checkCurrentGame(summoner);
+    }
 
-        return summoner;
-    } // smnInfo() 소환사 정보 종료
+    public String getSmnPuuid(String smn) throws RimumuException {
+        Summoner summoner = getSummoner(smn);
+        return summoner.getPuuid();
+    }
 
-    public List<Match> smnMatches(String puuid, int offset ) throws RimumuException {
 
-        return matchesUrl(puuid, offset);
+    public List<Match> getMatches(String puuid, int offset ) throws RimumuException {
+
+        return getMatchesUrl(puuid, offset);
     }
 
 
     // current 현재 게임 여부 ---------------
-    public Summoner currentGame(Summoner summoner) {
+    public Summoner checkCurrentGame(Summoner summoner) {
 
         String curUrl = RimumuKey.SUMMONER_CURRENT_URL + summoner.getId();
 
@@ -157,7 +167,7 @@ public class SummonerService {
     }
 
     // 매치 리스트 가져오기 matchId
-    public List<Match> matchesUrl(String userPuuid, int offset) throws RimumuException {
+    public List<Match> getMatchesUrl(String userPuuid, int offset) throws RimumuException {
 
         String matUrl = RimumuKey.SUMMONER_MATCHES_URL + userPuuid + "/ids?start=" + offset + "&count20";
         HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
@@ -169,7 +179,7 @@ public class SummonerService {
 
         List<String> matcheIds = gson.fromJson(smnMatchResponse.body(), List.class);
 
-        return matchDtls(userPuuid, matcheIds);
+        return setMatchDtls(userPuuid, matcheIds);
     }
 
     // match 당 정보 //  { info : {xx} } 부분
@@ -253,7 +263,7 @@ public class SummonerService {
     }
 
     // item 구하기
-    public Item getItem(int itemNum) {
+    public Item setItem(int itemNum) {
 
         Item item = new Item();
 
@@ -306,7 +316,7 @@ public class SummonerService {
      * forEach 반복문 시작구간
      * 설명 : 챔피언, 게입타입, 승패, 게임 시간, KDA, 룬, 스펠, 아이템, 플레이어
      */
-    public List<Match> matchDtls(String userPuuid, List<String> matcheIds) throws RimumuException {
+    public List<Match> setMatchDtls(String userPuuid, List<String> matcheIds) throws RimumuException {
 
         List<Match> matchList = new ArrayList<>();
 
@@ -402,7 +412,7 @@ public class SummonerService {
                 .map(t -> "item" + t)
                 .map(inGame::get)
                 .map(JsonElement::getAsInt)
-                .map(this::getItem)
+                .map(this::setItem)
                 .toList();
         gameDetail.setItemList(itemList);
 
