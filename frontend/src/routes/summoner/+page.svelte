@@ -6,8 +6,6 @@
     let info: any = {};
     let matches: any = [];
 
-    console.log("tlqkf")
-
     let smn = $page.url.searchParams.get('smn');
     const encodedSmn = encodeURIComponent(smn);
     let userPuuid;
@@ -19,12 +17,10 @@
             const data1 = await response1.json();
             info = data1.data;
             userPuuid = info.puuid;
-            console.log(info)
 
             const response2 = await fetch(`http://localhost:8088/api/matches?userPuuid=${userPuuid}`, { mode: 'cors' });
             const data2 = await response2.json();
             matches = data2.data;
-            console.log(matches)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
