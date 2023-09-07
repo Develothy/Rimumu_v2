@@ -1,5 +1,10 @@
 <script lang="ts">
     export let matches: any;
+
+    function smnSearch(smn, puuid) {
+        const encodedSmn = encodeURIComponent(smn);
+        window.location.href = `/summoner?smn=${encodedSmn}&puuid=${puuid}`;
+    }
 </script>
 
 <div class="main-card2 mb-3 card">
@@ -61,7 +66,7 @@
                         {#each match.participants as parti, index}
                             {#if index < 5}
                                 <li class="d-block text-truncate">
-                                    <a on:click={() => navigateToSummonerPage(parti.inName)} class="d-block text-truncate text-secondary m-0">
+                                    <a on:click={() => smnSearch(parti.inName, parti.puuid)} class="d-block text-truncate text-secondary m-0">
                                         <img src={parti.champImgUrl} alt="partiChamp" width="17px">
                                         <span class="small"> {parti.inName} </span>
                                     </a>

@@ -7,18 +7,39 @@
     let matches: any = [];
 
     let smn = $page.url.searchParams.get('smn');
-    const encodedSmn = encodeURIComponent(smn);
+    let puuid = $page.url.searchParams.get('puuid');
     let userPuuid;
+    let encodedSmn;
 
-    // 데이터 로딩 함수 정의
     async function fetchData() {
+        if (puuid != null) {
+            console.log("puuid 탄다요!")
+            await fetchInfo();
+            await fetchMatchWithPuuid(puuid);
+        } else {
+            console.log("not puuid 탄다요!")
+            encodedSmn = encodeURIComponent(smn);
+            await fetchInfo();
+            await fetchMatchWithName(encodedSmn);
+        }
+    }
+
+    // 소환사 정보
+    async function fetchInfo() {
         try {
             const response1 = await fetch(`http://localhost:8088/api/summoner?smn=${encodedSmn}`, { mode: 'cors' });
             const data1 = await response1.json();
             info = data1.data;
             userPuuid = info.puuid;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
 
-            const response2 = await fetch(`http://localhost:8088/api/matches?userPuuid=${userPuuid}`, { mode: 'cors' });
+    // Match 정보
+    async function fetchMatchWithName(encodedSmn) {
+        try {
+            const response2 = await fetch(`http://localhost:8088/api/matches?smn=${encodedSmn}`, { mode: 'cors' });
             const data2 = await response2.json();
             matches = data2.data;
         } catch (error) {
@@ -26,8 +47,21 @@
         }
     }
 
-    // 데이터 로딩 함수 호출
-    fetchData();
+    async function fetchMatchWithPuuid(puuid) {
+        try {
+            const response2 = await fetch(`http://localhost:8088/api/matches?puuid=${puuid}`, { mode: 'cors' });
+            const data2 = await response2.json();
+            matches = data2.data;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    import { onMount } from 'svelte';
+
+    onMount(() => {
+        fetchData();
+    });
 
 </script>
 
