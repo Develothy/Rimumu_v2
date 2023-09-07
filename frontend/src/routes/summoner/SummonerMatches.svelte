@@ -1,9 +1,9 @@
 <script lang="ts">
     export let matches: any;
 
-    function smnSearch(smn, puuid) {
+    function smnSearch(smn) {
         const encodedSmn = encodeURIComponent(smn);
-        window.location.href = `/summoner?smn=${encodedSmn}&puuid=${puuid}`;
+        window.location.href = `/summoner?smn=${encodedSmn}`;
     }
 </script>
 
@@ -66,7 +66,7 @@
                         {#each match.participants as parti, index}
                             {#if index < 5}
                                 <li class="d-block text-truncate">
-                                    <a on:click={() => smnSearch(parti.inName, parti.puuid)} class="d-block text-truncate text-secondary m-0">
+                                    <a on:click={() => smnSearch(parti.inName)} class="d-block text-truncate text-secondary m-0">
                                         <img src={parti.champImgUrl} alt="partiChamp" width="17px">
                                         <span class="small"> {parti.inName} </span>
                                     </a>
@@ -81,7 +81,7 @@
                         {#each match.participants as parti, index}
                             {#if index >= 5}
                                 <li class="d-block text-truncate">
-                                    <a href={`/summoner?smn=${encodeURIComponent(parti.inName)}`} class="d-block text-truncate text-secondary m-0">
+                                    <a on:click={() => smnSearch(parti.inName)} class="d-block text-truncate text-secondary m-0">
                                         <img src={parti.champImgUrl} alt="partiChamp" width="17px">
                                         <span class="small"> {parti.inName} </span>
                                     </a>
