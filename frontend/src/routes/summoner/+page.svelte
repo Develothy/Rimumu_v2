@@ -7,21 +7,20 @@
     let matches: any = [];
 
     let smn = $page.url.searchParams.get('smn');
-    let puuid = $page.url.searchParams.get('puuid');
+    let puuid = '';
     let userPuuid;
-    let encodedSmn;
+    let encodedSmn = encodeURIComponent(smn);
 
+    fetchData();
     async function fetchData() {
-        if (puuid != null) {
-            console.log("puuid 탄다요!")
-            await fetchInfo();
-            await fetchMatchWithPuuid(puuid);
-        } else {
             console.log("not puuid 탄다요!")
-            encodedSmn = encodeURIComponent(smn);
             await fetchInfo();
             await fetchMatchWithName(encodedSmn);
-        }
+    }
+    async function pu(puuid) {
+        console.log("puuid 탄다요!")
+        await fetchInfo();
+        await fetchMatchWithPuuid(puuid);
     }
 
     // 소환사 정보
@@ -57,11 +56,7 @@
         }
     }
 
-    import { onMount } from 'svelte';
 
-    onMount(() => {
-        fetchData();
-    });
 
 </script>
 
@@ -71,7 +66,7 @@
         <div class="container main-inner">
             <SummonerInfo {info}/>
             {#if matches}
-                <SummonerMatches {matches}/>
+                <SummonerMatches {matches}{pu}/>
             {/if}
         </div>
     {:else}
