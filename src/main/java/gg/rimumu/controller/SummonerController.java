@@ -32,7 +32,6 @@ public class SummonerController extends BaseController {
 
         try {
             Summoner summoner = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8));
-            System.out.println(summoner);
             return new RimumuResult(summoner);
 
         } catch (RimumuException e) {
@@ -51,11 +50,11 @@ public class SummonerController extends BaseController {
                 String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
                 smnPuuid = summonerService.getSmnPuuid(adjustSmn);
             }
-
+            System.out.println("====controller====");
             List<Match> matches = summonerService.getMatches(smnPuuid, offset);
 
             RimumuResult result = new RimumuResult<>(matches);
-            System.out.println(result.getData());
+            System.out.println("result" + result.getData());
             return result;
 
         } catch (RimumuException e) {

@@ -45,7 +45,7 @@ public class SummonerService {
         Summoner summoner;
         HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
 
-        if (smnSearchResponse != null && 200 != smnSearchResponse.statusCode()) {
+        if (smnSearchResponse == null || 200 != smnSearchResponse.statusCode()) {
             throw new RimumuException.SummonerNotFoundException(smn);
         }
 
