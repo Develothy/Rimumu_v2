@@ -24,6 +24,7 @@ public enum ChampionKey {
     K53 ("Blitzcrank"),
     K63("Brand"),
     K201 ("Braum"),
+    K233 ("Briar"),
     K51 ("Caitlyn"),
     K164 ("Camille"),
     K69 ("Cassiopeia"),
