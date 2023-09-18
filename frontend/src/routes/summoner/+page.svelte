@@ -5,71 +5,71 @@
 
     let info: any = {};
     let matches: any = [];
-
     let smn = $page.url.searchParams.get('smn');
-    let puuid = '';
-    let userPuuid;
-    let encodedSmn = encodeURIComponent(smn);
 
     fetchData();
+
+    // fetchData 함수를 async로 만들어서 비동기 처리
     async function fetchData() {
-            console.log("not puuid 탄다요!")
-            await fetchInfo();
-            await fetchMatchWithName(encodedSmn);
-    }
-    async function pu(puuid) {
-        console.log("puuid 탄다요!")
-        await fetchInfo();
-        await fetchMatchWithPuuid(puuid);
+        try {
+            console.log("fetchData : ", smn);
+            // 병렬 호출
+            await Promise.all([fetchMatchWithName(), fetchInfo()]);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
     }
 
     // 소환사 정보
     async function fetchInfo() {
         try {
-            const response1 = await fetch(`http://localhost:8088/api/summoner?smn=${encodedSmn}`, { mode: 'cors' });
-            const data1 = await response1.json();
-            info = data1.data;
-            userPuuid = info.puuid;
+            const url = `http://localhost:8088/api/summoner?smn=${encodeURIComponent(smn)}`
+            console.log(url)
+            const response = await fetch(url, { mode: 'cors' });
+            if (!response.ok) {
+                throw new Error('Failed to fetch summoner info');
+            }
+            const data = await response.json();
+            info = data.data;
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching summoner info:', error);
+            // 오류 발생 시 리다이렉트
         }
     }
 
     // Match 정보
-    async function fetchMatchWithName(encodedSmn) {
+    async function fetchMatchWithName() {
         try {
-            const response2 = await fetch(`http://localhost:8088/api/matches?smn=${encodedSmn}`, { mode: 'cors' });
-            const data2 = await response2.json();
-            matches = data2.data;
+            const url = `http://localhost:8088/api/matches?smn=${encodeURIComponent(smn)}`
+            console.log(url)
+            const response = await fetch(url, { mode: 'cors' });
+            if (!response.ok) {
+                throw new Error('Failed to fetch matches');
+            }
+            const data = await response.json();
+            console.log("matches", data.data)
+            matches = data.data;
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching matches:', error);
+            // 오류 발생 시 이미지 띄우기
         }
     }
-
-    async function fetchMatchWithPuuid(puuid) {
-        try {
-            const response2 = await fetch(`http://localhost:8088/api/matches?puuid=${puuid}`, { mode: 'cors' });
-            const data2 = await response2.json();
-            matches = data2.data;
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    }
-
-
 
 </script>
 
 <main>
-    {#if info.name}
-        <h1>{info.name}</h1>
-        <div class="container main-inner">
+    <div class="container main-inner">
+        {#if info.name}
             <SummonerInfo {info}/>
-            {#if matches}
-                <SummonerMatches {matches}{pu}/>
-            {/if}
-        </div>
-    {:else}
-        <p>Loading...</p>
-    {/if}
+        {:else}
+            <p>Loading...</p>
+        {/if}
+
+        {#if matches.length > 0}
+            <SummonerMatches {matches}/>
+        {:else}
+            <p>Loading...</p>
+        {/if}
+    </div>
+
 </main>
