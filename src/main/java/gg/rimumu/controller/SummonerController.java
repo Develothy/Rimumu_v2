@@ -29,6 +29,7 @@ public class SummonerController extends BaseController {
     public RimumuResult info (@RequestParam String smn) {
         // 2글자 닉네임 버그 조정
         String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
+        System.out.println("====controller summoner====");
 
         try {
             Summoner summoner = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8));
@@ -50,7 +51,7 @@ public class SummonerController extends BaseController {
                 String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
                 smnPuuid = summonerService.getSmnPuuid(adjustSmn);
             }
-            System.out.println("====controller====");
+            System.out.println("====controller matches====");
             List<Match> matches = summonerService.getMatches(smnPuuid, offset);
 
             RimumuResult result = new RimumuResult<>(matches);
