@@ -20,5 +20,9 @@ public class RimumuResult<T> implements Serializable {
     public RimumuResult(Object data) {
         this.data = (T) data;
     }
+    public RimumuResult(int code, String description) {
+        this.code = code;
+        this.description = description;
+    }
 
 }

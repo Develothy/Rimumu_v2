@@ -36,7 +36,7 @@ public class SummonerController extends BaseController {
             return new RimumuResult(summoner);
 
         } catch (RimumuException e) {
-            return new RimumuResult<>(e.code, e.getMessage(), null);
+            return new RimumuResult<>(e.code, e.getMessage());
         }
     }
 
@@ -59,7 +59,7 @@ public class SummonerController extends BaseController {
             return result;
 
         } catch (RimumuException e) {
-            return new RimumuResult<>(e.code, e.getMessage(), null);
+            return new RimumuResult<>(e.code, e.getMessage());
         }
     }
 }

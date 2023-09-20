@@ -30,6 +30,11 @@
                 throw new Error('Failed to fetch summoner info');
             }
             const data = await response.json();
+            if (data.code != null && data.code != 0) {
+                console.log('data code : ', data.code)
+                throw new Error('summoner info is not successful');
+            }
+            console.log('data code : ', data.code)
             info = data.data;
         } catch (error) {
             console.error('Error fetching summoner info:', error);
