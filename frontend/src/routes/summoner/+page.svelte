@@ -2,10 +2,12 @@
     import { page } from '$app/stores';
     import SummonerInfo from './SummonerInfo.svelte';
     import SummonerMatches from "./SummonerMatches.svelte";
+    import MatchResultNull from "../errorpage/MatchResultNull.svelte";
 
     let info: any = {};
     let matches: any = [];
     let smn = $page.url.searchParams.get('smn');
+    let matchResultCode: number = 1000;
 
     fetchData();
 
@@ -34,7 +36,7 @@
                 console.log('data code : ', data.code)
                 throw new Error('summoner info is not successful');
             }
-            console.log('data code : ', data.code)
+            console.log('info data code : ', data.code)
             info = data.data;
         } catch (error) {
             console.error('Error fetching summoner info:', error);
@@ -52,7 +54,12 @@
                 throw new Error('Failed to fetch matches');
             }
             const data = await response.json();
-            console.log("matches", data.data)
+            matchResultCode = data.code;
+            if (matchResultCode != null && matchResultCode != 0) {
+                console.log('matches data code : ', matchResultCode)
+                throw new Error('summoner matches is not successful');
+            }
+            //console.log("matches", data.data)
             matches = data.data;
         } catch (error) {
             console.error('Error fetching matches:', error);
@@ -70,8 +77,12 @@
             <p>Loading...</p>
         {/if}
 
-        {#if matches.length > 0}
-            <SummonerMatches {matches}/>
+        {#if matchResultCode != 1000}
+            {#if matchResultCode == 0}
+                <SummonerMatches {matches}/>
+            {:else }
+                <MatchResultNull />
+            {/if}
         {:else}
             <p>Loading...</p>
         {/if}
