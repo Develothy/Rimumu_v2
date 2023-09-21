@@ -41,22 +41,22 @@ public class SummonerService {
 
     public Summoner getSummoner(String smn) throws RimumuException {
         String url = RimumuKey.SUMMONER_INFO_URL + smn;
+        Summoner summoner = new Summoner();
 
-        Summoner summoner;
-        HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
-        LOGGER.info("exception test smnSearchResponse : {}", smnSearchResponse);
-        if (smnSearchResponse == null || 200 != smnSearchResponse.statusCode()) {
-            LOGGER.info("exception test smnSearchResponse.statusCode() : {}", smnSearchResponse);
+        try {
+            HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
+
+            // 검색 소환사 account 정보 가져오기
+            summoner = gson.fromJson(smnSearchResponse.body(), Summoner.class);
+        } catch (RimumuException e) {
+            LOGGER.error("!! getSummoner smnSearch error: {}", e.getMessage());
             throw new RimumuException.SummonerNotFoundException(smn);
         }
-
-        // 검색 소환사 account 정보 가져오기
-        summoner = gson.fromJson(smnSearchResponse.body(), Summoner.class);
         return summoner;
     }
 
     //소환사 정보
-    public void setSmnInfo(Summoner summoner) throws RimumuException {
+    public void setSmnInfo(Summoner summoner){
 
         // 아이콘 이미지 주소
         summoner.setIconImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/profileicon/" + summoner.getProfileIconId() + ".png");
@@ -85,16 +85,21 @@ public class SummonerService {
 
         String curUrl = RimumuKey.SUMMONER_CURRENT_URL + summoner.getId();
 
-        // 현재 게임 중일 경우 실행 //
-        HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(curUrl);
+        JsonObject curResult;
+        try {
+            HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(curUrl);
+            curResult = gson.fromJson(smnSearchResponse.body(), JsonObject.class);
+            summoner.setCurrent(true);
 
-        if (200 != smnSearchResponse.statusCode()) {
-            LOGGER.info("Not playing now");
+            if (200 != smnSearchResponse.statusCode()) {
+                LOGGER.info("Not playing now");
+                return summoner;
+            }
+        } catch (RimumuException e) {
             return summoner;
         }
 
-        JsonObject curResult = gson.fromJson(smnSearchResponse.body(), JsonObject.class);
-        summoner.setCurrent(true);
+        // 현재 게임 중일 경우 실행 //
 
         // 큐 타입
         String queueId = curResult.get("gameQueueConfigId").getAsString();
@@ -120,16 +125,18 @@ public class SummonerService {
     // current 현재 게임 여부 종료
 
     // 티어 조회 로직
-    public Summoner getTier(Summoner summoner) throws RimumuException {
+    public Summoner getTier(Summoner summoner) {
 
         String rankUrl = RimumuKey.SUMMONER_TIER_URL + summoner.getId();
-        HttpResponse<String> rankResultResponse = HttpConnUtil.sendHttpGetRequest(rankUrl);
+        String rankResultStr = null;
 
-        if (200 != rankResultResponse.statusCode()) {
-            throw new RimumuException.SummonerNotFoundException(summoner.getName());
+        try {
+            HttpResponse<String> rankResultResponse = HttpConnUtil.sendHttpGetRequest(rankUrl);
+            rankResultStr = rankResultResponse.body();
+        } catch (RimumuException e) {
+            LOGGER.error("!! getTier rankResultResponse error", e.getMessage());
         }
 
-        String rankResultStr = rankResultResponse.body();
         //언랭아닐 경우 [] 값
         if (!ObjectUtils.isEmpty(rankResultStr)) {
             JsonArray rankArr = gson.fromJson(rankResultStr, JsonArray.class);
@@ -171,16 +178,14 @@ public class SummonerService {
     public List<Match> getMatchesUrl(String userPuuid, int offset) throws RimumuException {
 
         String matUrl = RimumuKey.SUMMONER_MATCHES_URL + userPuuid + "/ids?start=" + offset + "&count20";
-        HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
+        try {
+            HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
+            List<String> matcheIds = gson.fromJson(smnMatchResponse.body(), List.class);
+            return setMatchDtls(userPuuid, matcheIds);
 
-        if (200 != smnMatchResponse.statusCode()) {
-            LOGGER.error("Match List 정보를 찾을 수 없습니다.");
+        } catch (RimumuException e) {
             throw new RimumuException.MatchNotFoundException(userPuuid);
         }
-
-        List<String> matcheIds = gson.fromJson(smnMatchResponse.body(), List.class);
-
-        return setMatchDtls(userPuuid, matcheIds);
     }
 
     // match 당 정보 //  { info : {xx} } 부분
@@ -188,18 +193,16 @@ public class SummonerService {
 
         String matchDataUrl = RimumuKey.SUMMONER_MATCHDTL_URL + matchId.replace("\"", "");
 
-        HttpResponse<String> matchInfoResponse = HttpConnUtil.sendHttpGetRequest(matchDataUrl);
+        try {
+            HttpResponse<String> matchInfoResponse = HttpConnUtil.sendHttpGetRequest(matchDataUrl);
+            JsonObject matchResult = gson.fromJson(matchInfoResponse.body(), JsonObject.class);
+            //matchResult 중 info : xx 부분
+            JsonObject info = matchResult.getAsJsonObject("info");
+            return info;
 
-        if (200 != matchInfoResponse.statusCode()) {
-            LOGGER.error("Match 정보를 찾을 수 없습니다.");
+        } catch (RimumuException e) {
             throw new RimumuException.MatchNotFoundException(matchId);
         }
-
-        JsonObject matchResult = gson.fromJson(matchInfoResponse.body(), JsonObject.class);
-        //matchResult 중 info : xx 부분
-        JsonObject info = matchResult.getAsJsonObject("info");
-
-        return info;
     }
 
     // Spell 구하기
@@ -283,10 +286,14 @@ public class SummonerService {
 
         // item TOOLTIP 템 정보
         String itemUrl = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/data/ko_KR/item.json";
+        HttpResponse<String> itemResultReponse = null;
 
-        //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
-        HttpResponse<String> itemResultReponse = HttpConnUtil.sendHttpGetRequest(itemUrl);
-
+        try {
+            //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
+            itemResultReponse = HttpConnUtil.sendHttpGetRequest(itemUrl);
+        } catch (RimumuException e) {
+            new RimumuException.NotFoundException("ITEM", e.getMessage());
+        }
         JsonObject itemResult = gson.fromJson(itemResultReponse.body(), JsonObject.class);
         //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
         JsonObject itemData = itemResult.getAsJsonObject("data");

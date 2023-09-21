@@ -24,7 +24,7 @@ public class HttpConnUtil {
                 .build();
     }
 
-    public static HttpResponse sendHttpGetRequest(String url) {
+    public static HttpResponse sendHttpGetRequest(String url) throws RimumuException {
 
         try {
             HttpRequest req = HttpRequest.newBuilder()
@@ -35,10 +35,9 @@ public class HttpConnUtil {
 
             return client.send(req, HttpResponse.BodyHandlers.ofString());
 
-        } catch (URISyntaxException | IOException | InterruptedException e) {
-            new RimumuException (e.getMessage());
+        } catch (Exception e) {
+            throw new RimumuException (500, e.getMessage());
         }
-        return null;
     }
 
 }

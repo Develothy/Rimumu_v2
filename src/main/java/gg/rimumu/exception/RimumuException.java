@@ -7,6 +7,10 @@ public sealed class RimumuException extends Exception {
     public RimumuException(String message) {
         super(message);
     }
+    public RimumuException(int code, String message) {
+        super(message);
+        this.code = code;
+    }
 
 
     /**
@@ -43,6 +47,13 @@ public sealed class RimumuException extends Exception {
         public MatchNotFoundException(String match) {
             super(match + ErrorMsg.MatchNotFound.getMsg());
             this.code = ErrorMsg.MatchNotFound.getCode();
+        }
+    }
+
+    public static final class NotFoundException extends RimumuException {
+        public NotFoundException(String item, String message) {
+            super(item + ErrorMsg.NotFound.getMsg() + message);
+            this.code = ErrorMsg.NotFound.getCode();
         }
     }
 

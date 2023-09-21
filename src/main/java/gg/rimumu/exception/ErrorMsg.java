@@ -7,6 +7,7 @@ public enum ErrorMsg {
 
     SummonerNotFound(40410, "님은 존재하지 않는 소환사입니다."),
     MatchNotFound(40411, " match가 존재하지 않습니다."),
+    NotFound(40400, " 이(가) 존재하지 않습니다."),
 
     MemberNotFoundException(40420, "가입되지 않은 회원입니다."),
     MemberAlreadyRegistered(40021, " 이미 가입된 회원입니다."),
