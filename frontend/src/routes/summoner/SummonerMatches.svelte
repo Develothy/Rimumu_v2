@@ -24,7 +24,7 @@
                     <p class="small"> {match.queueId} </p>
                     <h6><b> {match.myGame.inChamp}</b> </h6>
                     <span> {match.gameDuration} </span>
-                    <p class="small text-secondary"> {match.GamePlayedAt} </p>
+                    <p class="small text-secondary"> {match.gamePlayedAt} </p>
                 </td>
                 <!-- match champ -->
                 <td width="10%">
