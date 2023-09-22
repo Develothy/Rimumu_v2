@@ -3,24 +3,26 @@
     import SummonerInfo from './SummonerInfo.svelte';
     import SummonerMatches from "./SummonerMatches.svelte";
     import MatchResultNull from "../errorpage/MatchResultNull.svelte";
+    import {onMount} from "svelte";
 
     let info: any = {};
     let matches: any = [];
     let smn = $page.url.searchParams.get('smn');
     let matchResultCode: number = 1000;
 
-    fetchData();
+    //fetchData();
 
+    onMount(
     // fetchData 함수를 async로 만들어서 비동기 처리
-    async function fetchData() {
-        try {
-            console.log("fetchData : ", smn);
-            // 병렬 호출
-            await Promise.all([fetchMatchWithName(), fetchInfo()]);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    }
+        async() => {
+            try {
+                console.log("fetchData : ", smn);
+                // 병렬 호출
+                await Promise.all([fetchMatchWithName(), fetchInfo()]);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        });
 
     // 소환사 정보
     async function fetchInfo() {
