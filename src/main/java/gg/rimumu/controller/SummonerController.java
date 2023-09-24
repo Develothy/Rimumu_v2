@@ -45,14 +45,15 @@ public class SummonerController extends BaseController {
                                  @RequestParam(required = false, defaultValue = "0") int offset) {
 
         try {
+            Summoner summoner = new Summoner();
             if (smnPuuid == null) {
                 String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
-                smnPuuid = summonerService.getSmnPuuid(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8));
+                summoner.setPuuid(summonerService.getSmnPuuid(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8)));
             }
 
-            List<Match> matches = summonerService.getMatches(smnPuuid, offset);
-
-            RimumuResult result = new RimumuResult<>(matches);
+            List<Match> matches = summonerService.getMatches(summoner, offset);
+            summoner.setMatchList(matches);
+            RimumuResult result = new RimumuResult<>(summoner);
             return result;
 
         } catch (RimumuException e) {

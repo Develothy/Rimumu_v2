@@ -4,9 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.List;
+import java.util.*;
 
-import java.util.ArrayList;
 
 @Getter
 @Setter
@@ -41,14 +40,16 @@ public class Summoner {
     private String curChamp; // champ
     private String curChampUrl; // champ 이미지
 
-    // 검색한 소환사 최근 전적 승률 KDA
+    private SummonerRecent recent = new SummonerRecent();
+
+/*    // 검색한 소환사 최근 전적 승률 KDA
     private int recentWin;
     private int recentLose;
     private int recentKill;
     private int recentDeath;
     private int recentAssist;
     private int recentTotal;
-    private String recentAvg;
+    private String recentAvg;*/
 
     // matchId list
     private List<String> matchIdList = new ArrayList<>();

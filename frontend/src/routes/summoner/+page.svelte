@@ -6,6 +6,7 @@
     import {onMount} from "svelte";
 
     let info: any = {};
+    let recent: any = {};
     let matches: any = [];
     let smn = $page.url.searchParams.get('smn');
     let matchResultCode: number = 1000;
@@ -59,7 +60,9 @@
                 throw new Error('summoner matches is not successful');
             }
             //console.log("matches", data.data)
-            matches = data.data;
+            recent = data.data.recent;
+            matches = data.data.matchList;
+            console.log(recent);
         } catch (error) {
             console.error('Error fetching matches:', error);
             // 오류 발생 시 이미지 띄우기
@@ -70,8 +73,8 @@
 
 <main>
     <div class="container main-inner">
-        {#if info.name}
-            <SummonerInfo {info}/>
+        {#if info.name && recent }
+            <SummonerInfo {info}{recent}/>
         {:else}
             <p>Loading...</p>
         {/if}

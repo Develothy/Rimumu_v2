@@ -74,9 +74,9 @@ public class SummonerService {
     }
 
 
-    public List<Match> getMatches(String puuid, int offset ) throws RimumuException {
+    public List<Match> getMatches(Summoner summoner, int offset ) throws RimumuException {
 
-        return getMatchesUrl(puuid, offset);
+        return getMatchesUrl(summoner, offset);
     }
 
 
@@ -176,8 +176,9 @@ public class SummonerService {
     }
 
     // 매치 리스트 가져오기 matchId
-    public List<Match> getMatchesUrl(String userPuuid, int offset) throws RimumuException {
+    public List<Match> getMatchesUrl(Summoner summoner, int offset) throws RimumuException {
 
+        String userPuuid = summoner.getPuuid();
         String matUrl = RimumuKey.SUMMONER_MATCHES_URL + userPuuid + "/ids?start=" + offset + "&count=20";
         try {
             HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
@@ -186,7 +187,7 @@ public class SummonerService {
             if (ObjectUtils.isEmpty(matcheIds)) {
                 throw new RimumuException();
             }
-            return setMatchDtls(userPuuid, matcheIds);
+            return setMatchDtls(summoner, matcheIds);
 
         } catch (RimumuException e) {
             throw new RimumuException.MatchNotFoundException(userPuuid);
@@ -329,7 +330,7 @@ public class SummonerService {
      * forEach 반복문 시작구간
      * 설명 : 챔피언, 게입타입, 승패, 게임 시간, KDA, 룬, 스펠, 아이템, 플레이어
      */
-    public List<Match> setMatchDtls(String userPuuid, List<String> matcheIds) throws RimumuException {
+    public List<Match> setMatchDtls(Summoner summoner, List<String> matcheIds) throws RimumuException {
 
         List<Match> matchList = new ArrayList<>();
 
@@ -381,13 +382,13 @@ public class SummonerService {
                 participant.setInChamp(champ);
                 participant.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
-                if(userPuuid.equals(participant.getPuuid())) {
+                if(summoner.getPuuid().equals(participant.getPuuid())) {
                     MyGame myGame = new MyGame();
                     // participant가 나일 경우 추가 정보 세팅
-                    setGameDetail(match, inGame, myGame);
                     myGame.setInChamp(champ);
                     myGame.setChampImgUrl(participant.getChampImgUrl());
                     match.setMyGame(myGame);
+                    setGameDetail(match, inGame, summoner);
                 }
 
                 participants.add(participant);
@@ -400,28 +401,29 @@ public class SummonerService {
         return matchList;
     }
 
-    private void setGameDetail(Match match, JsonObject inGame, GameDetail gameDetail) {
+    private void setGameDetail(Match match, JsonObject inGame, Summoner summoner) {
 
         // KDA
         int kill = inGame.get("kills").getAsInt();
         int death = inGame.get("deaths").getAsInt();
-        int avg = inGame.get("assists").getAsInt();
+        int assists = inGame.get("assists").getAsInt();
 
+        MyGame myGame = match.getMyGame();
         // 해당 판 KDA
-        gameDetail.setKill(kill);
-        gameDetail.setDeath(death);
-        gameDetail.setAssist(avg);
-        gameDetail.setAvg(getKdaAvg(kill, death, avg));
+        myGame.setKill(kill);
+        myGame.setDeath(death);
+        myGame.setAssist(assists);
+        myGame.setAvg(getKdaAvg(kill, death, assists));
 
         // inGame 룬
         Map<String, String> runes = getRune(inGame);
-        gameDetail.setRuneImgUrl1(runes.get("rune1"));
-        gameDetail.setRuneImgUrl2(runes.get("rune2"));
+        myGame.setRuneImgUrl1(runes.get("rune1"));
+        myGame.setRuneImgUrl2(runes.get("rune2"));
 
         // inGame 스펠 [{"summonerId1:""}]
         Map<String, String> spells = getSpell(inGame);
-        gameDetail.setSpImgUrl1(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell1") + ".png");
-        gameDetail.setSpImgUrl2(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell2") + ".png");
+        myGame.setSpImgUrl1(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell1") + ".png");
+        myGame.setSpImgUrl2(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell2") + ".png");
 
         // inGame item 이미지 [{"item":xx}]
         List<Item> itemList = Stream.iterate(0, t -> t < 7, t -> t + 1)
@@ -430,27 +432,26 @@ public class SummonerService {
                 .map(JsonElement::getAsInt)
                 .map(this::setItem)
                 .toList();
-        gameDetail.setItemList(itemList);
+        myGame.setItemList(itemList);
 
-        if (gameDetail instanceof MyGame) {
-            // 단일 경기 승리, 패배
-            Boolean win = inGame.get("win").getAsBoolean();
-            if (win) {
-                match.setWin("WIN");
-                match.setTable("table-primary");
-                //summoner.setRecentWin(summoner.getRecentWin()+1);
-            } else {
-                match.setWin("LOSE");
-                match.setTable("table-danger");
-                //summoner.setRecentLose(summoner.getRecentLose()+1);
-            }
-/*            // 최근 전적 KDA
-            summoner.setRecentKill(summoner.getRecentKill() + kill);
-            summoner.setRecentDeath(summoner.getRecentDeath() + death);
-            summoner.setRecentAssist(summoner.getRecentAssist() + avg);
-            summoner.setRecentTotal(summoner.getRecentTotal() + 1);
-            summoner.setRecentAvg(getKdaAvg(summoner.getRecentKill(), summoner.getRecentAssist(), summoner.getRecentDeath()));*/
+        // 최근 전적
+        SummonerRecent recent = summoner.getRecent();
+        // 단일 경기 승리, 패배
+        Boolean win = inGame.get("win").getAsBoolean();
+        if (win) {
+            match.setWin("WIN");
+            match.setTable("table-primary");
+            recent.setWin(recent.getWin() + 1);
+        } else {
+            match.setWin("LOSE");
+            match.setTable("table-danger");
+            recent.setLose(recent.getLose() + 1);
         }
+        // 최근 전적 KDA
+        recent.setKill(recent.getKill() + kill);
+        recent.setDeath(recent.getDeath() + death);
+        recent.setAssist(recent.getAssist() + assists);
+        recent.setAvg(getKdaAvg(recent.getKill(), recent.getAssist(), recent.getDeath()));
         //return gameDetail;
     }
 

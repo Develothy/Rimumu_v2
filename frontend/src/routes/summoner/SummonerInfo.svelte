@@ -1,7 +1,61 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import Chart from 'chart.js/auto';
+
     export let info: any;
+    export let recent: any;
+
+    let chart: any ={};
+    let chartInitialized = false;
+
+    // onMount 함수에서 바로 initChart 호출
+    onMount(() => {
+        if (!chartInitialized) {
+            initChart(); // 차트 초기화 함수 호출
+            chartInitialized = true;
+        }
+    });
+
+    function initChart() {
+        // info 객체와 recent 객체가 존재하는지 확인
+        if (!info || !recent) {
+            console.error("info and/or recent objects are missing or not loaded.");
+            return;
+        }
+
+        let canvas = document.getElementById("chart") as HTMLCanvasElement;
+        if (!canvas) {
+            console.error("Canvas element not found.");
+            return;
+        }
+        let ctx = canvas.getContext("2d");
+
+        let w = recent.win;
+        let l = recent.lose;
+        console.log(w, l);
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    label: '# of Votes',
+                    data: [w, l],
+                    backgroundColor: [
+                        'rgba(255,99,132,0.2)',
+                        'rgba(54,162,235,0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54,162,235,1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {},
+        });
+    }
 
 </script>
+
 
 <div class="main-card mb-3 card">
     <div class="row summoner-date2">
@@ -63,16 +117,18 @@
         <div class="col-sm-3">
             <div class="row">
                 <!-- 도넛 차트 -->
-                <div class="col-sm-5">
-                    <canvas id="myChart" width="230" height="330"></canvas>
-                    <input type="hidden" value={info.recentWin} id="wins">
-                    <input type="hidden" value={info.recentLose} id="lose">
-                </div>
-                <div class="col-sm-6 text-right">
-                    <h6>{info.recentTotal}전 {info.recentWin}승 {info.recentLose}패</h6>
-                    <h6>{info.recentAvg}</h6>
-                    <h6 class="small">{info.recentKill} / {info.recentDeath} / {info.recentAssist}</h6>
-                </div>
+                {#if chart}
+                    <div class="col-sm-5">
+                        <canvas id="chart" width="230" height="330"></canvas>
+                    </div>
+                    <div class="col-sm-6 text-right">
+                        <h6>{recent.win + recent.lose}전 {recent.win}승 {recent.lose}패</h6>
+                        <h6>{recent.avg}</h6>
+                        <h6 class="small">{recent.kill} / {recent.death} / {recent.assist}</h6>
+                    </div>
+                {:else}
+                    loading..
+                {/if}
             </div>
         </div>
         <!-- box 4 인게임 여부 -->
