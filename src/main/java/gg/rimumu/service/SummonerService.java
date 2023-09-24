@@ -88,13 +88,14 @@ public class SummonerService {
         JsonObject curResult;
         try {
             HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(curUrl);
-            curResult = gson.fromJson(smnSearchResponse.body(), JsonObject.class);
-            summoner.setCurrent(true);
-
             if (200 != smnSearchResponse.statusCode()) {
                 LOGGER.info("Not playing now");
                 return summoner;
             }
+
+            curResult = gson.fromJson(smnSearchResponse.body(), JsonObject.class);
+            summoner.setCurrent(true);
+
         } catch (RimumuException e) {
             return summoner;
         }
@@ -177,10 +178,14 @@ public class SummonerService {
     // 매치 리스트 가져오기 matchId
     public List<Match> getMatchesUrl(String userPuuid, int offset) throws RimumuException {
 
-        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + userPuuid + "/ids?start=" + offset + "&count20";
+        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + userPuuid + "/ids?start=" + offset + "&count=20";
         try {
             HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
             List<String> matcheIds = gson.fromJson(smnMatchResponse.body(), List.class);
+
+            if (ObjectUtils.isEmpty(matcheIds)) {
+                throw new RimumuException();
+            }
             return setMatchDtls(userPuuid, matcheIds);
 
         } catch (RimumuException e) {
@@ -286,25 +291,25 @@ public class SummonerService {
 
         // item TOOLTIP 템 정보
         String itemUrl = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/data/ko_KR/item.json";
-        HttpResponse<String> itemResultReponse = null;
 
         try {
             //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
-            itemResultReponse = HttpConnUtil.sendHttpGetRequest(itemUrl);
+            HttpResponse<String> itemResultReponse = HttpConnUtil.sendHttpGetRequest(itemUrl);
+            JsonObject itemResult = gson.fromJson(itemResultReponse.body(), JsonObject.class);
+            //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
+            JsonObject itemData = itemResult.getAsJsonObject("data");
+            //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
+            JsonObject itemDtl = itemData.getAsJsonObject(String.valueOf(itemNum));
+
+            String itemName = itemDtl.get("name").getAsString();
+            String itemDesc = itemDtl.get("description").getAsString();
+            String itemText = itemDtl.get("plaintext").getAsString();
+
+            item.setItemTooltip("<b>" + itemName + "</b>" + "/n <hr>" + itemDesc + "<br>" + itemText);
+
         } catch (RimumuException e) {
             new RimumuException.NotFoundException("ITEM", e.getMessage());
         }
-        JsonObject itemResult = gson.fromJson(itemResultReponse.body(), JsonObject.class);
-        //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
-        JsonObject itemData = itemResult.getAsJsonObject("data");
-        //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
-        JsonObject itemDtl = itemData.getAsJsonObject(String.valueOf(itemNum));
-
-        String itemName = itemDtl.get("name").getAsString();
-        String itemDesc = itemDtl.get("description").getAsString();
-        String itemText = itemDtl.get("plaintext").getAsString();
-
-        item.setItemTooltip("<b>" + itemName + "</b>" + "/n <hr>" + itemDesc + "<br>" + itemText);
 
         return item;
     }
@@ -341,6 +346,9 @@ public class SummonerService {
 
             //matchData 중 info : xx 부분
             JsonObject info = getMatchIdInfo(matchId);
+            if (!isValid(info, i, "INFO")) {
+                return matchList;
+            };
 
             //게임종류(협곡 칼바람 등) //모드 추가 시 추가 필요
             match.setQueueId(getGameType(info.get("queueId").getAsString()));
@@ -444,5 +452,26 @@ public class SummonerService {
             summoner.setRecentAvg(getKdaAvg(summoner.getRecentKill(), summoner.getRecentAssist(), summoner.getRecentDeath()));*/
         }
         //return gameDetail;
+    }
+
+    /**
+     * object != null -> true
+     * object = null이지만, 지금까지 조회한 result가 1건이라도 유효 -> false
+     * object, 지금까지 조회한 list 둘다 null이면 exception
+     *
+     * @param object
+     * @param existResultSize
+     * @param item
+     * @return boolean
+     * @throws RimumuException.InvalidationException
+     */
+    private boolean isValid(JsonObject object, int existResultSize, String item) throws RimumuException {
+        if (ObjectUtils.isEmpty(object)) {
+            if (0 >= existResultSize) {
+                throw new RimumuException.InvalidationException(item);
+            }
+            return false;
+        }
+        return true;
     }
 }

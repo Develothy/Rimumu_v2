@@ -1,5 +1,8 @@
 package gg.rimumu.exception;
 
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 public sealed class RimumuException extends Exception {
 
     public int code;
@@ -54,6 +57,13 @@ public sealed class RimumuException extends Exception {
         public NotFoundException(String item, String message) {
             super(item + ErrorMsg.NotFound.getMsg() + message);
             this.code = ErrorMsg.NotFound.getCode();
+        }
+    }
+
+    public static final class InvalidationException extends RimumuException {
+        public InvalidationException(String item) {
+            super(item + ErrorMsg.Invalidation.getMsg());
+            this.code = ErrorMsg.Invalidation.getCode();
         }
     }
 
