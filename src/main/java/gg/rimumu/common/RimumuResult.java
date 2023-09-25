@@ -10,6 +10,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class RimumuResult<T> implements Serializable {
 
+    static final long serialVersionUID = 1L;
+
     private int code = 0;
 
     private String description = "정상 처리 되었습니다.";
