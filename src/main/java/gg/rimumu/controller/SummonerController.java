@@ -4,6 +4,7 @@ import gg.rimumu.common.RimumuResult;
 import gg.rimumu.dto.Match;
 import gg.rimumu.dto.Summoner;
 import gg.rimumu.exception.RimumuException;
+import gg.rimumu.service.TaskService;
 import gg.rimumu.service.SummonerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 
 @Controller
@@ -21,6 +23,7 @@ import java.util.List;
 public class SummonerController extends BaseController {
 
     private final SummonerService summonerService;
+    private final TaskService taskService;
 
     // 소환사 Summoner(smn) 검색
     @GetMapping("/summoner")
@@ -51,13 +54,16 @@ public class SummonerController extends BaseController {
                 summoner.setPuuid(summonerService.getSmnPuuid(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8)));
             }
 
-            List<Match> matches = summonerService.getMatches(summoner, offset);
+            List<String> matcheIds = summonerService.getMatches(summoner, offset);
+            List<Match> matches = (List<Match>) taskService.ApiParallelCalls(TaskService.ReturnType.MATCH, summoner, matcheIds);
             summoner.setMatchList(matches);
             RimumuResult result = new RimumuResult<>(summoner);
             return result;
 
         } catch (RimumuException e) {
             return new RimumuResult<>(e.code, e.getMessage());
+        } catch (ExecutionException | InterruptedException e) {
+            return new RimumuResult<>(500, e.getMessage());
         }
     }
 }
