@@ -1,5 +1,6 @@
 package gg.rimumu.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,6 +11,7 @@ import java.util.*;
 @Getter
 @Setter
 @ToString
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Summoner {
 
     private String id;
@@ -22,41 +24,26 @@ public class Summoner {
 
     // 솔랭 기록
     private String soloTier = "Unranked";
-    private String soloRank;
-    private String soloLeaguePoints;
-    private String soloWins;
-    private String soloLosses;
+    private String soloRank = null;
+    private String soloLeaguePoints = null;
+    private String soloWins = null;
+    private String soloLosses = null;
 
     // 자유랭크 기록
     private String flexTier = "Unranked";
-    private String flexRank;
-    private String flexLeaguePoints;
-    private String flexWins;
-    private String flexLosses;
+    private String flexRank = null;
+    private String flexLeaguePoints = null;
+    private String flexWins = null;
+    private String flexLosses = null;
 
     // 현재 게임중인 기록 (current)
     private boolean isCurrent = false; // 게임 여부 true false
-    private String queueId;
-    private String curChamp; // champ
-    private String curChampUrl; // champ 이미지
+    private String queueId = null;
+    private String curChamp = null; // champ
+    private String curChampUrl = null; // champ 이미지
 
     private SummonerRecent recent = new SummonerRecent();
 
-/*    // 검색한 소환사 최근 전적 승률 KDA
-    private int recentWin;
-    private int recentLose;
-    private int recentKill;
-    private int recentDeath;
-    private int recentAssist;
-    private int recentTotal;
-    private String recentAvg;*/
-
-    // matchId list
-    private List<String> matchIdList = new ArrayList<>();
-
-    private List<Match> matchList = new ArrayList<>();
-
-
-
+    private List<Match> matchList = null;
 
 }
