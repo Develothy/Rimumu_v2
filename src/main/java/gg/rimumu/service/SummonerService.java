@@ -1,9 +1,6 @@
 package gg.rimumu.service;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import gg.rimumu.common.ChampionKey;
 import gg.rimumu.common.GameTypeKey;
 import gg.rimumu.common.RimumuKey;
@@ -42,18 +39,20 @@ public class SummonerService {
 
     public Summoner getSummoner(String smn) throws RimumuException {
         String url = RimumuKey.SUMMONER_INFO_URL + smn;
-        Summoner summoner = new Summoner();
 
         try {
             HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
 
-            // 검색 소환사 account 정보 가져오기
-            summoner = gson.fromJson(smnSearchResponse.body(), Summoner.class);
-        } catch (RimumuException e) {
-            LOGGER.error("!! getSummoner smnSearch error: {}", e.getMessage());
+            if (smnSearchResponse.statusCode() != 200) {
+                throw new RimumuException.SummonerNotFoundException(smn);
+            }
+
+            return gson.fromJson(smnSearchResponse.body(), Summoner.class);
+
+        } catch (RimumuException | JsonSyntaxException e) {
+            LOGGER.error("!! getSummoner smnSearch error: {} / {}", smn, e.getMessage());
             throw new RimumuException.SummonerNotFoundException(smn);
         }
-        return summoner;
     }
 
     //소환사 정보
@@ -81,51 +80,6 @@ public class SummonerService {
     }
 
 
-    // current 현재 게임 여부 ---------------
-    public Summoner checkCurrentGame(Summoner summoner) {
-
-        String curUrl = RimumuKey.SUMMONER_CURRENT_URL + summoner.getId();
-
-        JsonObject curResult;
-        try {
-            HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(curUrl);
-            if (200 != smnSearchResponse.statusCode()) {
-                LOGGER.info("Not playing now");
-                return summoner;
-            }
-
-            curResult = gson.fromJson(smnSearchResponse.body(), JsonObject.class);
-            summoner.setCurrent(true);
-
-        } catch (RimumuException e) {
-            return summoner;
-        }
-
-        // 현재 게임 중일 경우 실행 //
-
-        // 큐 타입
-        String queueId = curResult.get("gameQueueConfigId").getAsString();
-        summoner.setQueueId(getGameType(queueId));
-
-        // participants : ['x','x'] 부분 arr
-        JsonArray partiArr = curResult.getAsJsonArray("participants");
-
-        for (JsonElement parti : partiArr) {
-            // i번째 participant
-            JsonObject inGame = parti.getAsJsonObject();
-            //inGame participant(p)의 id == myId 비교
-            if (summoner.getId().equals(inGame.get("summonerId").getAsString())) {
-                String curChamp = ChampionKey.valueOf("K" + inGame.get("championId")).getLabel();
-                String curChampImg = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
-                summoner.setCurChamp(curChamp);
-                summoner.setCurChampUrl(curChampImg);
-                return summoner;
-            }
-        }
-        return summoner;
-    }
-    // current 현재 게임 여부 종료
-
     // 티어 조회 로직
     public Summoner getTier(Summoner summoner) {
 
@@ -135,12 +89,17 @@ public class SummonerService {
         try {
             HttpResponse<String> rankResultResponse = HttpConnUtil.sendHttpGetRequest(rankUrl);
             rankResultStr = rankResultResponse.body();
+
         } catch (RimumuException e) {
             LOGGER.error("!! getTier rankResultResponse error", e.getMessage());
         }
 
-        //언랭아닐 경우 [] 값
-        if (!ObjectUtils.isEmpty(rankResultStr)) {
+        //언랭일 경우 [] 값
+        if (ObjectUtils.isEmpty(rankResultStr)) {
+            return summoner;
+        }
+
+        try {
             JsonArray rankArr = gson.fromJson(rankResultStr, JsonArray.class);
             //솔랭, 자랭 구분하기
             for (int i = 0; i < rankArr.size(); i++) {
@@ -166,9 +125,61 @@ public class SummonerService {
                     summoner.setFlexLosses(ranks.get("losses").getAsString());
                 }
             } // 솔랭, 자랭 구분 종료
-        } // 랭크 정보 등록 종료
+            // 랭크 정보 등록 종료
+        } catch (Exception e) {
+            LOGGER.error("!! getTier error. summoner id : {}", summoner.getId());
+            return summoner;
+        }
         return summoner;
     } // smnTier() 티어 죄회 로직 종료
+
+
+    // current 현재 게임 여부 ---------------
+    public Summoner checkCurrentGame(Summoner summoner) {
+
+        String curUrl = RimumuKey.SUMMONER_CURRENT_URL + summoner.getId();
+
+        try {
+            HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(curUrl);
+
+            // 현재 게임 중 아님 //
+            if (200 != smnSearchResponse.statusCode()) {
+                LOGGER.info("Not playing now");
+                return summoner;
+            }
+
+            JsonObject curResult = gson.fromJson(smnSearchResponse.body(), JsonObject.class);
+            summoner.setCurrent(true);
+
+            // 큐 타입
+            String queueId = curResult.get("gameQueueConfigId").getAsString();
+            summoner.setQueueId(getGameType(queueId));
+
+            // participants : ['x','x'] 부분 arr
+            JsonArray partiArr = curResult.getAsJsonArray("participants");
+
+            for (JsonElement parti : partiArr) {
+                // i번째 participant
+                JsonObject inGame = parti.getAsJsonObject();
+                String summonerId = inGame.get("summonerId").getAsString();
+
+                //inGame participant(p)의 id == myId 비교
+                if (summoner.getId().equals(summonerId)) {
+                    String curChamp = ChampionKey.valueOf("K" + inGame.get("championId")).getLabel();
+                    String curChampImg = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
+                    summoner.setCurChamp(curChamp);
+                    summoner.setCurChampUrl(curChampImg);
+                    return summoner;
+                }
+            }
+        } catch (RimumuException | JsonSyntaxException e) {
+            LOGGER.error("!! checkCurrentGame error. summoner id : {}", summoner.getId());
+        }
+
+        return summoner;
+    }
+    // current 현재 게임 여부 종료
+
 
     // GameType 구하기
     public String getGameType(String queueId) {
@@ -178,22 +189,23 @@ public class SummonerService {
 
     // 매치 리스트 가져오기 matchId
     public List<String> getMatchesUrl(Summoner summoner, int offset) throws RimumuException {
-
         String userPuuid = summoner.getPuuid();
         String matUrl = RimumuKey.SUMMONER_MATCHES_URL + userPuuid + "/ids?start=" + offset + "&count=10";
+
         try {
             HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
-            List<String> matcheIds = gson.fromJson(smnMatchResponse.body(), List.class);
 
-            if (ObjectUtils.isEmpty(matcheIds)) {
-                throw new RimumuException();
+            if (smnMatchResponse.statusCode() == 200) {
+                return gson.fromJson(smnMatchResponse.body(), List.class);
             }
-            return matcheIds;
 
-        } catch (RimumuException e) {
-            throw new RimumuException.MatchNotFoundException(userPuuid);
+        } catch (RimumuException | JsonSyntaxException e) {
+            LOGGER.error("!! getMatchesUrl error : {}", userPuuid);
         }
+
+        throw new RimumuException.MatchNotFoundException(userPuuid);
     }
+
 
     // match 당 정보 //  { info : {xx} } 부분
     public JsonObject getMatchIdInfo(String matchId) throws RimumuException {
@@ -207,7 +219,8 @@ public class SummonerService {
             JsonObject info = matchResult.getAsJsonObject("info");
             return info;
 
-        } catch (RimumuException e) {
+        } catch (RimumuException | JsonSyntaxException e) {
+            LOGGER.error("!! getMatchIdInfo error. match id : {}", matchId);
             throw new RimumuException.MatchNotFoundException(matchId);
         }
     }
@@ -310,6 +323,7 @@ public class SummonerService {
             item.setItemTooltip("<b>" + itemName + "</b>" + "/n <hr>" + itemDesc + "<br>" + itemText);
 
         } catch (RimumuException e) {
+            LOGGER.error("!! setItem error");
             new RimumuException.NotFoundException("ITEM", e.getMessage());
         }
 
