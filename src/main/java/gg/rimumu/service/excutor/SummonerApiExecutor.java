@@ -1,8 +1,9 @@
-package gg.rimumu.service;
+package gg.rimumu.service.excutor;
 
 import gg.rimumu.dto.Match;
 import gg.rimumu.dto.Summoner;
 import gg.rimumu.exception.RimumuException;
+import gg.rimumu.service.SummonerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ public class SummonerApiExecutor {
     private final SummonerService summonerService;
 
 
-    public List<Match> ApiParallelCalls(Summoner item, List<String> endpoints) throws RimumuException, ExecutionException, InterruptedException {
+    public List<Match> apiParallelCalls(Summoner item, List<String> endpoints) throws RimumuException, ExecutionException, InterruptedException {
 
         List<CompletableFuture<Match>> futures = new ArrayList<>();
 

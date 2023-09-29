@@ -4,7 +4,7 @@ import gg.rimumu.common.RimumuResult;
 import gg.rimumu.dto.Match;
 import gg.rimumu.dto.Summoner;
 import gg.rimumu.exception.RimumuException;
-import gg.rimumu.service.SummonerApiExecutor;
+import gg.rimumu.service.excutor.SummonerApiExecutor;
 import gg.rimumu.service.SummonerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -55,7 +55,7 @@ public class SummonerController extends BaseController {
             }
 
             List<String> matcheIds = summonerService.getMatches(summoner, offset);
-            List<Match> matches = executor.ApiParallelCalls(summoner, matcheIds);
+            List<Match> matches = executor.apiParallelCalls(summoner, matcheIds);
             summoner.setMatchList(matches);
             RimumuResult result = new RimumuResult<>(summoner);
             return result;
