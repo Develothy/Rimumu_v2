@@ -11,45 +11,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class TaskService {
+public class SummonerApiExecutor {
 
     @Autowired
     private final SummonerService summonerService;
 
 
-    public Object ApiParallelCalls(ReturnType type, Object item, List<String> endpoints) throws RimumuException, ExecutionException, InterruptedException {
+    public List<Match> ApiParallelCalls(Summoner item, List<String> endpoints) throws RimumuException, ExecutionException, InterruptedException {
 
-        List<Object> results = new ArrayList<>();
-        List<Supplier<Object>> tasks = new ArrayList<>();
+        List<CompletableFuture<Match>> futures = new ArrayList<>();
 
         for (String endpoint : endpoints) {
-            /**
-             * ApiParallelCalls을 사용하는 ReturnType 추가될 경우 (ex.ITEM)
-             * ReturnType enum 추가
-             */
-            switch (type) {
-                case MATCH -> tasks.add(() -> callApiForMatch((Summoner) item, endpoint));
-                default -> tasks.add(() -> callApiForMatch((Summoner) item, endpoint));
-            }
+            CompletableFuture<Match> future = CompletableFuture.supplyAsync(() -> callApiForMatch(item, endpoint));
+            futures.add(future);
         }
-
-        List<CompletableFuture<Object>> futures = tasks.stream()
-                .map(task -> CompletableFuture.supplyAsync(task))
-                .collect(Collectors.toList());
 
         CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         allOf.join();
 
-        for (CompletableFuture future : futures) {
-            results.add(future.get());
-        }
-
-        return results;
+        return futures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
     }
 
 
@@ -61,10 +47,6 @@ public class TaskService {
             new RimumuException();
         }
         return match;
-    }
-
-    public enum ReturnType {
-        MATCH;
     }
 
 }

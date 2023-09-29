@@ -8,9 +8,7 @@ import java.io.Serializable;
 @Setter
 @Getter
 @AllArgsConstructor
-public class RimumuResult<T> implements Serializable {
-
-    static final long serialVersionUID = 1L;
+public class RimumuResult<T> {
 
     private int code = 0;
 

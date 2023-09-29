@@ -4,7 +4,7 @@ import gg.rimumu.common.RimumuResult;
 import gg.rimumu.dto.Match;
 import gg.rimumu.dto.Summoner;
 import gg.rimumu.exception.RimumuException;
-import gg.rimumu.service.TaskService;
+import gg.rimumu.service.SummonerApiExecutor;
 import gg.rimumu.service.SummonerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException;
 public class SummonerController extends BaseController {
 
     private final SummonerService summonerService;
-    private final TaskService taskService;
+    private final SummonerApiExecutor executor;
 
     // 소환사 Summoner(smn) 검색
     @GetMapping("/summoner")
@@ -55,7 +55,7 @@ public class SummonerController extends BaseController {
             }
 
             List<String> matcheIds = summonerService.getMatches(summoner, offset);
-            List<Match> matches = (List<Match>) taskService.ApiParallelCalls(TaskService.ReturnType.MATCH, summoner, matcheIds);
+            List<Match> matches = executor.ApiParallelCalls(summoner, matcheIds);
             summoner.setMatchList(matches);
             RimumuResult result = new RimumuResult<>(summoner);
             return result;
