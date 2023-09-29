@@ -49,7 +49,7 @@
                 <td width="15%" class="align-middle" >
                     {#each match.myGame.itemList as item, index}
                         <span>
-                            <img src={item.itemImgUrl || 'src/lib/images/img/itemNull.png'} alt="itemImg" width="20px" title={item.itemTooltip} class="tooltip_event">
+                            <img src='https://ddragon.leagueoflegends.com/cdn/13.19.1/img/item/{item.itemNum}.png' alt="itemImg" width="20px" title={item.itemTooltip} class="tooltip_event">
                             {#if index === 3}
                                     <br>
                                 {/if}

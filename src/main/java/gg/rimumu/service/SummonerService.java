@@ -15,7 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.io.InputStream;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
@@ -297,20 +299,14 @@ public class SummonerService {
             item.setItemImgUrl("/img/itemNull.png");
             item.setItemTooltip("보이지 않는 검이 가장 무서운 법.....");
             return item;
+        } else {
+            item.setItemNum(itemNum);
         }
-        // inGame 나의 item 설명 (툴팁)
-        // item.json URL 연결
-
-        item.setItemNum(itemNum);
-        item.setItemImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/item/" + itemNum + ".png");
 
         // item TOOLTIP 템 정보
-        String itemUrl = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/data/ko_KR/item.json";
-
         try {
             //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
-            HttpResponse<String> itemResultReponse = HttpConnUtil.sendHttpGetRequest(itemUrl);
-            JsonObject itemResult = gson.fromJson(itemResultReponse.body(), JsonObject.class);
+            JsonObject itemResult = readJsonFile("/datadragon/item.json");
             //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
             JsonObject itemData = itemResult.getAsJsonObject("data");
             //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
@@ -473,6 +469,27 @@ public class SummonerService {
             throw new RimumuException.InvalidationException(item);
         }
         return false;
+    }
+
+    private JsonObject readJsonFile(String path) throws RimumuException {
+        try (InputStream inputStream = getClass().getResourceAsStream(path)) {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("!! Json 파일이 존재하지 않습니다. : " + path);
+            }
+
+            String jsonContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+
+            // JSON 문자열을 파싱하여 JsonObject로 변환
+            JsonElement jsonElement = JsonParser.parseString(jsonContent);
+            if (!jsonElement.isJsonObject()) {
+                throw new RimumuException("!! Json 형식이 아닙니다. : " + path);
+            }
+
+            return jsonElement.getAsJsonObject();
+        } catch (Exception e) {
+            LOGGER.error("!! read json file error : {}", e.getMessage());
+            throw new RimumuException("read json file error");
+        }
     }
 }
 
