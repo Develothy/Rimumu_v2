@@ -1,6 +1,7 @@
 package gg.rimumu.service;
 
 import com.google.gson.*;
+import gg.rimumu.cache.CacheService;
 import gg.rimumu.common.ChampionKey;
 import gg.rimumu.common.GameTypeKey;
 import gg.rimumu.common.RimumuKey;
@@ -8,7 +9,6 @@ import gg.rimumu.common.SpellKey;
 import gg.rimumu.dto.*;
 import gg.rimumu.exception.RimumuException;
 import gg.rimumu.util.DateTimeUtil;
-import gg.rimumu.util.FileUtil;
 import gg.rimumu.util.HttpConnUtil;
 import gg.rimumu.util.ApplicationDataUtil;
 import org.slf4j.Logger;
@@ -27,6 +27,7 @@ public class SummonerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SummonerService.class);
     private static final Gson gson = new Gson();
+    private CacheService cached;
 
 
     // 소환사 검색
@@ -304,18 +305,17 @@ public class SummonerService {
 
         // item TOOLTIP 템 정보
         try {
-            //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
-            JsonObject itemResult = FileUtil.readJsonFile("/datadragon/item.json");
-            //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
-            JsonObject itemData = itemResult.getAsJsonObject("data");
-            //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
-            JsonObject itemDtl = itemData.getAsJsonObject(String.valueOf(itemNum));
+            JsonObject itemDtl = cached.getItem(itemNum);
 
-            String itemName = itemDtl.get("name").getAsString();
-            String itemDesc = itemDtl.get("description").getAsString();
-            String itemText = itemDtl.get("plaintext").getAsString();
+            StringBuilder tooltip = new StringBuilder();
+            tooltip.append("<b>");
+            tooltip.append(itemDtl.get("name").getAsString());
+            tooltip.append("</b>/n <hr>");
+            tooltip.append(itemDtl.get("description").getAsString());
+            tooltip.append("<br>");
+            tooltip.append(itemDtl.get("plaintext").getAsString());
 
-            item.setItemTooltip("<b>" + itemName + "</b>" + "/n <hr>" + itemDesc + "<br>" + itemText);
+            item.setItemTooltip(tooltip.toString());
 
         } catch (RimumuException e) {
             LOGGER.error("!! setItem error");
