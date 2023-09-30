@@ -8,16 +8,15 @@ import gg.rimumu.common.SpellKey;
 import gg.rimumu.dto.*;
 import gg.rimumu.exception.RimumuException;
 import gg.rimumu.util.DateTimeUtil;
+import gg.rimumu.util.FileUtil;
 import gg.rimumu.util.HttpConnUtil;
-import gg.rimumu.util.VersionUtil;
+import gg.rimumu.util.ApplicationDataUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.io.InputStream;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
@@ -61,7 +60,7 @@ public class SummonerService {
     public void setSmnInfo(Summoner summoner){
 
         // 아이콘 이미지 주소
-        summoner.setIconImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/profileicon/" + summoner.getProfileIconId() + ".png");
+        summoner.setIconImgUrl(RimumuKey.DD_URL + ApplicationDataUtil.DD_VERSION + "/img/profileicon/" + summoner.getProfileIconId() + ".png");
 
         // 티어 조회
         getTier(summoner);
@@ -168,7 +167,7 @@ public class SummonerService {
                 //inGame participant(p)의 id == myId 비교
                 if (summoner.getId().equals(summonerId)) {
                     String curChamp = ChampionKey.valueOf("K" + inGame.get("championId")).getLabel();
-                    String curChampImg = RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
+                    String curChampImg = RimumuKey.DD_URL + ApplicationDataUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
                     summoner.setCurChamp(curChamp);
                     summoner.setCurChampUrl(curChampImg);
                     return summoner;
@@ -306,7 +305,7 @@ public class SummonerService {
         // item TOOLTIP 템 정보
         try {
             //(item.json) itemResult값 parse해서 JsonObject로 받아오기 K:V
-            JsonObject itemResult = readJsonFile("/datadragon/item.json");
+            JsonObject itemResult = FileUtil.readJsonFile("/datadragon/item.json");
             //(item.json) Key값이 data 인 항목 { "data" : xx 부분 }
             JsonObject itemData = itemResult.getAsJsonObject("data");
             //(item.json) Key값이 data 안에서 1001인 항목 { "data" : {"1001" : xx 부분 }}
@@ -383,7 +382,7 @@ public class SummonerService {
             // 챔프네임의 대소문자가 match Json과 img API가 동일하지 않은 이유로 에러발생. 때문에 emun에서 가져옴
             String champ = ChampionKey.valueOf("K" + inGame.get("championId").getAsString()).label();
             participant.setInChamp(champ);
-            participant.setChampImgUrl(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/champion/" + champ + ".png");
+            participant.setChampImgUrl(RimumuKey.DD_URL + ApplicationDataUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
             if(summoner.getPuuid().equals(participant.getPuuid())) {
                 MyGame myGame = new MyGame();
@@ -423,8 +422,8 @@ public class SummonerService {
 
         // inGame 스펠 [{"summonerId1:""}]
         Map<String, String> spells = getSpell(inGame);
-        myGame.setSpImgUrl1(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell1") + ".png");
-        myGame.setSpImgUrl2(RimumuKey.DD_URL + VersionUtil.DD_VERSION + "/img/spell/" + spells.get("spell2") + ".png");
+        myGame.setSpImgUrl1(RimumuKey.DD_URL + ApplicationDataUtil.DD_VERSION + "/img/spell/" + spells.get("spell1") + ".png");
+        myGame.setSpImgUrl2(RimumuKey.DD_URL + ApplicationDataUtil.DD_VERSION + "/img/spell/" + spells.get("spell2") + ".png");
 
         // inGame item 이미지 [{"item":xx}]
         List<Item> itemList = Stream.iterate(0, t -> t < 7, t -> t + 1)
@@ -471,25 +470,5 @@ public class SummonerService {
         return false;
     }
 
-    private JsonObject readJsonFile(String path) throws RimumuException {
-        try (InputStream inputStream = getClass().getResourceAsStream(path)) {
-            if (inputStream == null) {
-                throw new IllegalArgumentException("!! Json 파일이 존재하지 않습니다. : " + path);
-            }
-
-            String jsonContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-
-            // JSON 문자열을 파싱하여 JsonObject로 변환
-            JsonElement jsonElement = JsonParser.parseString(jsonContent);
-            if (!jsonElement.isJsonObject()) {
-                throw new RimumuException("!! Json 형식이 아닙니다. : " + path);
-            }
-
-            return jsonElement.getAsJsonObject();
-        } catch (Exception e) {
-            LOGGER.error("!! read json file error : {}", e.getMessage());
-            throw new RimumuException("read json file error");
-        }
-    }
 }
 

@@ -10,18 +10,19 @@ import org.springframework.stereotype.Component;
 import java.net.http.HttpResponse;
 
 @Component
-public class VersionUtil implements ApplicationRunner {
+public class ApplicationDataUtil implements ApplicationRunner {
 
     public static String DD_VERSION = "13.12.0";
-    private static final Logger LOGGER = LoggerFactory.getLogger(VersionUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationDataUtil.class);
 
 
     @Override
     public void run(ApplicationArguments args) {
-        versionInit();
+        InitVersion();
+        InitItemData();
     }
 
-    public String versionInit() {
+    public String InitVersion() {
         try {
             HttpResponse response = HttpConnUtil.sendHttpGetRequest(RimumuKey.DD_VERSION_URL);
             if (response.statusCode() == 200) {
@@ -37,7 +38,17 @@ public class VersionUtil implements ApplicationRunner {
         return null;
     }
 
-    public String versionSet(String version) {
+    public void InitItemData() {
+        LOGGER.info("Generate item.json version : {}", DD_VERSION);
+        try {
+            FileUtil.initJsonFile("src/main/resources/datadragon/item.json",
+                    "https://ddragon.leagueoflegends.com/cdn/" + DD_VERSION + "/data/ko_KR/item.json");
+        } catch (Exception e) {
+            LOGGER.error("item.json init fail. check!! item.json!!");
+        }
+    }
+
+    public String serVersion(String version) {
         DD_VERSION = version;
         return DD_VERSION;
     }

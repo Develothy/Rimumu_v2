@@ -1,7 +1,7 @@
 package gg.rimumu.controller;
 
 import gg.rimumu.common.ChampionKey;
-import gg.rimumu.util.VersionUtil;
+import gg.rimumu.util.ApplicationDataUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,20 +12,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class LoLController {
 
-    private final VersionUtil versionUtil;
+    private final ApplicationDataUtil applicationDataUtil;
 
     @GetMapping("/version")
     public String version() {
-        return VersionUtil.DD_VERSION;
+        return ApplicationDataUtil.DD_VERSION;
     }
 
     @PutMapping("/version")
     public String init() {
-        return versionUtil.versionInit();
+        return applicationDataUtil.InitVersion();
     }
     @PostMapping("/version")
     public String set(@RequestParam String version) {
-        return versionUtil.versionSet(version);
+        return applicationDataUtil.serVersion(version);
     }
 
     @GetMapping("/champion")
