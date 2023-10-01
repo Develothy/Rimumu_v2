@@ -34,7 +34,7 @@ public class SummonerController extends BaseController {
 
         try {
             Summoner summoner = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8));
-            return new RimumuResult(summoner);
+            return new RimumuResult(summoner.toResponse());
 
         } catch (RimumuException e) {
             return new RimumuResult<>(e.code, e.getMessage());
@@ -57,7 +57,7 @@ public class SummonerController extends BaseController {
             List<String> matcheIds = summonerService.getMatches(summoner, offset);
             List<Match> matches = executor.apiParallelCalls(summoner, matcheIds);
             summoner.setMatchList(matches);
-            RimumuResult result = new RimumuResult<>(summoner);
+            RimumuResult result = new RimumuResult<>(summoner.toResponse());
             return result;
 
         } catch (RimumuException e) {

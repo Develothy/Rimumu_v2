@@ -13,9 +13,6 @@ public class GameDetail {
     // myChamp
     private String inChamp;
 
-    // myChampUrl
-    private String champImgUrl;
-
     // 닉네임?
     private String inName;
     private String puuid;
@@ -32,11 +29,11 @@ public class GameDetail {
     // myAvg, partiAvg
     private String avg;
 
-    private String runeImgUrl1;
-    private String runeImgUrl2;
+    private String rune1;
+    private String rune2;
 
-    private String spImgUrl1;
-    private String spImgUrl2;
+    private String spell1;
+    private String spell2;
 
     private List<Item> itemList = new ArrayList<>();
 

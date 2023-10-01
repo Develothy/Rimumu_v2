@@ -8,6 +8,7 @@
     let info: any = {};
     let recent: any = {};
     let matches: any = [];
+    let version: any = "";
     let smn = $page.url.searchParams.get('smn');
     let matchResultCode: number = 1000;
 
@@ -62,7 +63,7 @@
             //console.log("matches", data.data)
             recent = data.data.recent;
             matches = data.data.matchList;
-            console.log(recent);
+            version = data.data.version;
         } catch (error) {
             console.error('Error fetching matches:', error);
             // 오류 발생 시 이미지 띄우기
@@ -81,7 +82,7 @@
 
         {#if matchResultCode != 1000}
             {#if matchResultCode == 0}
-                <SummonerMatches {matches}/>
+                <SummonerMatches {matches}{version}/>
             {:else }
                 <MatchResultNull />
             {/if}

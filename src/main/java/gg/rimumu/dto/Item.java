@@ -9,17 +9,6 @@ import lombok.ToString;
 @ToString
 public class Item {
 
-    private int itemNum;
-
-    private String itemName;
-
-    private String itemImgUrl;
-
-    // description
-    private String itemDesc;
-
-    // plaintext
-    private String itemText;
-
+    private int itemNum = 0;
     private String itemTooltip;
 }

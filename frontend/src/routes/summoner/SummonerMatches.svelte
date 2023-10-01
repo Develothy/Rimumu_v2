@@ -1,5 +1,6 @@
 <script lang="ts">
     export let matches: any;
+    export let version: any;
 
     function smnSearch(smn) {
         const encodedSmn = encodeURIComponent(smn);
@@ -28,15 +29,15 @@
                 </td>
                 <!-- match champ -->
                 <td width="10%">
-                    <img src= {match.myGame.champImgUrl} alt="myChamp" width="100px">
+                    <img src= 'https://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{match.myGame.inChamp}.png' alt="myChamp" width="100px">
 
                 </td>
                 <!-- match rune -->
                 <td width="5%" >
-                    <img src={match.myGame.runeImgUrl1} alt="rune1" width="20px" class="m-1 d-block">
-                    <img src={match.myGame.runeImgUrl2} alt="rune2" width="20px" class="m-1 d-block">
-                    <img src={match.myGame.spImgUrl1} alt="spell1" width="20px" class="m-1 d-block">
-                    <img src={match.myGame.spImgUrl2} alt="spell2" width="20px" class="m-1 d-block">
+                    <img src='https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/{match.myGame.rune1}.png' alt="rune1" width="20px" class="m-1 d-block">
+                    <img src='https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/{match.myGame.rune2}.png' alt="rune2" width="20px" class="m-1 d-block">
+                    <img src='https://ddragon.leagueoflegends.com/cdn/{version}/img/spell/{match.myGame.spell1}.png' alt="spell1" width="20px" class="m-1 d-block">
+                    <img src='https://ddragon.leagueoflegends.com/cdn/{version}/img/spell/{match.myGame.spell2}.png' alt="spell2" width="20px" class="m-1 d-block">
 
                 </td>
                 <!-- match KDA -->
@@ -49,10 +50,14 @@
                 <td width="15%" class="align-middle" >
                     {#each match.myGame.itemList as item, index}
                         <span>
-                            <img src='https://ddragon.leagueoflegends.com/cdn/13.19.1/img/item/{item.itemNum}.png' alt="itemImg" width="20px" title={item.itemTooltip} class="tooltip_event">
+                            {#if item.itemNum == 0}
+                                <img src="src/lib/images/img/itemNull.png" alt="itemNull" width="20px">
+                            {:else }
+                                <img src='https://ddragon.leagueoflegends.com/cdn/{version}/img/item/{item.itemNum}.png' alt="itemImg" width="20px" title={item.itemTooltip} class="tooltip_event">
+                            {/if}
                             {#if index === 3}
-                                    <br>
-                                {/if}
+                                <br>
+                            {/if}
                         </span>
                     {/each}
                     <img src={`src/lib/images/img/itemNull.png`} alt="itemNull" width="20px" title="보이지 않는 검이 가장 무서운 법...">
@@ -67,7 +72,7 @@
                             {#if index < 5}
                                 <li class="d-block text-truncate">
                                     <a on:click={() => smnSearch(parti.inName)} class="d-block text-truncate text-secondary m-0">
-                                        <img src={parti.champImgUrl} alt="partiChamp" width="17px">
+                                        <img src='https://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{parti.inChamp}.png' alt="partiChamp" width="17px">
                                         <span class="small"> {parti.inName} </span>
                                     </a>
                                 </li>
@@ -82,7 +87,7 @@
                             {#if index >= 5}
                                 <li class="d-block text-truncate">
                                     <a on:click={() => smnSearch(parti.inName)} class="d-block text-truncate text-secondary m-0">
-                                        <img src={parti.champImgUrl} alt="partiChamp" width="17px">
+                                        <img src='https://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{parti.inChamp}.png' alt="partiChamp" width="17px">
                                         <span class="small"> {parti.inName} </span>
                                     </a>
                                 </li>

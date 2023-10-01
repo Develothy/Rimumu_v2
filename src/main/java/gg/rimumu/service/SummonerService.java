@@ -10,7 +10,6 @@ import gg.rimumu.dto.*;
 import gg.rimumu.exception.RimumuException;
 import gg.rimumu.util.DateTimeUtil;
 import gg.rimumu.util.HttpConnUtil;
-import gg.rimumu.util.ApplicationDataUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -60,12 +59,8 @@ public class SummonerService {
     //소환사 정보
     public void setSmnInfo(Summoner summoner){
 
-        // 아이콘 이미지 주소
-        summoner.setIconImgUrl(RimumuKey.DD_URL + ApplicationDataUtil.DD_VERSION + "/img/profileicon/" + summoner.getProfileIconId() + ".png");
-
         // 티어 조회
         getTier(summoner);
-
         // 게임중 여부 조회 (riot developer api 막힘)
         checkCurrentGame(summoner);
     }
@@ -168,9 +163,7 @@ public class SummonerService {
                 //inGame participant(p)의 id == myId 비교
                 if (summoner.getId().equals(summonerId)) {
                     String curChamp = ChampionKey.valueOf("K" + inGame.get("championId")).getLabel();
-                    String curChampImg = RimumuKey.DD_URL + ApplicationDataUtil.DD_VERSION + "/img/champion/" + curChamp +".png";
                     summoner.setCurChamp(curChamp);
-                    summoner.setCurChampUrl(curChampImg);
                     return summoner;
                 }
             }
@@ -247,43 +240,24 @@ public class SummonerService {
         JsonObject runes = inGame.getAsJsonObject("perks");
         JsonArray styles = runes.getAsJsonArray("styles");
 
-        String rune1 = ((JsonObject) styles.get(0)).get("style").getAsString();;
-        String rune2;
-        String runeImgUrl1;
-        String runeImgUrl2;
-        // 메인 룬
-        if (!"0".equals(rune1)) {
-            runeImgUrl1 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(rune1);
-            // 보조 룬
-            rune2 = ((JsonObject) styles.get(1)).get("style").getAsString();
-            runeImgUrl2 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(rune2);
+        String rune1 = ((JsonObject) styles.get(0)).get("style").getAsString();
+        String rune2 = ((JsonObject) styles.get(1)).get("style").getAsString();
 
-        } else {
-            rune1 = null;
-            rune2 = null;
-            runeImgUrl1 = null;
-            runeImgUrl2 = null;
-            /*            rune1 = inGame.get("playerAugment1").getAsString();
-            rune2 = inGame.get("playerAugment2").getAsString();
-            runeImgUrl1 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(rune1);
-            runeImgUrl2 = RimumuKey.DD_URL + "img/" + getRuneImgUrl(rune2);*/
-
-        }
-        rune.put("rune1", runeImgUrl1);
-        rune.put("rune2", runeImgUrl2);
+        rune.put("rune1", setRuneName(rune1));
+        rune.put("rune2", setRuneName(rune2));
 
         return rune;
     }
 
     // rune 이미지 주소 변환
-    public String getRuneImgUrl(String rune) {
+    public String setRuneName(String rune) {
 
         switch (rune) {
-            case "8000" -> rune = "perk-images/Styles/7201_Precision.png";
-            case "8100" -> rune = "perk-images/Styles/7200_Domination.png";
-            case "8200" -> rune = "perk-images/Styles/7202_Sorcery.png";
-            case "8300" -> rune = "perk-images/Styles/7203_Whimsy.png";
-            case "8400" -> rune = "perk-images/Styles/7204_Resolve.png";
+            case "8000" -> rune = "7201_Precision";
+            case "8100" -> rune = "7200_Domination";
+            case "8200" -> rune = "7202_Sorcery";
+            case "8300" -> rune = "7203_Whimsy";
+            case "8400" -> rune = "7204_Resolve";
         }
         return rune;
     }
@@ -295,8 +269,6 @@ public class SummonerService {
 
         // item이 없는 칸 회색템 표시
         if (itemNum == 0) {
-            item.setItemNum(itemNum);
-            item.setItemImgUrl("/img/itemNull.png");
             item.setItemTooltip("보이지 않는 검이 가장 무서운 법.....");
             return item;
         } else {
@@ -382,13 +354,11 @@ public class SummonerService {
             // 챔프네임의 대소문자가 match Json과 img API가 동일하지 않은 이유로 에러발생. 때문에 emun에서 가져옴
             String champ = ChampionKey.valueOf("K" + inGame.get("championId").getAsString()).label();
             participant.setInChamp(champ);
-            participant.setChampImgUrl(RimumuKey.DD_URL + ApplicationDataUtil.DD_VERSION + "/img/champion/" + champ + ".png");
 
             if(summoner.getPuuid().equals(participant.getPuuid())) {
                 MyGame myGame = new MyGame();
                 // participant가 나일 경우 추가 정보 세팅
                 myGame.setInChamp(champ);
-                myGame.setChampImgUrl(participant.getChampImgUrl());
                 match.setMyGame(myGame);
                 setGameDetail(match, inGame, summoner);
             }
@@ -417,13 +387,13 @@ public class SummonerService {
 
         // inGame 룬
         Map<String, String> runes = getRune(inGame);
-        myGame.setRuneImgUrl1(runes.get("rune1"));
-        myGame.setRuneImgUrl2(runes.get("rune2"));
+        myGame.setRune1(runes.get("rune1"));
+        myGame.setRune2(runes.get("rune2"));
 
         // inGame 스펠 [{"summonerId1:""}]
         Map<String, String> spells = getSpell(inGame);
-        myGame.setSpImgUrl1(RimumuKey.DD_URL + ApplicationDataUtil.DD_VERSION + "/img/spell/" + spells.get("spell1") + ".png");
-        myGame.setSpImgUrl2(RimumuKey.DD_URL + ApplicationDataUtil.DD_VERSION + "/img/spell/" + spells.get("spell2") + ".png");
+        myGame.setSpell1(spells.get("spell1"));
+        myGame.setSpell2(spells.get("spell2"));
 
         // inGame item 이미지 [{"item":xx}]
         List<Item> itemList = Stream.iterate(0, t -> t < 7, t -> t + 1)
