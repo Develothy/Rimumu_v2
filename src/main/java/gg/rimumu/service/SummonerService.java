@@ -137,7 +137,7 @@ public class SummonerService {
         String curUrl = RimumuKey.SUMMONER_CURRENT_URL + summoner.getId();
 
         try {
-            HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(curUrl);
+            HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(curUrl, false);
 
             // 현재 게임 중 아님 //
             if (200 != smnSearchResponse.statusCode()) {
@@ -339,7 +339,6 @@ public class SummonerService {
          * 플레이어 수 만큼 도는 for문
          */
         JsonArray partiInArr = info.getAsJsonArray("participants");
-        LOGGER.info("== Participants  사이즈 체크 : {}", partiInArr.size());
 
         List<Participant> participants = new ArrayList<>();
 
