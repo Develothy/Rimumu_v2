@@ -4,41 +4,33 @@
 
     export let info: any;
     export let recent: any;
+    let chartCanvas;
+    let win: number;
+    let lose: number;
 
-    let chart: any ={};
-    let chartInitialized = false;
-
-    // onMount 함수에서 바로 initChart 호출
-    onMount(() => {
-        if (!chartInitialized) {
-            initChart(); // 차트 초기화 함수 호출
-            chartInitialized = true;
+    // onMount 함수에서 recent 데이터를 가져온 후에 initChart 호출
+    onMount(async () => {
+        if (recent) {
+            lose = recent.lose;
+            win = recent.win;
+            await initChart(); // 차트 초기화 함수 호출
         }
     });
 
-    function initChart() {
-        // info 객체와 recent 객체가 존재하는지 확인
-        if (!info || !recent) {
+    async function initChart() {
+        if (!recent) {
             console.error("info and/or recent objects are missing or not loaded.");
             return;
         }
 
-        let canvas = document.getElementById("chart") as HTMLCanvasElement;
-        if (!canvas) {
-            console.error("Canvas element not found.");
-            return;
-        }
-        let ctx = canvas.getContext("2d");
+        let ctx = chartCanvas.getContext("2d");
 
-        let w = recent.win;
-        let l = recent.lose;
-        console.log(w, l);
-        chart = new Chart(ctx, {
+        var chart = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 datasets: [{
                     label: '# of Votes',
-                    data: [w, l],
+                    data: [lose, win],
                     backgroundColor: [
                         'rgba(255,99,132,0.2)',
                         'rgba(54,162,235,0.2)',
@@ -57,12 +49,11 @@
 </script>
 
 
-<div class="main-card mb-3 card">
     <div class="row summoner-date2">
 
         <!-- 아이콘 -->
         <div class="col-sm-3 m-4 summoner">
-            <img src={info.iconImgUrl} alt="소환사 아이콘" width="120px">
+            <img src='https://ddragon.leagueoflegends.com/cdn/{info.version}/img/profileicon/{info.profileIconId}.png' alt="소환사 아이콘" width="120px">
         </div>
 
         <!-- 소환사 명 -->
@@ -117,18 +108,15 @@
         <div class="col-sm-3">
             <div class="row">
                 <!-- 도넛 차트 -->
-                {#if chart}
                     <div class="col-sm-5">
-                        <canvas id="chart" width="230" height="330"></canvas>
+                        <canvas bind:this={chartCanvas} id="myChart" width="230" height="330"/>
                     </div>
                     <div class="col-sm-6 text-right">
                         <h6>{recent.win + recent.lose}전 {recent.win}승 {recent.lose}패</h6>
                         <h6>{recent.avg}</h6>
                         <h6 class="small">{recent.kill} / {recent.death} / {recent.assist}</h6>
                     </div>
-                {:else}
-                    loading..
-                {/if}
+
             </div>
         </div>
         <!-- box 4 인게임 여부 -->
@@ -137,9 +125,8 @@
                 <img src="/src/lib/images/img/current.png" alt="게임중 아님" width="150px">
             {:else}
                 <p>{info.curChamp} playing!</p>
-                <img src={info.curChampUrl} alt="현재 챔프" width="70px">
+                <img src='https://ddragon.leagueoflegends.com/cdn/{info.version}/img/champion/{info.curChamp}.png' alt="현재 챔프" width="70px">
             {/if}
         </div>
     </div>
     <!-- info 하단 종료 -->
-</div>

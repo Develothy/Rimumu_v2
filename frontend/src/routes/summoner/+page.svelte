@@ -17,7 +17,8 @@
             try {
                 console.log("fetchData : ", smn);
                 // 병렬 호출
-                await Promise.all([fetchMatchWithName(), fetchInfo()]);
+                await fetchMatchWithName();
+                await fetchInfo();
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -74,11 +75,15 @@
 
 <main>
     <div class="container main-inner">
-        {#if info.name && recent }
-            <SummonerInfo {info}{recent}/>
-        {:else}
-            <p>Loading...</p>
-        {/if}
+        <div class="main-card mb-3 card" style="height:340px">
+            {#if info.name && recent }
+                <SummonerInfo {info}{recent}/>
+            {:else}
+                <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+                    <img src="/src/lib/images/img/loading.gif" width="10%">
+                </div>
+            {/if}
+        </div>
 
         {#if matchResultCode != 1000}
             {#if matchResultCode == 0}
