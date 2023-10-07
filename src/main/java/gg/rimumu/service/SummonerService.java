@@ -60,7 +60,8 @@ public class SummonerService {
     public void setSmnInfo(Summoner summoner){
 
         // 티어 조회
-        getTier(summoner);
+        setTier(summoner);
+        setMasteryChamp(summoner);
         // 게임중 여부 조회 (riot developer api 막힘)
         checkCurrentGame(summoner);
     }
@@ -78,7 +79,7 @@ public class SummonerService {
 
 
     // 티어 조회 로직
-    public Summoner getTier(Summoner summoner) {
+    public void setTier(Summoner summoner) {
 
         String rankUrl = RimumuKey.SUMMONER_TIER_URL + summoner.getId();
         String rankResultStr = null;
@@ -93,7 +94,7 @@ public class SummonerService {
 
         //언랭일 경우 [] 값
         if (ObjectUtils.isEmpty(rankResultStr)) {
-            return summoner;
+            return;
         }
 
         try {
@@ -125,11 +126,24 @@ public class SummonerService {
             // 랭크 정보 등록 종료
         } catch (Exception e) {
             LOGGER.error("!! getTier error. summoner id : {}", summoner.getId());
-            return summoner;
         }
-        return summoner;
     } // smnTier() 티어 죄회 로직 종료
 
+    public void setMasteryChamp(Summoner summoner) {
+
+        String masteryChampUrl = RimumuKey.SUMMONER_MASTERY_URL + summoner.getId() + "/top?count=1";
+
+        try {
+            HttpResponse<String> smnMasteryResponse = HttpConnUtil.sendHttpGetRequest(masteryChampUrl, false);
+
+            JsonObject matchResult = JsonParser.parseString(smnMasteryResponse.body()).getAsJsonArray().get(0).getAsJsonObject();
+            String masteryChamp = ChampionKey.valueOf("K" + matchResult.get("championId").getAsString()).getLabel();
+            summoner.setMasteryChamp(masteryChamp);
+
+        } catch (RimumuException e) {
+            LOGGER.warn("!! get mastery champion error : {}", e.getMessage());
+        }
+    }
 
     // current 현재 게임 여부 ---------------
     public Summoner checkCurrentGame(Summoner summoner) {

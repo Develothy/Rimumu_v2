@@ -75,9 +75,11 @@
 
 <main>
     <div class="container main-inner">
-        <div class="main-card mb-3 card" style="height:340px">
+        <div class="main-card mb-3 card" style="height:360px">
             {#if info.name && recent }
-                <SummonerInfo {info}{recent}/>
+                <div class="card-img-overlay" style="height: 360px; background: linear-gradient(to right, rgba(0,0,0,0.9) 40%, rgba(0,0,0,0) 100%), url('http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{info.masteryChamp}_0.jpg'); background-size: cover; background-position: right;">
+                    <SummonerInfo {info}{recent}/>
+                </div>
             {:else}
                 <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
                     <img src="/src/lib/images/img/loading.gif" width="10%">

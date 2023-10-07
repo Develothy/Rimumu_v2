@@ -18,7 +18,7 @@ public class Summoner {
     private String puuid;
     private String name;
     private int summonerLevel;
-    // 아이콘 이미지 주소
+    private String masteryChamp = "Amumu";
     private int profileIconId;
 
     // 솔랭 기록
@@ -49,6 +49,7 @@ public class Summoner {
         SummonerResponse response = new SummonerResponse();
         response.setName(this.name);
         response.setSummonerLevel(this.summonerLevel);
+        response.setMasteryChamp(this.masteryChamp);
         response.setProfileIconId(this.profileIconId);
         response.setSoloTier(this.soloTier);
         response.setSoloRank(this.soloRank);

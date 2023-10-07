@@ -18,6 +18,7 @@ public class RimumuKey {
     public static String DD_URL;
     public static String SUMMONER_INFO_URL ;
     public static String SUMMONER_TIER_URL;
+    public static String SUMMONER_MASTERY_URL;
     public static String SUMMONER_CURRENT_URL ;
     public static String SUMMONER_MATCHES_URL ;
     public static String SUMMONER_MATCHDTL_URL ;
@@ -31,6 +32,7 @@ public class RimumuKey {
         DD_URL = environment.getProperty("DD_URL");
         SUMMONER_INFO_URL = environment.getProperty("SUMMONER_INFO_URL");
         SUMMONER_TIER_URL = environment.getProperty("SUMMONER_TIER_URL");
+        SUMMONER_MASTERY_URL = environment.getProperty("SUMMONER_MASTERY_URL");
         SUMMONER_CURRENT_URL = environment.getProperty("SUMMONER_CURRENT_URL");
         SUMMONER_MATCHES_URL = environment.getProperty("SUMMONER_MATCHES_URL");
         SUMMONER_MATCHDTL_URL = environment.getProperty("SUMMONER_MATCHDTL_URL");

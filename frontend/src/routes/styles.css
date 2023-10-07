@@ -18,12 +18,15 @@ html {
 	position: relative;
 	min-height: 100%;
 	margin: 0;
-
 }
 body {
 	color: #353535;
 	font-family: 'Archivo Black', sans-serif;
+	/*
 	background-color : whiteSmoke;
+	*/
+	background-color: #353535;
+
 	min-height: 100%;
 }
 p {
@@ -80,13 +83,24 @@ a {
 	color: #f5c6cb;
 }
 
+.summoner{
+	color: floralwhite;
+}
+
 .summoner-data4{
 	height: 140px;
 	margin: auto 0;
 	margin: 10px;
 	align-items: center;
 	text-align: center;
+	border-radius: 4px;
+	/*
 	background-color: #f0f4fd;
+	*/
+	color: floralwhite;
+	background-color: rgba(23, 23, 23, 0.75); /* 배경 색상을 연하게 조절 */
 }
+
+
 
 
