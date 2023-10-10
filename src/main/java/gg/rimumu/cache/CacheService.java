@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class CacheService {
 
-    @Autowired
     private static CacheManager cacheManager;
 
     private static final String CACHE_KEY_ITEM_ALL = "itemData";
@@ -20,7 +19,6 @@ public class CacheService {
         JsonObject itemCached = (JsonObject) cacheManager.get(key);
 
         if (itemCached != null) {
-            System.out.println("====cached data : " + key);
             return itemCached;
         }
 
@@ -38,8 +36,6 @@ public class CacheService {
         JsonObject itemAllCached = (JsonObject) cacheManager.get(CACHE_KEY_ITEM_ALL);
 
         if (itemAllCached != null) {
-            System.out.println("==== cached data : ItemAllData");
-
             return itemAllCached;
         }
 
