@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.net.http.HttpResponse;
@@ -22,6 +23,7 @@ public class ApplicationDataUtil implements ApplicationRunner {
         InitItemData();
     }
 
+    @Scheduled(cron = "0 0 0 * * ?") // 매일 0시 0분 0초
     public String InitVersion() {
         try {
             HttpResponse response = HttpConnUtil.sendHttpGetRequest(RimumuKey.DD_VERSION_URL);
