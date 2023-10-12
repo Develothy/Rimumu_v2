@@ -135,12 +135,12 @@ public class SummonerService {
 
         try {
             HttpResponse<String> smnMasteryResponse = HttpConnUtil.sendHttpGetRequest(masteryChampUrl, false);
-
             JsonObject matchResult = JsonParser.parseString(smnMasteryResponse.body()).getAsJsonArray().get(0).getAsJsonObject();
             String masteryChamp = ChampionKey.valueOf("K" + matchResult.get("championId").getAsString()).getLabel();
             summoner.setMasteryChamp(masteryChamp);
 
-        } catch (RimumuException e) {
+        } catch (RimumuException | IllegalStateException e) {
+            LOGGER.warn(masteryChampUrl);
             LOGGER.warn("!! get mastery champion error : {}", e.getMessage());
         }
     }
