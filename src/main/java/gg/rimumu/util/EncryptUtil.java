@@ -50,7 +50,7 @@ public class EncryptUtil {
     }
 
     protected static Key getGenerateKey() {
-        String key = RimumuKey.ENCRYPT_KEY;
+        String key = "RIMUMUGG.2023WTF";
         byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
         return new SecretKeySpec(keyBytes, ALGORITHM);
     }
