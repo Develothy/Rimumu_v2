@@ -18,7 +18,7 @@ jobs:
           distribution: 'adopt'
 
       - name: excute
-        run: chomd +x gradlew
+        run: chmod +x gradlew
         shell: bash
 
       - name: build with gradle
