@@ -14,6 +14,7 @@ import java.net.http.HttpResponse;
 public class ApplicationDataUtil implements ApplicationRunner {
 
     public static String DD_VERSION = "13.12.0";
+    public static String FILE_PATH = "src/main/resources/datadragon/item.json";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationDataUtil.class);
 
 
@@ -43,8 +44,8 @@ public class ApplicationDataUtil implements ApplicationRunner {
     public void InitItemData() {
         LOGGER.info("Generate item.json version : {}", DD_VERSION);
         try {
-            FileUtil.initJsonFile("src/main/resources/datadragon/item.json",
-                    "https://ddragon.leagueoflegends.com/cdn/" + DD_VERSION + "/data/ko_KR/item.json");
+            FileUtil.initJsonFile(FILE_PATH,
+                    RimumuKey.DD_URL + DD_VERSION + "/data/ko_KR/item.json");
         } catch (Exception e) {
             LOGGER.error("item.json init fail. check!! item.json!!");
         }
