@@ -134,6 +134,7 @@ public class SummonerService {
         String masteryChampUrl = RimumuKey.SUMMONER_MASTERY_URL + summoner.getId() + "/top?count=1";
 
         try {
+            LOGGER.info("summoner Id check : {}", summoner.getId() );
             HttpResponse<String> smnMasteryResponse = HttpConnUtil.sendHttpGetRequest(masteryChampUrl, false);
             JsonObject matchResult = JsonParser.parseString(smnMasteryResponse.body()).getAsJsonArray().get(0).getAsJsonObject();
             String masteryChamp = ChampionKey.valueOf("K" + matchResult.get("championId").getAsString()).getLabel();
