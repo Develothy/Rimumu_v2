@@ -13,7 +13,7 @@ import java.net.http.HttpResponse;
 @Component
 public class ApplicationDataUtil implements ApplicationRunner {
 
-    public static String DD_VERSION = "13.12.0";
+    public static String DD_VERSION = "13.20.1";
     public static String FILE_PATH = "src/main/resources/datadragon/item.json";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationDataUtil.class);
 
