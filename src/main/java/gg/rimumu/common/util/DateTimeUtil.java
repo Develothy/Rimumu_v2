@@ -1,4 +1,4 @@
-package gg.rimumu.util;
+package gg.rimumu.common.util;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;

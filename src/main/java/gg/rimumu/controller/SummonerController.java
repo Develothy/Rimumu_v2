@@ -1,6 +1,6 @@
 package gg.rimumu.controller;
 
-import gg.rimumu.common.RimumuResult;
+import gg.rimumu.common.result.RimumuResult;
 import gg.rimumu.dto.Match;
 import gg.rimumu.dto.Summoner;
 import gg.rimumu.exception.RimumuException;

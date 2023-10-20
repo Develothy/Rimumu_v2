@@ -1,4 +1,4 @@
-package gg.rimumu.util;
+package gg.rimumu.common.util;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

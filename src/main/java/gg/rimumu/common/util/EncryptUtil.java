@@ -1,6 +1,5 @@
-package gg.rimumu.util;
+package gg.rimumu.common.util;
 
-import gg.rimumu.common.RimumuKey;
 import gg.rimumu.exception.RimumuException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

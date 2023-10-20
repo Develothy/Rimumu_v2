@@ -1,4 +1,4 @@
-package gg.rimumu.common;
+package gg.rimumu.common.result;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;

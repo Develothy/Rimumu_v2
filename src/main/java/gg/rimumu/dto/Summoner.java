@@ -1,6 +1,7 @@
 package gg.rimumu.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import gg.rimumu.common.result.SummonerResponse;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

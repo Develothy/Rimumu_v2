@@ -1,7 +1,7 @@
 package gg.rimumu.controller;
 
-import gg.rimumu.common.ChampionKey;
-import gg.rimumu.util.ApplicationDataUtil;
+import gg.rimumu.common.key.ChampionKey;
+import gg.rimumu.common.util.ApplicationDataUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

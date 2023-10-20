@@ -1,7 +1,8 @@
-package gg.rimumu.dto;
+package gg.rimumu.common.result;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import gg.rimumu.util.ApplicationDataUtil;
+import gg.rimumu.common.util.ApplicationDataUtil;
+import gg.rimumu.dto.Summoner;
 import lombok.Getter;
 import lombok.Setter;
 

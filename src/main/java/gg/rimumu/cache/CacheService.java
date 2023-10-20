@@ -2,8 +2,7 @@ package gg.rimumu.cache;
 
 import com.google.gson.JsonObject;
 import gg.rimumu.exception.RimumuException;
-import gg.rimumu.util.FileUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import gg.rimumu.common.util.FileUtil;
 import org.springframework.stereotype.Component;
 
 @Component
