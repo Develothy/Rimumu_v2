@@ -177,7 +177,7 @@ public class SummonerService {
 
                 //inGame participant(p)의 id == myId 비교
                 if (summoner.getId().equals(summonerId)) {
-                    String curChamp = ChampionKey.valueOf("K" + inGame.get("championId")).getLabel();
+                    String curChamp = cached.getChampionName(inGame.get("championId").getAsInt());
                     summoner.setCurChamp(curChamp);
                     return summoner;
                 }
