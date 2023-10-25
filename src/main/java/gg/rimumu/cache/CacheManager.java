@@ -1,29 +1,36 @@
 package gg.rimumu.cache;
 
-import org.springframework.scheduling.annotation.Scheduled;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CacheManager {
 
-    private static final Map<String, Object> cacheMap = new HashMap<>();
+    private static final Map<String, Object> ITEM_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Object> CHAMPION_CACHE = new ConcurrentHashMap<>();
 
-    public static Object get(String key) {
-        return cacheMap.get(key);
+    public static Map<String, Object> findCacheMap(String prefix) {
+        switch (prefix) {
+            case "ITEM_" : return ITEM_CACHE;
+            case "CHAMPION_" : return CHAMPION_CACHE;
+        }
+        return null;
     }
 
-    public static void put(String key, Object value) {
-        cacheMap.put(key, value);
+    public static Object get(String prefix) {
+        return findCacheMap(prefix);
     }
 
-    public static void remove(String key) {
-        cacheMap.remove(key);
+    public static void put(String prefix, String key, Object value) {
+        findCacheMap(prefix).put(key, value);
     }
 
-    @Scheduled(cron = "0 0 0 * * ?") // 매일 0시 0분 0초
-    public static void removeAll() {
-        cacheMap.clear();
+    public static void remove(String prefix, String key) {
+        findCacheMap(prefix).remove(key);
+    }
+
+    public static void removeAll(String prefix) {
+        findCacheMap(prefix).clear();
     }
 
 }

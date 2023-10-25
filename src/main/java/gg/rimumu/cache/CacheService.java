@@ -11,12 +11,12 @@ public class CacheService {
 
     private static CacheManager cacheManager;
 
-    private static final String CACHE_KEY_ITEM_ALL = "itemData";
-    private static final String PREFIX_ITEM = "item_";
-    private static final String PREFIX_CHAMPION = "K";
+    private static final String PREFIX_ITEM = "ITEM_";
+    private static final String PREFIX_CHAMPION = "CHAMPION_";
+    private static final String CACHE_KEY_ITEM_ALL = "ITEM_ALL";
 
     public static JsonObject getItem(int itemNum) throws RimumuException {
-        String key = PREFIX_ITEM + itemNum;
+        String key = String.valueOf(itemNum);
         JsonObject itemCached = (JsonObject) cacheManager.get(key);
 
         if (itemCached != null) {
@@ -25,9 +25,9 @@ public class CacheService {
 
         JsonObject itemAllCached = getItemAllData();
         JsonObject itemData = itemAllCached.getAsJsonObject("data");
-        JsonObject itemResult = itemData.getAsJsonObject(String.valueOf(itemNum));
+        JsonObject itemResult = itemData.getAsJsonObject(key);
         itemCached = itemResult;
-        cacheManager.put(key, itemCached);
+        cacheManager.put(PREFIX_ITEM, key, itemCached);
 
         return itemCached;
     }
@@ -41,22 +41,22 @@ public class CacheService {
         }
 
         itemAllCached = FileUtil.readJsonFile("/datadragon/item.json");
-        cacheManager.put(CACHE_KEY_ITEM_ALL, itemAllCached);
+        cacheManager.put(PREFIX_ITEM, CACHE_KEY_ITEM_ALL, itemAllCached);
 
         return itemAllCached;
     }
 
     public static String getChampionName(int champNum) {
-        String key = PREFIX_CHAMPION + champNum;
+        String key = "K" + champNum;
 
         String champName = (String) cacheManager.get(key);
 
         if (champName != null) {
-            champName = ChampionKey.valueOf("K" + champName).getLabel();
-            cacheManager.put(key, champName);
             return  champName;
         }
 
+        champName = ChampionKey.valueOf("K" + champName).getLabel();
+        cacheManager.put(PREFIX_CHAMPION, key, champName);
         return champName;
     }
 
