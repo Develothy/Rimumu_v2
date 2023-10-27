@@ -61,7 +61,7 @@ public class SummonerService {
 
         // 티어 조회
         setTier(summoner);
-        setMasteryChamp(summoner);
+        //setMasteryChamp(summoner);
         // 게임중 여부 조회 (riot developer api 막힘)
         checkCurrentGame(summoner);
     }
