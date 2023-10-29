@@ -35,6 +35,19 @@ public class FileUtil {
         }
     }
 
+    public static Reader readJsonFileToReader(String path) {
+
+        try (InputStream inputStream = FileUtil.class.getResourceAsStream(path)) {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("file is not exist : " + path);
+            }
+            return new StringReader(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new RuntimeException("read json file error : " + path);
+        }
+
+    }
+
     public static void initJsonFile(String path, String url) throws RimumuException {
 
         Path filePath = Path.of(path);
@@ -54,5 +67,4 @@ public class FileUtil {
             throw new RimumuException(e.getMessage());
         }
     }
-
 }

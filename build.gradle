@@ -24,6 +24,14 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.google.code.gson:gson:2.8.9'
 	implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+
+	implementation 'co.elastic.clients:elasticsearch-java:8.5.3'
+	implementation 'org.elasticsearch.client:elasticsearch-rest-client:8.5.3'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7.1'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.12.7'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.12.7'
+	implementation 'org.glassfish:jakarta.json:2.0.1'
+
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
