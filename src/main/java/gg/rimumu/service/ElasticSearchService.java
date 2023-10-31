@@ -1,11 +1,16 @@
 package gg.rimumu.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermQueryBuilder;
 import com.google.gson.Gson;
+import gg.rimumu.common.result.ItemResponse;
 import gg.rimumu.common.util.ElasticSearchUtil;
 import gg.rimumu.common.util.ApplicationDataUtil;
 import gg.rimumu.common.util.FileUtil;
@@ -13,7 +18,6 @@ import gg.rimumu.exception.RimumuException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -120,6 +124,23 @@ public class ElasticSearchService {
         // 클라이언트 종료 (필요한 경우)
         // client.close();
         return "insert document failed";
+    }
+
+    public ItemResponse get(int num) {
+        ItemResponse result = new ItemResponse();
+        TermQueryBuilder termQueryBuilder = TermQuery.Builder
+                .ofField("data") // 필드명
+                .matching(String.valueOf(num)); // 일치할 값
+        TermQuery termQuery = termQueryBuilder.build();
+
+        SearchRequest request = new SearchRequest.Builder()
+                .index(INDEX)
+                .query(
+                        BoolQuery.Builder
+                                .must(termQuery)
+                                .build()._toQuery()
+                )
+                .build();
     }
 
 }
