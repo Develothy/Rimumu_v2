@@ -127,6 +127,7 @@ public class ElasticSearchService {
     }
 
     public ItemResponse get(int num) {
+        LOGGER.info("item key : {}", num);
         ItemResponse result = new ItemResponse();
         TermQueryBuilder termQueryBuilder = TermQuery.Builder
                 .ofField("data") // 필드명
