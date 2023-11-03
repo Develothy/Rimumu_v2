@@ -129,10 +129,7 @@ public class ElasticSearchService {
     public ItemResponse get(int num) {
         LOGGER.info("item key : {}", num);
         ItemResponse result = new ItemResponse();
-        TermQueryBuilder termQueryBuilder = TermQuery.Builder
-                .ofField("data") // 필드명
-                .matching(String.valueOf(num)); // 일치할 값
-        TermQuery termQuery = termQueryBuilder.build();
+        TermQuery termQuery= QueryBuilders.term().field("data").value(num).build();
 
         SearchRequest request = new SearchRequest.Builder()
                 .index(INDEX)
@@ -142,6 +139,7 @@ public class ElasticSearchService {
                                 .build()._toQuery()
                 )
                 .build();
+
     }
 
 }
