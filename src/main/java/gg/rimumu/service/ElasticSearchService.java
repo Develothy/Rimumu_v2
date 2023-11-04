@@ -130,6 +130,7 @@ public class ElasticSearchService {
         LOGGER.info("item key : {}", num);
         ItemResponse result = new ItemResponse();
         TermQuery termQuery= QueryBuilders.term().field("data").value(num).build();
+        LOGGER.info("termQuery : {}", termQuery.toString());
 
         SearchRequest request = new SearchRequest.Builder()
                 .index(INDEX)
@@ -139,6 +140,7 @@ public class ElasticSearchService {
                                 .build()._toQuery()
                 )
                 .build();
+
 
     }
 
