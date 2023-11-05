@@ -130,13 +130,32 @@ public class ElasticSearchService {
         LOGGER.info("item key : {}", num);
         ItemResponse result = new ItemResponse();
         TermQuery termQuery= QueryBuilders.term().field("data").value(num).build();
+        TermQuery termQuery2= new Query.Builder().term(
+                new TermQuery.Builder()
+                        .field("data")
+                                .value(num)
+                                .build()
+                )
+                .build().term();
         LOGGER.info("termQuery : {}", termQuery.toString());
 
         SearchRequest request = new SearchRequest.Builder()
                 .index(INDEX)
                 .query(
                         BoolQuery.Builder
-                                .must(termQuery)
+                                .must(termQuery2)
+                                .build()._toQuery()
+                )
+                .build();
+
+
+        SearchRequest request = new SearchRequest.Builder()
+                .index(INDEX)
+                .query(
+                        BoolQuery.Builder
+                                .must(TermQuery.Builder
+                                        .term("field_name", "field_value")  // 실제 필드 이름과 값을 여기에 사용
+                                        .build())
                                 .build()._toQuery()
                 )
                 .build();
