@@ -8,7 +8,6 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.TermQueryBuilder;
 import com.google.gson.Gson;
 import gg.rimumu.common.result.ItemResponse;
 import gg.rimumu.common.util.ElasticSearchUtil;
@@ -129,37 +128,24 @@ public class ElasticSearchService {
     public ItemResponse get(int num) {
         LOGGER.info("item key : {}", num);
         ItemResponse result = new ItemResponse();
-        TermQuery termQuery= QueryBuilders.term().field("data").value(num).build();
-        TermQuery termQuery2= new Query.Builder().term(
-                new TermQuery.Builder()
-                        .field("data")
-                                .value(num)
-                                .build()
-                )
-                .build().term();
-        LOGGER.info("termQuery : {}", termQuery.toString());
+
+        TermQuery termQuery2 = new TermQuery.Builder()
+                .field("data")
+                .value(num)
+                .build();
+
+        BoolQuery boolQuery = new BoolQuery.Builder()
+                .must(termQuery2._toQuery())
+                .build();
 
         SearchRequest request = new SearchRequest.Builder()
                 .index(INDEX)
-                .query(
-                        BoolQuery.Builder
-                                .must(termQuery2)
-                                .build()._toQuery()
-                )
+                .query(boolQuery._toQuery())
                 .build();
+        LOGGER.info("request : {}", request.query());
 
 
-        SearchRequest request = new SearchRequest.Builder()
-                .index(INDEX)
-                .query(
-                        BoolQuery.Builder
-                                .must(TermQuery.Builder
-                                        .term("field_name", "field_value")  // 실제 필드 이름과 값을 여기에 사용
-                                        .build())
-                                .build()._toQuery()
-                )
-                .build();
-
+        return result;
 
     }
 
