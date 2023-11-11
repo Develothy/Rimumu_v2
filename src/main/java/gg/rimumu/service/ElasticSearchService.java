@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 import static gg.rimumu.common.util.FileUtil.readJsonFile;
@@ -144,9 +146,17 @@ public class ElasticSearchService {
                 .build();
         LOGGER.info("request : {}", request.query());
 
+        try {
+            SearchResponse response = client.search(request, Map.class);
+            List<Object> data = response.hits().hits();
+
+            LOGGER.info("data : {}", data.toString());
+
+        } catch (Exception e) {
+            LOGGER.error("Item search error!");
+        }
 
         return result;
-
     }
 
 }
