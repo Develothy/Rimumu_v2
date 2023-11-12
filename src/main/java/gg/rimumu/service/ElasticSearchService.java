@@ -154,6 +154,7 @@ public class ElasticSearchService {
 
         } catch (Exception e) {
             LOGGER.error("Item search error!");
+            LOGGER.error(e.getMessage());
         }
 
         return result;
