@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
@@ -19,6 +20,7 @@ import gg.rimumu.exception.RimumuException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -132,7 +134,7 @@ public class ElasticSearchService {
         ItemResponse result = new ItemResponse();
 
         TermQuery termQuery2 = new TermQuery.Builder()
-                .field("data")
+                .field("_id")
                 .value(num)
                 .build();
 
@@ -147,10 +149,14 @@ public class ElasticSearchService {
         LOGGER.info("request : {}", request.query());
 
         try {
-            SearchResponse response = client.search(request, Map.class);
-            List<Object> data = response.hits().hits();
 
-            LOGGER.info("data : {}", data.toString());
+            SearchResponse response = client.search(request, Map.class);
+            List<Hit<Map<String, Object>>> hits = response.hits().hits();
+
+            Map<String, Object> hit = hits.get(0).source();
+            result.setNum(num);
+            result.setName((String) hit.get("name"));
+            result.setDescription((String) hit.get("description"));
 
         } catch (Exception e) {
             LOGGER.error("Item search error!");
