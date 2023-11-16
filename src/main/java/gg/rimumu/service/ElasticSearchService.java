@@ -157,6 +157,8 @@ public class ElasticSearchService {
             result.setNum(num);
             result.setName((String) hit.get("name"));
             result.setDescription((String) hit.get("description"));
+            Map<String, Object> goldField = (Map<String, Object>) hit.get("gold");
+            result.setGold(((Number) goldField.get("total")).intValue());
 
         } catch (Exception e) {
             LOGGER.error("Item search error!");
