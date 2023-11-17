@@ -153,6 +153,11 @@ public class ElasticSearchService {
             SearchResponse response = client.search(request, Map.class);
             List<Hit<Map<String, Object>>> hits = response.hits().hits();
 
+            if (ObjectUtils.isEmpty(hits) || 1 > hits.size()) {
+                LOGGER.error("item response error!! hits size : {}", hits.size());
+                return result;
+            }
+
             Map<String, Object> hit = hits.get(0).source();
             result.setNum(num);
             result.setName((String) hit.get("name"));
