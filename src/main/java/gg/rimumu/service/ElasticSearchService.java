@@ -165,9 +165,10 @@ public class ElasticSearchService {
             Map<String, Object> goldField = (Map<String, Object>) hit.get("gold");
             result.setGold(((Number) goldField.get("total")).intValue());
 
-        } catch (Exception e) {
+        } catch (RimumuException e) {
             LOGGER.error("Item search error!");
             LOGGER.error(e.getMessage());
+            throw new RimumuException.ServerException();
         }
 
         return result;
