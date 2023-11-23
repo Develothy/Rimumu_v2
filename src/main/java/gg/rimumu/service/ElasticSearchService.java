@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -165,10 +166,9 @@ public class ElasticSearchService {
             Map<String, Object> goldField = (Map<String, Object>) hit.get("gold");
             result.setGold(((Number) goldField.get("total")).intValue());
 
-        } catch (RimumuException e) {
+        } catch (IOException e) {
             LOGGER.error("Item search error!");
             LOGGER.error(e.getMessage());
-            throw new RimumuException.ServerException();
         }
 
         return result;
