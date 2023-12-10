@@ -50,6 +50,7 @@ public enum ChampionKey {
     K887 ("Gwen"),
     K120 ("Hecarim"),
     K74 ("Heimerdinger"),
+    K910 ("Hwei"),
     K420 ("Illaoi"),
     K39 ("Irelia"),
     K427 ("Ivern"),
