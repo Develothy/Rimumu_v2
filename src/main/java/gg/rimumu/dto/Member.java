@@ -6,10 +6,25 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
 public class Member {
 
     private Long id;
     private String email;
     private String password;
+    private Social social;
+
+    public enum Social {
+        KAKAO("kakao"), NAVER("naver");
+
+        private String label;
+
+        Social(String label) {
+            this.label = label;
+        }
+
+        public String label() {
+            return label;
+        }
+
+    }
 }
