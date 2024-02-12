@@ -10,6 +10,7 @@ public class Member {
 
     private Long id;
     private String email;
+    private String nickname;
     private String password;
     private Social social;
 

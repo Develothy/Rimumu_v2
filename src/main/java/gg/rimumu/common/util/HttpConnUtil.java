@@ -45,7 +45,7 @@ public class HttpConnUtil {
         }
     }
 
-    private static HttpResponse<String> sendRequestWithRetry(HttpRequest request, String url) throws RimumuException {
+    public static HttpResponse<String> sendRequestWithRetry(HttpRequest request, String url) throws RimumuException {
 
         int retry = 0;
         while (retry < 5) {
@@ -67,7 +67,7 @@ public class HttpConnUtil {
         throw new RimumuException(url + " exceeded maximum retry attempts");
     }
 
-    private static HttpResponse<String> sendRequest(HttpRequest request) throws RimumuException {
+    public static HttpResponse<String> sendRequest(HttpRequest request) throws RimumuException {
         try {
             return CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
