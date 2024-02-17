@@ -130,6 +130,7 @@ public enum ChampionKey {
     K14 ("Sion"),
     K15 ("Sivir"),
     K72 ("Skarner"),
+    K901("Smolder"),
     K37 ("Sona"),
     K16 ("Soraka"),
     K50 ("Swain"),
