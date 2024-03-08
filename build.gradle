@@ -22,8 +22,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.apache.commons:commons-lang3:3.11'
 	implementation 'com.google.code.gson:gson:2.8.9'
 	implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+	implementation 'org.aspectj:aspectjweaver:1.9.5'
 
 	implementation 'co.elastic.clients:elasticsearch-java:8.5.3'
 	implementation 'org.elasticsearch.client:elasticsearch-rest-client:8.5.3'
