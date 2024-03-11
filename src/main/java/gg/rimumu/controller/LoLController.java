@@ -20,7 +20,7 @@ public class LoLController {
 
     @Audit(target = "version", action = AuditAction.CREATED)
     @GetMapping("/version")
-    public String version(@RequestBody Actor actor) {
+    public String version(Actor actor) {
         return ApplicationDataUtil.DD_VERSION;
     }
 
