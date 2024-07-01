@@ -11,10 +11,10 @@ import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import com.google.gson.Gson;
-import gg.rimumu.common.result.ItemResponse;
 import gg.rimumu.common.util.ElasticSearchUtil;
 import gg.rimumu.common.util.ApplicationDataUtil;
 import gg.rimumu.common.util.FileUtil;
+import gg.rimumu.dto.Item;
 import gg.rimumu.exception.RimumuException;
 
 import org.slf4j.Logger;
@@ -130,9 +130,9 @@ public class ElasticSearchService {
         return "insert document failed";
     }
 
-    public ItemResponse get(int num) {
+    public Item get(int num) {
         LOGGER.info("item key : {}", num);
-        ItemResponse result = new ItemResponse();
+        Item result = new Item();
 
         TermQuery termQuery2 = new TermQuery.Builder()
                 .field("_id")

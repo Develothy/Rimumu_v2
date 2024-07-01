@@ -1,7 +1,7 @@
 package gg.rimumu.controller;
 
-import gg.rimumu.common.result.ItemResponse;
 import gg.rimumu.common.result.RimumuResult;
+import gg.rimumu.dto.Item;
 import gg.rimumu.service.ElasticSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +32,9 @@ public class ElasticSearchController {
     }
 
     @GetMapping
-    public ItemResponse get(@RequestParam int num) {
+    public Item get(@RequestParam int num) {
         if (ObjectUtils.isEmpty(num)) {
-            return new ItemResponse();
+            return new Item();
         }
         return elasticSearchService.get(num);
     }

@@ -1,17 +1,17 @@
 package gg.rimumu.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import gg.rimumu.common.result.SummonerResponse;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.*;
 
 
 @Getter
 @Setter
+@Builder
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Summoner {
 
@@ -46,27 +46,25 @@ public class Summoner {
     private List<Match> matchList = null;
 
 
-    public SummonerResponse toResponse() {
-        SummonerResponse response = new SummonerResponse();
-        response.setName(this.name);
-        response.setSummonerLevel(this.summonerLevel);
-        response.setMasteryChamp(this.masteryChamp);
-        response.setProfileIconId(this.profileIconId);
-        response.setSoloTier(this.soloTier);
-        response.setSoloRank(this.soloRank);
-        response.setSoloLeaguePoints(this.soloLeaguePoints);
-        response.setSoloWins(this.soloWins);
-        response.setSoloLosses(this.soloLosses);
-        response.setFlexRank(this.flexRank);
-        response.setFlexLeaguePoints(this.flexLeaguePoints);
-        response.setFlexWins(this.flexWins);
-        response.setFlexLosses(this.flexLosses);
-        response.setCurrent(this.isCurrent);
-        response.setQueueId(this.queueId);
-        response.setCurChamp(this.curChamp);
-        response.setRecent(this.recent);
-        response.setMatchList(this.matchList);
-
-        return response;
+    public Summoner toResponse() {
+        return Summoner.builder()
+                .name(name)
+                .summonerLevel(summonerLevel)
+                .masteryChamp(masteryChamp)
+                .profileIconId(profileIconId)
+                .soloTier(soloTier)
+                .soloRank(soloRank)
+                .soloLeaguePoints(soloLeaguePoints)
+                .soloWins(soloWins)
+                .flexTier(flexTier)
+                .flexRank(flexRank)
+                .flexWins(flexWins)
+                .flexLosses(flexLosses)
+                .isCurrent(isCurrent)
+                .queueId(queueId)
+                .curChamp(curChamp)
+                .recent(recent)
+                .matchList(matchList)
+                .build();
     }
 }

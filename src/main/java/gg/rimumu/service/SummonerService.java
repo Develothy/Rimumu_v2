@@ -284,10 +284,10 @@ public class SummonerService {
 
         // item이 없는 칸 회색템 표시
         if (itemNum == 0) {
-            item.setItemTooltip("보이지 않는 검이 가장 무서운 법.....");
+            item.setDescription("보이지 않는 검이 가장 무서운 법.....");
             return item;
         } else {
-            item.setItemNum(itemNum);
+            item.setNum(itemNum);
         }
 
         // item TOOLTIP 템 정보
@@ -302,7 +302,7 @@ public class SummonerService {
             tooltip.append("<br>");
             tooltip.append(itemDtl.get("plaintext").getAsString());
 
-            item.setItemTooltip(tooltip.toString());
+            item.setDescription(tooltip.toString());
 
         } catch (RimumuException e) {
             LOGGER.error("!! setItem error");
