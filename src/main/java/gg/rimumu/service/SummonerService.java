@@ -30,25 +30,38 @@ public class SummonerService {
 
 
     // 소환사 검색
-    public Summoner smnSearch(String smn) throws RimumuException {
+    public Summoner smnSearch(String smn, String tagline) throws RimumuException {
 
-        Summoner summoner = getSummoner(smn);
+        Summoner summoner = getSummoner(smn, tagline);
         setSmnInfo(summoner);
 
         return summoner;
     }
 
-    public Summoner getSummoner(String smn) throws RimumuException {
-        String url = RimumuKey.SUMMONER_INFO_URL + smn;
+    public Summoner getSummoner(String smn, String tagline) throws RimumuException {
+        Summoner summoner;
 
         try {
-            HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
 
+            String puuidUrl = RimumuKey.SUMMONER_PUUID_URL + smn + "/" + tagline;
+            HttpResponse<String> puuidResponse = HttpConnUtil.sendHttpGetRequest(puuidUrl);
+            if (puuidResponse.statusCode() != 200) {
+                throw new RimumuException.SummonerNotFoundException(smn);
+            }
+            summoner = gson.fromJson(puuidResponse.body(), Summoner.class);
+            String gameName = summoner.getGameName();
+            String tagLine = summoner.getTagLine();
+
+            String url = RimumuKey.SUMMONER_INFO_URL + summoner.getPuuid();
+            HttpResponse<String> smnSearchResponse = HttpConnUtil.sendHttpGetRequest(url);
             if (smnSearchResponse.statusCode() != 200) {
                 throw new RimumuException.SummonerNotFoundException(smn);
             }
+            summoner = gson.fromJson(smnSearchResponse.body(), Summoner.class);
+            summoner.setGameName(gameName);
+            summoner.setTagLine(tagLine);
 
-            return gson.fromJson(smnSearchResponse.body(), Summoner.class);
+            return summoner;
 
         } catch (RimumuException | JsonSyntaxException e) {
             LOGGER.error("!! getSummoner smnSearch error: {} / {}", smn, e.getMessage());
@@ -66,8 +79,8 @@ public class SummonerService {
         checkCurrentGame(summoner);
     }
 
-    public String getSmnPuuid(String smn) throws RimumuException {
-        Summoner summoner = getSummoner(smn);
+    public String getSmnPuuid(String smn, String tagline) throws RimumuException {
+        Summoner summoner = getSummoner(smn, tagline);
         return summoner.getPuuid();
     }
 
@@ -199,21 +212,23 @@ public class SummonerService {
 
     // 매치 리스트 가져오기 matchId
     public List<String> getMatchesUrl(Summoner summoner, int offset) throws RimumuException {
-        String userPuuid = summoner.getPuuid();
-        String matUrl = RimumuKey.SUMMONER_MATCHES_URL + userPuuid + "/ids?start=" + offset + "&count=10";
+        String puuid = summoner.getPuuid();
+        String matchesUrl = RimumuKey.SUMMONER_MATCHES_URL + puuid + "/ids?start=" + offset + "&count=10";
+        HttpResponse<String> smnMatchResponse = null;
 
         try {
-            HttpResponse<String> smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matUrl);
+            smnMatchResponse = HttpConnUtil.sendHttpGetRequest(matchesUrl);
 
-            if (smnMatchResponse.statusCode() == 200) {
-                return gson.fromJson(smnMatchResponse.body(), List.class);
+            if (smnMatchResponse.statusCode() != 200) {
+                throw new RimumuException.MatchNotFoundException(matchesUrl + "\n" + smnMatchResponse.body());
             }
 
-        } catch (RimumuException | JsonSyntaxException e) {
-            LOGGER.error("!! getMatchesUrl error : {}", userPuuid);
-        }
+            return gson.fromJson(smnMatchResponse.body(), List.class);
 
-        throw new RimumuException.MatchNotFoundException(userPuuid);
+        } catch (RimumuException | JsonSyntaxException e) {
+            LOGGER.error("!! getMatchesUrl error : {}\n {}", matchesUrl, e.getMessage());
+            throw new RimumuException.MatchNotFoundException(matchesUrl + "\n" + e.getMessage());
+        }
     }
 
 

@@ -48,8 +48,9 @@ public class HttpConnUtil {
     public static HttpResponse<String> sendRequestWithRetry(HttpRequest request, String url) throws RimumuException {
 
         int retry = 0;
+        HttpResponse<String> response = null;
         while (retry < 5) {
-            HttpResponse<String> response = sendRequest(request);
+            response = sendRequest(request);
             if (response.statusCode() == 200) {
                 return response;
             }
@@ -64,7 +65,7 @@ public class HttpConnUtil {
             }
         }
 
-        throw new RimumuException(url + " exceeded maximum retry attempts");
+        throw new RimumuException(url + " exceeded maximum retry attempts. \n" + response.body());
     }
 
     public static HttpResponse<String> sendRequest(HttpRequest request) throws RimumuException {

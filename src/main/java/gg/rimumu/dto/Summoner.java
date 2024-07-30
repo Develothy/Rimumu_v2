@@ -17,7 +17,8 @@ public class Summoner {
 
     private String id;
     private String puuid;
-    private String name;
+    private String gameName;
+    private String tagLine;
     private int summonerLevel;
     private String masteryChamp = "Amumu";
     private int profileIconId;
@@ -48,7 +49,8 @@ public class Summoner {
 
     public Summoner toResponse() {
         return Summoner.builder()
-                .name(name)
+                .gameName(gameName)
+                .tagLine(tagLine)
                 .summonerLevel(summonerLevel)
                 .masteryChamp(masteryChamp)
                 .profileIconId(profileIconId)

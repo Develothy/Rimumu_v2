@@ -16,6 +16,7 @@ public class RimumuKey {
     public static String ENCRYPT_KEY ;
     public static String DD_VERSION_URL;
     public static String DD_URL;
+    public static String SUMMONER_PUUID_URL ;
     public static String SUMMONER_INFO_URL ;
     public static String SUMMONER_TIER_URL;
     public static String SUMMONER_MASTERY_URL;
@@ -30,6 +31,7 @@ public class RimumuKey {
         ENCRYPT_KEY = environment.getProperty("ENCRYPT_KEY");
         DD_VERSION_URL = environment.getProperty("DD_VERSION_URL");
         DD_URL = environment.getProperty("DD_URL");
+        SUMMONER_PUUID_URL = environment.getProperty("SUMMONER_PUUID_URL");
         SUMMONER_INFO_URL = environment.getProperty("SUMMONER_INFO_URL");
         SUMMONER_TIER_URL = environment.getProperty("SUMMONER_TIER_URL");
         SUMMONER_MASTERY_URL = environment.getProperty("SUMMONER_MASTERY_URL");

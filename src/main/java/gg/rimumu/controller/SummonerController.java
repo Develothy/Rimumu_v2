@@ -28,12 +28,13 @@ public class SummonerController extends BaseController {
     // 소환사 Summoner(smn) 검색
     @GetMapping("/summoner")
     @ResponseBody
-    public RimumuResult info (@RequestParam String smn) {
+    public RimumuResult info (@RequestParam String smn,
+                              @RequestParam(required = false, defaultValue = "KR1") String tagline) {
         // 2글자 닉네임 버그 조정
         String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
 
         try {
-            Summoner summoner = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8));
+            Summoner summoner = summonerService.smnSearch(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8), tagline);
             return new RimumuResult(summoner.toResponse());
 
         } catch (RimumuException e) {
@@ -45,13 +46,16 @@ public class SummonerController extends BaseController {
     @ResponseBody
     public RimumuResult matches (@RequestParam(required = false) String smnPuuid,
                                  @RequestParam(required = false) String smn,
+                                 @RequestParam(required = false, defaultValue = "KR1") String tagline,
                                  @RequestParam(required = false, defaultValue = "0") int offset) {
 
         try {
             Summoner summoner = new Summoner();
             if (smnPuuid == null) {
                 String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
-                summoner.setPuuid(summonerService.getSmnPuuid(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8)));
+                summoner.setPuuid(summonerService.getSmnPuuid(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8), tagline));
+            } else {
+                summoner.setPuuid(smnPuuid);
             }
 
             List<String> matcheIds = summonerService.getMatches(summoner, offset);
