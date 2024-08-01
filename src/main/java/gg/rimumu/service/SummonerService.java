@@ -10,6 +10,8 @@ import gg.rimumu.dto.*;
 import gg.rimumu.exception.RimumuException;
 import gg.rimumu.common.util.DateTimeUtil;
 import gg.rimumu.common.util.HttpConnUtil;
+import gg.rimumu.service.excutor.SummonerApiExecutor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,14 +20,19 @@ import org.springframework.util.ObjectUtils;
 import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
 @Service
+@RequiredArgsConstructor
 public class SummonerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SummonerService.class);
     private static final Gson gson = new Gson();
+
+    private final SummonerApiExecutor executor;
+
     private CacheService cached;
 
 
@@ -342,18 +349,15 @@ public class SummonerService {
      * forEach 반복문 시작구간
      * 설명 : 챔피언, 게입타입, 승패, 게임 시간, KDA, 룬, 스펠, 아이템, 플레이어
      */
-    public Match setMatchDtls(Summoner summoner, String matchId) throws RimumuException {
-
-        LOGGER.info("Match : {}", matchId);
+    public Match setMatchDtls(Summoner summoner, JsonObject info) throws RimumuException {
 
         Match match = new Match();
-        match.setMatchId(matchId);
 
         //matchData 중 info : xx 부분
-        JsonObject info = getMatchIdInfo(matchId);
         if (isNotValid(info, "INFO")) {
             return match;
         }
+        //match.setMatchId(info.getAsString());
 
         //게임종류(협곡 칼바람 등) //모드 추가 시 추가 필요
         match.setQueueId(getGameType(info.get("queueId").getAsString()));
@@ -469,5 +473,21 @@ public class SummonerService {
         return false;
     }
 
+    public List<Match> getMatchResult(Summoner summoner, int offset) throws RimumuException, ExecutionException, InterruptedException {
+
+        List<String> matchIds = getMatches(summoner, offset);
+        List<JsonObject> e = executor.apiParallelCalls(summoner, matchIds);
+        List<Match> matches = e.stream()
+                .map(m -> {
+                    try {
+                        return setMatchDtls(summoner, m);
+                    } catch (RimumuException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                })
+                .collect(Collectors.toList());
+
+        return matches;
+    }
 }
 

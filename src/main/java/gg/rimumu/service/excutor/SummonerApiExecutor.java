@@ -1,5 +1,9 @@
 package gg.rimumu.service.excutor;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import gg.rimumu.common.key.RimumuKey;
+import gg.rimumu.common.util.HttpConnUtil;
 import gg.rimumu.dto.Match;
 import gg.rimumu.dto.Summoner;
 import gg.rimumu.exception.RimumuException;
@@ -8,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -15,19 +20,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class SummonerApiExecutor {
 
-    @Autowired
-    private final SummonerService summonerService;
+    private static final Gson gson = new Gson();
 
 
-    public List<Match> apiParallelCalls(Summoner item, List<String> endpoints) throws RimumuException, ExecutionException, InterruptedException {
+    public List<JsonObject> apiParallelCalls(Summoner item, List<String> endpoints) {
 
-        List<CompletableFuture<Match>> futures = new ArrayList<>();
+        List<CompletableFuture<JsonObject>> futures = new ArrayList<>();
 
         for (String endpoint : endpoints) {
-            CompletableFuture<Match> future = CompletableFuture.supplyAsync(() -> callApiForMatch(item, endpoint));
+            CompletableFuture<JsonObject> future = CompletableFuture.supplyAsync(() -> callApiForMatch(item, endpoint));
             futures.add(future);
         }
 
@@ -40,14 +43,21 @@ public class SummonerApiExecutor {
     }
 
 
-    private Match callApiForMatch(Summoner summoner, String endpoint) {
-        Match match = new Match();
+    private JsonObject callApiForMatch(Summoner summoner, String matchId) {
         try {
-            match = summonerService.setMatchDtls(summoner, endpoint);
+            String matchDataUrl = RimumuKey.SUMMONER_MATCHDTL_URL + matchId.replace("\"", "");
+
+
+            HttpResponse<String> matchInfoResponse = HttpConnUtil.sendHttpGetRequest(matchDataUrl);
+            JsonObject matchResult = gson.fromJson(matchInfoResponse.body(), JsonObject.class);
+            //matchResult 중 info : xx 부분
+            JsonObject info = matchResult.getAsJsonObject("info");
+            return info;
+
         } catch (RimumuException e) {
             new RimumuException();
         }
-        return match;
+        return null;
     }
 
 }
