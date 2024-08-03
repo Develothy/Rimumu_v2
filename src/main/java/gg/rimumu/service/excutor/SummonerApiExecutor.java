@@ -7,16 +7,12 @@ import gg.rimumu.common.util.HttpConnUtil;
 import gg.rimumu.dto.Match;
 import gg.rimumu.dto.Summoner;
 import gg.rimumu.exception.RimumuException;
-import gg.rimumu.service.SummonerService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,12 +21,12 @@ public class SummonerApiExecutor {
     private static final Gson gson = new Gson();
 
 
-    public List<JsonObject> apiParallelCalls(Summoner item, List<String> endpoints) {
+    public List<?> apiParallelCalls(Summoner item, List<String> endpoints) {
 
-        List<CompletableFuture<JsonObject>> futures = new ArrayList<>();
+        List<CompletableFuture<?>> futures = new ArrayList<>();
 
         for (String endpoint : endpoints) {
-            CompletableFuture<JsonObject> future = CompletableFuture.supplyAsync(() -> callApiForMatch(item, endpoint));
+            CompletableFuture<?> future = CompletableFuture.supplyAsync(() -> callApiForMatch(item, endpoint));
             futures.add(future);
         }
 
@@ -43,16 +39,22 @@ public class SummonerApiExecutor {
     }
 
 
-    private JsonObject callApiForMatch(Summoner summoner, String matchId) {
+    private Match callApiForMatch(Summoner summoner, String matchId) {
         try {
+            Match match = new Match();
             String matchDataUrl = RimumuKey.SUMMONER_MATCHDTL_URL + matchId.replace("\"", "");
-
-
+            System.out.println(matchDataUrl);
             HttpResponse<String> matchInfoResponse = HttpConnUtil.sendHttpGetRequest(matchDataUrl);
             JsonObject matchResult = gson.fromJson(matchInfoResponse.body(), JsonObject.class);
             //matchResult 중 info : xx 부분
-            JsonObject info = matchResult.getAsJsonObject("info");
-            return info;
+            match = gson.fromJson(matchResult.getAsJsonObject("info"), Match.class);
+            match.setMatchId(matchId);
+            match.setSummonerPuuid(summoner.getPuuid());
+            match.afterPropertiesSet();
+            System.out.println(matchDataUrl.toString());
+            System.out.println(match.toString());
+            System.out.println("execute "+match.getParticipants().get(0).toString());
+            return match;
 
         } catch (RimumuException e) {
             new RimumuException();

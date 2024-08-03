@@ -44,29 +44,29 @@ public class Summoner {
 
     private SummonerRecent recent = new SummonerRecent();
 
-    private List<Match> matchList = null;
+    private List<Match> matchList = new ArrayList<>();
 
 
     public Summoner toResponse() {
         return Summoner.builder()
-                .gameName(gameName)
-                .tagLine(tagLine)
-                .summonerLevel(summonerLevel)
-                .masteryChamp(masteryChamp)
-                .profileIconId(profileIconId)
-                .soloTier(soloTier)
-                .soloRank(soloRank)
-                .soloLeaguePoints(soloLeaguePoints)
-                .soloWins(soloWins)
-                .flexTier(flexTier)
-                .flexRank(flexRank)
-                .flexWins(flexWins)
-                .flexLosses(flexLosses)
-                .isCurrent(isCurrent)
-                .queueId(queueId)
-                .curChamp(curChamp)
-                .recent(recent)
-                .matchList(matchList)
+                .gameName(this.gameName)
+                .tagLine(this.tagLine)
+                .summonerLevel(this.summonerLevel)
+                .masteryChamp(this.masteryChamp)
+                .profileIconId(this.profileIconId)
+                .soloTier(this.soloTier)
+                .soloRank(this.soloRank)
+                .soloLeaguePoints(this.soloLeaguePoints)
+                .soloWins(this.soloWins)
+                .flexTier(this.flexTier)
+                .flexRank(this.flexRank)
+                .flexWins(this.flexWins)
+                .flexLosses(this.flexLosses)
+                .isCurrent(this.isCurrent)
+                .queueId(this.queueId)
+                .curChamp(this.curChamp)
+                .recent(this.recent)
+                .matchList(this.matchList)
                 .build();
     }
 }

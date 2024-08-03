@@ -51,7 +51,7 @@ public class SummonerController extends BaseController {
             Summoner summoner = new Summoner();
             if (smnPuuid == null) {
                 String adjustSmn = smn.strip().length() > 2 ? smn : smn.charAt(0) + " " + smn.charAt(1);
-                summoner.setPuuid(summonerService.getSmnPuuid(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8), tagline));
+                summoner.setPuuid(summonerService.getPuuid(URLEncoder.encode(adjustSmn, StandardCharsets.UTF_8), tagline));
             } else {
                 summoner.setPuuid(smnPuuid);
             }
