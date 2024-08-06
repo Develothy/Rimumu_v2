@@ -1,6 +1,7 @@
 package gg.rimumu.service;
 
 import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import gg.rimumu.cache.CacheService;
 import gg.rimumu.common.key.ChampionKey;
 import gg.rimumu.common.key.GameTypeKey;
@@ -84,7 +85,7 @@ public class SummonerService {
 
         // 티어 조회
         setTier(summoner);
-        //setMasteryChamp(summoner);
+        setMasteryChamp(summoner);
         // 게임중 여부 조회 (riot developer api 막힘)
         checkCurrentGame(summoner);
     }
@@ -149,13 +150,13 @@ public class SummonerService {
 
     public void setMasteryChamp(Summoner summoner) {
 
-        String masteryChampUrl = RimumuKey.SUMMONER_MASTERY_URL + summoner.getId() + "/top?count=1";
+        String masteryChampUrl = RimumuKey.SUMMONER_MASTERY_URL + summoner.getPuuid() + "/top?count=1";
 
         try {
-            LOGGER.info("summoner Id check : {}", summoner.getId() );
             HttpResponse<String> smnMasteryResponse = HttpConnUtil.sendHttpGetRequest(masteryChampUrl, false);
-            JsonObject matchResult = JsonParser.parseString(smnMasteryResponse.body()).getAsJsonArray().get(0).getAsJsonObject();
-            String masteryChamp = ChampionKey.valueOf("K" + matchResult.get("championId").getAsString()).getLabel();
+            List<ChampionMastery> masteryResult = gson.fromJson(smnMasteryResponse.body(), new TypeToken<List<ChampionMastery>>() {}.getType());
+
+            String masteryChamp = ChampionKey.valueOf("K" + masteryResult.get(0).getChampionId()).getLabel();
             summoner.setMasteryChamp(masteryChamp);
 
         } catch (RimumuException | IllegalStateException e) {
