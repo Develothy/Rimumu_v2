@@ -5,7 +5,6 @@ import gg.rimumu.cache.CacheService;
 import gg.rimumu.common.key.ChampionKey;
 import gg.rimumu.common.key.GameTypeKey;
 import gg.rimumu.common.key.RimumuKey;
-import gg.rimumu.common.key.SpellKey;
 import gg.rimumu.dto.*;
 import gg.rimumu.exception.RimumuException;
 import gg.rimumu.common.util.HttpConnUtil;
@@ -31,7 +30,7 @@ public class SummonerService {
 
     private final SummonerApiExecutor executor;
 
-    private CacheService cached;
+    private static CacheService cached;
 
 
     // 소환사 검색
@@ -239,7 +238,7 @@ public class SummonerService {
 
 
     // item 구하기
-    public Item setItem(int itemNum) {
+    public static Item setItemDescription(int itemNum) {
 
         Item item = new Item();
 
@@ -298,8 +297,7 @@ public class SummonerService {
 
             if(summoner.getPuuid().equals(parti.getPuuid())) {
                 // participant가 나일 경우 추가 정보 세팅
-                MyGame myGame = parti.of();
-                match.setMyGame(myGame);
+                match.setMyGame(MyGame.of(parti));
                 setGameDetail(match, summoner);
                 System.out.println("for " + match.getParticipants().get(0).toString());
             }

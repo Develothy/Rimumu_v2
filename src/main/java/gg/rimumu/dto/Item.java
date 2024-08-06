@@ -13,7 +13,7 @@ import lombok.ToString;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Item {
 
-    private int num = 0;
+    private int num;
     private String name;
     private String description;
     private int gold;

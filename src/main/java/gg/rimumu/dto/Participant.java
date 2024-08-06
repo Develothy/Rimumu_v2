@@ -5,6 +5,7 @@ import gg.rimumu.common.key.SpellKey;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
+@SuperBuilder
 public class Participant {
 
     private String summonerName;
@@ -37,7 +39,6 @@ public class Participant {
     private int item4;
     private int item5;
     private int item6;
-    private List<Item> itemList = new ArrayList<>();
 
     // rune
     private Perks perks;
@@ -57,7 +58,6 @@ public class Participant {
     public void afterPropertiesSet() {
         setChampionName();
         setAvg();
-        setItemList();
         setRune1();
         setRune2();
         setSpell();
@@ -73,16 +73,6 @@ public class Participant {
         } else {
             this.avg = String.format("%.2f", (this.kills + this.assists) / (double) this.deaths);
         }
-    }
-
-    private void setItemList() {
-        this.itemList.add(new Item(item0));
-        this.itemList.add(new Item(item1));
-        this.itemList.add(new Item(item2));
-        this.itemList.add(new Item(item3));
-        this.itemList.add(new Item(item4));
-        this.itemList.add(new Item(item5));
-        this.itemList.add(new Item(item6));
     }
 
     @Getter @Setter
@@ -122,19 +112,4 @@ public class Participant {
         this.summoner2Id = SpellKey.valueOf("SP" + this.summoner2Id).label();
     }
 
-    public MyGame of() {
-        MyGame myGame = new MyGame();
-        myGame.setChampionName(this.championName);
-        myGame.setWin(this.win);
-        myGame.setKills(this.kills);
-        myGame.setDeaths(this.deaths);
-        myGame.setAssists(this.assists);
-        myGame.setAvg(this.avg);
-        myGame.setRune1(this.rune1);
-        myGame.setRune2(this.rune2);
-        myGame.setSummoner1Id(this.summoner1Id);
-        myGame.setSummoner2Id(this.summoner2Id);
-        myGame.setItemList(this.itemList);
-        return myGame;
-    }
 }
