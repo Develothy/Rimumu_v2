@@ -180,6 +180,7 @@ public class SummonerService {
             }
 
             JsonObject curResult = gson.fromJson(smnSearchResponse.body(), JsonObject.class);
+            CurrentGameInfo currentGameInfo = gson.fromJson(curResult, CurrentGameInfo.class);
             summoner.setCurrent(true);
 
             // 큐 타입
@@ -242,7 +243,6 @@ public class SummonerService {
     public static Item setItemDescription(int itemNum) {
 
         Item item = new Item();
-
         // item이 없는 칸 회색템 표시
         if (itemNum == 0) {
             item.setDescription("보이지 않는 검이 가장 무서운 법.....");
