@@ -91,7 +91,7 @@ public class SummonerService {
     }
 
 
-    public List<String> getMatches(Summoner summoner, int offset ) throws RimumuException, ExecutionException, InterruptedException {
+    public List<String> getMatches(Summoner summoner, int offset ) throws RimumuException {
 
         return getMatchesUrl(summoner, offset);
     }
