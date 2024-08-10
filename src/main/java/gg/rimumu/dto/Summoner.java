@@ -46,6 +46,25 @@ public class Summoner {
 
     private List<Match> matchList = new ArrayList<>();
 
+    public void setRank(SummonerRank rank) {
+        switch (rank.getQueueType()) {
+            case RANKED_SOLO_5x5 -> {
+                this.soloTier = rank.getTier();
+                this.soloRank = rank.getRank();
+                this.soloLeaguePoints = rank.getLeaguePoints();
+                this.soloWins = rank.getWins();
+                this.soloLosses = rank.getLosses();
+            }
+            case RANKED_FLEX_SR -> {
+                this.flexTier = rank.getTier();
+                this.flexRank = rank.getRank();
+                this.flexLeaguePoints = rank.getLeaguePoints();
+                this.flexWins = rank.getWins();
+                this.flexLosses = rank.getLosses();
+            }
+        }
+    }
+
 
     public Summoner toResponse() {
         return Summoner.builder()

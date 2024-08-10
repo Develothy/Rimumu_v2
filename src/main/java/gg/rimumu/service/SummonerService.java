@@ -117,34 +117,13 @@ public class SummonerService {
         }
 
         try {
-            JsonArray rankArr = gson.fromJson(rankResultStr, JsonArray.class);
-            //솔랭, 자랭 구분하기
-            for (int i = 0; i < rankArr.size(); i++) {
+            List<SummonerRank> summonerRankList = gson.fromJson(rankResultStr, new TypeToken<List<SummonerRank>>() {}.getType());
+            for (SummonerRank rank: summonerRankList) {
+                summoner.setRank(rank);
+            }
 
-                JsonObject ranks = rankArr.get(i).getAsJsonObject();
-                String rankType = ranks.get("queueType").getAsString();
-
-                // 솔랭, 자랭 값이 존재 한다면 해당 tier값으로 덮음
-                //솔랭
-                if ("RANKED_SOLO_5x5".equals(rankType)) {
-                    summoner.setSoloTier(ranks.get("tier").getAsString()); // 챌, 다이아, 플레 등
-                    summoner.setSoloRank(ranks.get("rank").getAsString()); // 1 ~ 4
-                    summoner.setSoloLeaguePoints(ranks.get("leaguePoints").getAsString()); // 티어 LP
-                    summoner.setSoloWins(ranks.get("wins").getAsString()); //랭크 전체 승
-                    summoner.setSoloLosses(ranks.get("losses").getAsString()); //랭크 전체 패
-                }
-                //자랭
-                else if ("RANKED_FLEX_SR".equals(rankType)) {
-                    summoner.setFlexTier(ranks.get("tier").getAsString());
-                    summoner.setFlexRank(ranks.get("rank").getAsString());
-                    summoner.setFlexLeaguePoints(ranks.get("leaguePoints").getAsString());
-                    summoner.setFlexWins(ranks.get("wins").getAsString());
-                    summoner.setFlexLosses(ranks.get("losses").getAsString());
-                }
-            } // 솔랭, 자랭 구분 종료
-            // 랭크 정보 등록 종료
         } catch (Exception e) {
-            LOGGER.error("!! getTier error. summoner id : {}", summoner.getId());
+            LOGGER.error("!! getTier error. summoner id : {} \n{}", summoner.getId(), e.getMessage());
         }
     } // smnTier() 티어 죄회 로직 종료
 
